@@ -54,7 +54,7 @@ async def llm_batch_worker():
         if batch_prompts:
             try:
                 actual_wait = time.perf_counter() - start_time
-                logger.info(f"🚀 Batch listo: {len(batch_prompts)} items en {actual_wait:.4f}s")
+                logger.info(f"Batch listo: {len(batch_prompts)} items en {actual_wait:.4f}s")
                 
                 results = state.llm.generate(batch_prompts, sampling_params, use_tqdm=False)
                 

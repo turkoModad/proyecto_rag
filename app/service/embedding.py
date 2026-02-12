@@ -22,26 +22,44 @@ def normalize(v: np.ndarray) -> np.ndarray:
         return v
     return v / norm
 
+
+# =========================
+# POOLING PARA E5
+# =========================
+def average_pool(last_hidden_states: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
+    """
+    Aplica masked mean pooling recomendado para modelos E5.
+    Ignora padding correctamente.
+    """
+    last_hidden = last_hidden_states.masked_fill(
+        ~attention_mask[..., None].bool(),
+        0.0
+    )
+    return last_hidden.sum(dim=1) / attention_mask.sum(dim=1)[..., None]
+
+
 # =========================
 # EMBEDDING
 # =========================
-def get_embedding(text: str) -> np.ndarray:
+def get_embedding(text: str, prefix="query") -> np.ndarray:
     """
-    Genera una representación vectorial densa de un texto usando el modelo cargado en 'state'.
+    Genera embedding usando prefijo correcto para E5.
     
-    Proceso:
-    1. Prepara el texto con el prefijo 'query: '.
-    2. Realiza la inferencia en la GPU configurada.
-    3. Aplica Mean Pooling sobre los estados ocultos.
-    4. Normaliza el vector final antes de devolverlo.
+    prefix:
+        "query"   -> consultas
+        "passage" -> documentos
     """
+
     if not text or not isinstance(text, str):
-        logger.error("Se recibió un texto vacío o inválido para generar embedding.")
-        return np.zeros(1024) 
+        logger.error("Texto inválido para embedding.")
+        dim = state.emb_model.config.hidden_size
+        return np.zeros(dim)
 
     try:
+        formatted_text = f"{prefix}: {text}"
+
         inputs = state.emb_tokenizer(
-            f"query: {text}",
+            formatted_text,
             return_tensors="pt",
             truncation=True,
             max_length=512
@@ -49,22 +67,17 @@ def get_embedding(text: str) -> np.ndarray:
 
         with torch.no_grad():
             outputs = state.emb_model(**inputs)
-            emb = outputs.last_hidden_state.mean(dim=1)
+            emb = average_pool(
+                outputs.last_hidden_state,
+                inputs["attention_mask"]
+            )
 
-        # Mover a CPU y convertir a Numpy para compatibilidad con Qdrant y Sklearn
         emb_np = emb.cpu().numpy().flatten()
-        
-        return normalize(emb_np)
+        emb_np = normalize(emb_np)
 
-    except RuntimeError as e:
-        if "out of memory" in str(e).lower():
-            logger.critical("GPU Out of Memory durante la generación de embeddings.")
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-        else:
-            logger.error(f"Error de tiempo de ejecución en modelo de embedding: {e}")
-        return np.zeros(1024)
-        
+        return emb_np
+
     except Exception as e:
-        logger.error(f"Error inesperado al generar embedding: {e}", exc_info=True)
-        return np.zeros(1024)
+        logger.error(f"Error generando embedding: {e}")
+        dim = state.emb_model.config.hidden_size
+        return np.zeros(dim)
