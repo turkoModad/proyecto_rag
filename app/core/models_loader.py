@@ -3,7 +3,7 @@ import logging
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModel
 from vllm import LLM
 from app.core.config import (
-    CLASIFICADOR, EMBEDDING, MODELO_GENERADOR, UTILIZACION_GPU, MAX_MODEL_LENGTH
+    CLASIFICADOR, EMBEDDING, MODELO_GENERADOR, UTILIZACION_GPU, MAX_MODEL_LENGTH, RERANKER
 )
 from app.core.variables_locales import state
 
@@ -47,7 +47,25 @@ def cargar_modelos():
         logger.error(f"Error crítico cargando Embeddings: {e}")
         raise
 
-    # --- 3. CARGA DEL GENERADOR (vLLM) ---
+
+    # --- 3. CARGA DEL RERANKER ---
+    try:
+        logger.info(f"Cargando reranker desde: {RERANKER}")
+        state.rerank_tokenizer = AutoTokenizer.from_pretrained(RERANKER)
+        state.rerank_model = AutoModelForSequenceClassification.from_pretrained(
+            RERANKER,
+            dtype=torch.float16,
+            device_map={"": "cuda:0"}
+        ).eval()
+
+        torch.set_grad_enabled(False)
+
+    except Exception as e:
+        logger.error(f"Error crítico cargando Reranker: {e}")
+        raise
+
+
+    # --- 4. CARGA DEL GENERADOR (vLLM) ---
     try:
         logger.info(f"Iniciando vLLM con modelo: {MODELO_GENERADOR}")
         state.llm = LLM(

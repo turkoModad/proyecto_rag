@@ -12,7 +12,7 @@ from app.service.auto_cache import should_autocache, append_qa_cache
 from app.core.variables_locales import state
 from app.core.config import (
     TOP_K, DEVICE, SYSTEM_PROMPT, MAX_NEW_TOKENS, 
-    TEMPERATURE
+    TEMPERATURE, SECURITY, RERANK_TOP_K
 )
 from app.core.models_loader import cargar_modelos
 from app.engine.generator import llm_batch_worker
@@ -20,6 +20,7 @@ from app.db.qdrant.functions_qdrant import (
     ensure_qa_collection, collection_is_empty,
     search_ley, search_qa_cache, load_dataset_to_qdrant
 )
+from app.service.reranker import rerank
 
 
 logging.basicConfig(level=logging.INFO)
@@ -105,11 +106,23 @@ async def process_query(query: Query):
         except Exception as e:
             logger.warning(f"Fallo en QA Cache: {e}. Continuando con RAG...")
 
-        # 3. RAG
+        # 3. RAG - RERANKER
         try:
             results = search_ley(q_emb, TOP_K)
+
+            if len(results) > 1 and results[0].score < SECURITY:
+                results = rerank(query.text, results)
+                 
+                for r in results:
+                    logger.info(
+                        f"Qdrant: {getattr(r, 'original_score', r.score):.4f} "
+                        f"| Rerank: {getattr(r, 'rerank_score', r.score):.4f}"
+                    )
+
+            results = results[:RERANK_TOP_K]
+
             top_scores = [hit.score for hit in results]
-            
+
             top1_score = top_scores[0] if len(top_scores) > 0 else 0
             top2_score = top_scores[1] if len(top_scores) > 1 else 0
             gap = top1_score - top2_score
@@ -120,9 +133,11 @@ async def process_query(query: Query):
                 f"{e.payload.get('titulo','')} Art. {e.payload.get('numero_articulo','')} - {e.payload.get('contenido','')}"
                 for e in results
             )
+
         except Exception as e:
             logger.error(f"Error en Retrieval (Qdrant): {e}")
             raise HTTPException(status_code=500, detail="Error al recuperar contexto legal")
+        
 
         # 4. LLM GENERATION
         try:
