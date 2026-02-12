@@ -169,6 +169,22 @@ PREGUNTAS = [
     "¿Qué debe hacer un conductor si se detiene o va a girar para ingresar a otra vía?",
     "¿Qué prioridad tienen los vehículos de tracción a sangre en una encrucijada?",
     "¿Qué debe hacer un conductor en una cuesta estrecha si lleva acoplado y otro vehículo asciende?",
+    "¿Puede un conductor cruzar un semáforo en rojo para dejar paso a una ambulancia?",
+    "¿Se puede estacionar en contramano en una calle de un solo sentido?",
+    "¿Puede circular un vehículo remolcando a otro con una soga?",
+    "¿Qué ocurre si un conductor no señaliza un giro?",
+    "¿Está permitido circular con menores en brazos dentro del vehículo?",
+    "¿Puede un conductor avanzar sobre la senda peatonal mientras espera el semáforo?",
+    "¿Se puede circular sin espejos retrovisores si la visibilidad lateral es buena?",
+    "¿Está permitido usar luces antiniebla sin niebla?",
+    "¿Qué debe hacer un conductor al ver animales sueltos en la ruta?",
+    "¿Puede un conductor detenerse en un puente para tomar fotografías?",
+    "¿Se puede circular con la puerta mal cerrada si está asegurada manualmente?",
+    "¿Está permitido estacionar en una pendiente sin colocar el freno de mano?",
+
+
+
+
     "¿Qué pasos debe seguir un conductor para adelantar a otro vehículo de manera segura?",
     "¿Qué debe verificar un conductor antes de iniciar un adelantamiento?",
     "¿En qué situaciones está prohibido adelantar a otro vehículo?",
@@ -389,18 +405,16 @@ PREGUNTAS = [
     "¿Se puede circular con el escape libre o modificado?",
     "¿Quién es responsable si un pasajero no usa cinturón?",
     "¿Está permitido usar el teléfono celular detenido en un semáforo?",
-    "¿Puede un conductor cruzar un semáforo en rojo para dejar paso a una ambulancia?",
-    "¿Se puede estacionar en contramano en una calle de un solo sentido?",
-    "¿Puede circular un vehículo remolcando a otro con una soga?",
-    "¿Qué ocurre si un conductor no señaliza un giro?",
-    "¿Está permitido circular con menores en brazos dentro del vehículo?",
-    "¿Puede un conductor avanzar sobre la senda peatonal mientras espera el semáforo?",
-    "¿Se puede circular sin espejos retrovisores si la visibilidad lateral es buena?",
-    "¿Está permitido usar luces antiniebla sin niebla?",
-    "¿Qué debe hacer un conductor al ver animales sueltos en la ruta?",
-    "¿Puede un conductor detenerse en un puente para tomar fotografías?",
-    "¿Se puede circular con la puerta mal cerrada si está asegurada manualmente?",
-    "¿Está permitido estacionar en una pendiente sin colocar el freno de mano?",
+
+
+
+
+
+
+
+
+
+
     "¿Qué debe hacer un conductor al ingresar a un túnel?",
     "¿Puede un conductor circular con el capot mal cerrado?",
     "¿Está permitido transportar más pasajeros de los indicados por el fabricante?",
