@@ -8,7 +8,10 @@ from app.core.config import (
 from app.core.variables_locales import state
 
 
+logging.getLogger("vllm").setLevel(logging.WARNING)
+logging.getLogger("transformers").setLevel(logging.ERROR)
 logger = logging.getLogger("ModelLoader")
+
 
 def cargar_modelos():
     """
@@ -21,10 +24,12 @@ def cargar_modelos():
     
     Nota: Se utiliza device_map='cuda:0' para asegurar la asignación en la GPU seleccionada (previamente filtrada).
     """
+
+
     # --- 1. CARGA DEL CLASIFICADOR ---
     try:
-        logger.info(f"Cargando clasificador desde: {CLASIFICADOR}")
-        state.clf_tokenizer = AutoTokenizer.from_pretrained(CLASIFICADOR)
+        logger.info("Cargando modelo: [CLASIFICADOR]")
+        state.clf_tokenizer = AutoTokenizer.from_pretrained(CLASIFICADOR, trust_remote_code=True)
         state.clf_model = AutoModelForSequenceClassification.from_pretrained(
             CLASIFICADOR,
             dtype=torch.float16,
@@ -34,9 +39,10 @@ def cargar_modelos():
         logger.error(f"Error crítico cargando Clasificador: {e}")
         raise  
 
+
     # --- 2. CARGA DE EMBEDDINGS ---
     try:
-        logger.info(f"Cargando modelo de embeddings: {EMBEDDING}")
+        logger.info("Cargando modelo: [EMBEDDINGS]")
         state.emb_tokenizer = AutoTokenizer.from_pretrained(EMBEDDING)
         state.emb_model = AutoModel.from_pretrained(
             EMBEDDING,
@@ -50,7 +56,7 @@ def cargar_modelos():
 
     # --- 3. CARGA DEL RERANKER ---
     try:
-        logger.info(f"Cargando reranker desde: {RERANKER}")
+        logger.info("Cargando modelo: [RERANKER]")
         state.rerank_tokenizer = AutoTokenizer.from_pretrained(RERANKER)
         state.rerank_model = AutoModelForSequenceClassification.from_pretrained(
             RERANKER,
@@ -67,7 +73,7 @@ def cargar_modelos():
 
     # --- 4. CARGA DEL GENERADOR (vLLM) ---
     try:
-        logger.info(f"Iniciando vLLM con modelo: {MODELO_GENERADOR}")
+        logger.info("Cargando modelo: [GENERADOR LLM]")
         state.llm = LLM(
             model=MODELO_GENERADOR,
             gpu_memory_utilization=UTILIZACION_GPU,

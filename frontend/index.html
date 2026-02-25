@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente de Seguridad Vial</title>
+    <link rel="stylesheet" href="/frontend/css/styles.css?v=0.2">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app">
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">🛡️ Asistente Vial</div>
+                <span class="badge">Beta</span>
+            </div>
+
+            <div class="header-right">
+                <div class="status online">● Conectado</div>
+                <button id="logoutBtn" class="logout-btn">Cerrar sesión</button>
+            </div>
+        </header>
+
+        <main id="chat" class="chat-window">
+            <div class="welcome">
+                <h3>Bienvenido al Asistente de Seguridad Vial</h3>
+                <p>Consulta sobre normas de tránsito, señales, multas y más.</p>
+            </div>
+        </main>
+
+        <footer class="input-area">
+            <input 
+                type="text"
+                id="question" 
+                placeholder="Ej: ¿Qué tipo de Seguridad usar para niños menores de 10 años?" 
+                autocomplete="off"
+            >
+            <button id="send">Enviar</button>
+        </footer>
+    </div>
+
+    <script type="module" src="/frontend/js/app.js?v0.2"></script>
+</body>
+</html>

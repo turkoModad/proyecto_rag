@@ -60,7 +60,10 @@ async def llm_batch_worker():
                 
                 for fut, res in zip(futures, results):
                     if not fut.done():
-                        fut.set_result(res.outputs[0].text.strip())
+                        raw_text = res.outputs[0].text
+                        logger.info(f"TEXTO CRUDO LLM: '{raw_text}'")
+                        fut.set_result(raw_text.strip())
+
                         
             except Exception as e:
                 logger.error(f"Error crítico vLLM: {e}")

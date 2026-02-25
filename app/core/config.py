@@ -1,90 +1,79 @@
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 import torch
 import logging
-from dotenv import load_dotenv
-from cryptography.fernet import Fernet
+from app.core.security import get_secret
 
-
-load_dotenv()
 
 logger = logging.getLogger("Config")
 
 
-def inicializar_cifrador():
-    master_key = os.getenv("MY_APP_MASTER_KEY")
-    if not master_key:
-        logger.critical("No se encontró 'MY_APP_MASTER_KEY' en el sistema.")
-        raise EnvironmentError("MY_APP_MASTER_KEY faltante.")
-    return Fernet(master_key.encode())
-
-
-cipher = inicializar_cifrador()
-
-
-def get_secret(var_name, default=None):
-    """Obtiene y descifra una variable del .env"""
-    encrypted_value = os.getenv(var_name, default)
-    if not encrypted_value:
-        raise EnvironmentError(f"Variable cifrada {var_name} no encontrada en el .env")
-    try:
-        return cipher.decrypt(encrypted_value.encode()).decode()
-    except Exception:
-        logger.error(f"Error al descifrar {var_name}.")
-        raise
-
-
-def get_env_var(var_name, default=None, required=True):
-    """Obtiene una variable de entorno normal y valida su existencia."""
-    value = os.getenv(var_name, default)
-    if required and value is None:
-        logger.error(f"Falta la variable de entorno obligatoria: {var_name}")
-        raise EnvironmentError(f"Variable {var_name} no encontrada en el .env")
-    return value
-
-
+# ==========================================
+# 1. SECRETS
+# ==========================================
 try:
     EMBEDDING = get_secret("EMBEDDING")
     MODELO_GENERADOR = get_secret("MODELO_GENERADOR")
-    QDRANT_API_KEY = get_secret("QDRANT_API_KEY")
+    VECTOR_API_KEY = get_secret("VECTOR_API_KEY")
     CLASIFICADOR = get_secret("CLASIFICADOR")
     SERVER_URL = get_secret("SERVER_URL")    
-    QDRANT_HOST = get_secret("QDRANT_HOST")       
+    VECTOR_HOST = get_secret("VECTOR_HOST")       
     COLLECTION_LEY = get_secret("COLLECTION_LEY")
     COLLECTION_QA = get_secret("COLLECTION_QA")    
     DATASET_FILE = get_secret("DATASET_FILE")
     OUTPUT_JSONL = get_secret("OUTPUT_JSONL", "output.jsonl")
     RERANKER = get_secret("RERANKER")
+    DB_USER= get_secret("DB_USER")
+    DB_PASSWORD= get_secret("DB_PASSWORD")
+    DB_NAME= get_secret("DB_NAME")
+    DB_HOST= get_secret("DB_HOST")
+    DB_PORT= int(get_secret("DB_PORT"))
+    ADMIN_DATABASE_URL= get_secret("ADMIN_DATABASE_URL")
+    USER_DATABASE_URL=  get_secret("USER_DATABASE_URL")
+    JWT_SECRET= get_secret("JWT_SECRET")
 
-    QDRANT_PORT = int(get_env_var("QDRANT_PORT", 6333)) 
 
 except Exception as e:
-    logger.critical(f"Error cargando la configuración: {e}")
-    raise
+    logger.critical("Fallo crítico: No se pudieron cargar los recursos base.")
+    raise e
 
-
+# ==========================================
+# 2. INFRAESTRUCTURA Y HARDWARE
+# ==========================================
+VECTOR_PORT = 6333  
 EMB_DIM = 1024
-TOP_K = 6
-RERANK_TOP_K = 2
-SECURITY = 0.84
 
-QA_SEARCH_THRESHOLD = 0.92
+# ==========================================
+# 3. LÓGICA DE RECUPERACIÓN (RETRIEVAL)
+# ==========================================
+TOP_K = 7
+RERANK_TOP_K = 3
+SECURITY = 0.86   
+
+# ==========================================
+# 4. LÓGICA DE CACHÉ Y CALIDAD
+# ==========================================
+QA_SEARCH_THRESHOLD = 0.87
 QA_DUPLICATE_THRESHOLD = 0.91
-AUTO_CACHE_THRESHOLD = 0.87
-AUTO_CACHE_GAP = 0.015
+AUTO_CACHE_THRESHOLD = 0.89
+AUTO_CACHE_GAP = 0.01
 AUTO_CACHE_DUPLICATE_THRESHOLD = 0.90
-MIN_GEN_CTX_SIM = 0.82
+MIN_GEN_CTX_SIM = 0.88
 MIN_ANSWER_LENGTH = 12
 MAX_ANSWER_LENGTH = 800
+SIM_CTX = 0.80
 
+# ==========================================
+# 5. PARÁMETROS DEL GENERADOR (LLM)
+# ==========================================
 LLM_BATCH_SIZE = 12
 LLM_BATCH_TIMEOUT = 0.02
 UTILIZACION_GPU = 0.65
 MAX_MODEL_LENGTH = 1680
-MAX_NEW_TOKENS = 192
-TEMPERATURE = 0.0
+MAX_NEW_TOKENS = 220
+TEMPERATURE = 0.05
 
 
 try:
@@ -98,6 +87,9 @@ except Exception as e:
     DEVICE = torch.device("cpu")
 
 
+# ==========================================
+# 6. PROMPT DEL SISTEMA
+# ==========================================
 SYSTEM_PROMPT = (
     "Sos un asistente especializado en normas de tránsito argentinas.\n"
     "Respondé SOLO con la información del CONTEXTO.\n"

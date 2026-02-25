@@ -14,7 +14,7 @@ El proyecto sigue un diseño de responsabilidad única, organizado en capas para
 
 **app/core/ (Núcleo):** Centraliza la configuración global del sistema, la carga segura de modelos y la gestión de variables de estado de la aplicación.
 
-**app/db/ (Persistencia):** Contiene la lógica de conexión y operaciones vectoriales con Qdrant, asegurando una comunicación eficiente con la base de datos.
+**app/db/ (Persistencia):** Contiene la lógica de conexión y operaciones vectoriales, asegurando una comunicación eficiente con la base de datos.
 
 **app/engine/ (Motor de Inferencia):** Aloja el llm_batch_worker, encargado de orquestar el procesamiento por lotes para optimizar el uso de la GPU.
 
@@ -28,7 +28,7 @@ El proyecto sigue un diseño de responsabilidad única, organizado en capas para
 
 **Inferencia Optimizada (Batching):** Implementación de un sistema de procesamiento por lotes que agrupa múltiples consultas para procesarlas simultáneamente en la GPU, maximizando el rendimiento del motor vLLM.
 
-**Caché Semántica (Auto-Cache):** El sistema optimiza recursos mediante un mecanismo de "autocacheo en caliente". Si una consulta se resuelve con alta confianza, la respuesta se almacena en **Qdrant** para ofrecer respuestas instantáneas a futuro.
+**Caché Semántica (Auto-Cache):** El sistema optimiza recursos mediante un mecanismo de "autocacheo en caliente". Si una consulta se resuelve con alta confianza, la respuesta se almacena en vectorial db para ofrecer respuestas instantáneas a futuro.
 
 **Clasificador de Dominio:** Incluye un modelo de clasificación preentrenado que actúa como filtro inicial, determinando si la consulta es pertinente al ámbito legal de tránsito **(in_domain)** o si es ajena al tema **(out_of_domain)**.
 
@@ -44,7 +44,7 @@ El proyecto sigue un diseño de responsabilidad única, organizado en capas para
 
 **Clasificador:** **BERT Multilingual** (bert_multilingual_in_out).
 
-**Base de Datos Vectorial:** **Qdrant** (vectorial db).
+**Base de Datos Vectorial:** **vectorial db**.
 
 **Aceleración de Inferencia:** **vLLM** con soporte nativo para **Flash Attention**.
 

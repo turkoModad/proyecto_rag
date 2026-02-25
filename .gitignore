@@ -1,7 +1,7 @@
 .env
 __pycache__
 proyecto/
-app/data/
-app/models/
-app/scripts/organizar_jsonl.py
-app/scripts/cifrado/
+data/
+models/
+scripts/
+*.csv
