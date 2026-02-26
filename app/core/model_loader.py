@@ -43,7 +43,10 @@ def cargar_modelos():
     # --- 2. CARGA DE EMBEDDINGS ---
     try:
         logger.info("Cargando modelo: [EMBEDDINGS]")
-        state.emb_tokenizer = AutoTokenizer.from_pretrained(EMBEDDING)
+        state.emb_tokenizer = AutoTokenizer.from_pretrained(
+            EMBEDDING,
+            local_files_only=True
+        )
         state.emb_model = AutoModel.from_pretrained(
             EMBEDDING,
             dtype=torch.float16,

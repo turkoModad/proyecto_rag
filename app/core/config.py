@@ -33,6 +33,11 @@ try:
     ADMIN_DATABASE_URL= get_secret("ADMIN_DATABASE_URL")
     USER_DATABASE_URL=  get_secret("USER_DATABASE_URL")
     JWT_SECRET= get_secret("JWT_SECRET")
+    SMTP_SERVER = get_secret("SMTP_SERVER")
+    SMTP_PORT = int(get_secret("SMTP_PORT", 587))
+    SMTP_USER = get_secret("SMTP_USER")
+    SMTP_PASSWORD = get_secret("SMTP_PASSWORD")
+    SENDER_EMAIL = get_secret("SENDER_EMAIL")
 
 
 except Exception as e:

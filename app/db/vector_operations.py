@@ -75,6 +75,7 @@ def load_dataset_to_qdrant(batch_size=100):
         logger.error(f"Error crítico durante la ingesta: {e}")
 
 
+
 # ------------------------
 # RETRIEVAL LOGIC
 # ------------------------
