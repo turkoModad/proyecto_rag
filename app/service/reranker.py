@@ -3,12 +3,12 @@ import numpy as np
 from app.core.variables_locales import state
 from app.core.config import DEVICE
 
+
 def rerank(query: str, documents: list):
     """
     documents: lista de dicts con {payload, score, vector}
     Retorna documentos reordenados por score semántico cruzado.
     """
-
     if not documents:
         return documents
 

@@ -6,6 +6,7 @@ import logging
 
 logger = logging.getLogger("JWT") 
 
+
 ALGORITHM = "HS256"
 ACCESS_EXPIRE_MINUTES = 15
 REFRESH_EXPIRE_DAYS = 7

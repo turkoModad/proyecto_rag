@@ -1,7 +1,6 @@
 from fastapi import Depends, HTTPException, status, Request
-from sqlalchemy.ext.asyncio import AsyncSession
-from .database import AsyncSessionLocal
-from .jwt_handler import verify_token
+from app.auth.database import AsyncSessionLocal
+from app.auth.jwt_handler import verify_token
 import logging
 
 
@@ -10,7 +9,14 @@ logger = logging.getLogger("AuthDeps")
 
 async def get_db():
     async with AsyncSessionLocal() as session:
-        yield session
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
+        finally:
+            await session.close()
 
 
 async def get_current_user(request: Request):
@@ -27,12 +33,10 @@ async def get_current_user(request: Request):
     try:
         payload = verify_token(access_token)
         
-        # Verificar si el token es válido y es de tipo access
         if payload.get("type") != "access" or "error" in payload:
             logger.debug(f"Invalid token payload: {payload}")
             return None
 
-        # Verificar que tenga los campos necesarios
         if "sub" not in payload or "role" not in payload:
             logger.debug("Token missing required fields")
             return None

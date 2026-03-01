@@ -41,7 +41,7 @@
 document.getElementById('loginForm').onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    
+
     const response = await fetch('/auth/login', {
         method: 'POST',
         body: formData,
@@ -51,9 +51,13 @@ document.getElementById('loginForm').onsubmit = async (e) => {
     const data = await response.json();
 
     if (response.ok) {
-        window.location.href = "/";
+        if (data.redirect) {
+            window.location.href = data.redirect;
+        } else {
+            window.location.href = "/";
+        }
     } else {
-        alert(data.detail || "Credenciales incorrectas");
+        alert(data.detail || "Error al iniciar sesión");
     }
 };
 </script>

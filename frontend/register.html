@@ -54,7 +54,7 @@ document.getElementById('registerForm').onsubmit = async (e) => {
     const data = await response.json();
 
     if (response.ok) {
-        window.location.href = "/";
+        window.location.href = data.redirect;
     } else {
         alert(data.detail || "Error al registrarse");
     }

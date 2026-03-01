@@ -13,25 +13,22 @@ from app.core.config import (
 logger = logging.getLogger("VectorClient")
 
 
-# ------------------------
 # CLIENT INITIALIZATION
-# ------------------------
 try:
     client = QdrantClient(
         host=VECTOR_HOST,
         port=VECTOR_PORT,
         api_key=VECTOR_API_KEY,
-        https=False,
+        https=True,
         timeout=60
     )
+    
 except Exception as e:
     logger.error(f"Error fatal al inicializar el cliente de base de datos vectorial: {e}")
     raise e
 
 
-# ------------------------
 # INFRASTRUCTURE HELPERS
-# ------------------------
 def ensure_qa_collection():
     """
     Verifica la existencia de la colección de Caché de Respuestas (QA).

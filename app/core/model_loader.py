@@ -1,5 +1,6 @@
 import torch
 import logging
+import warnings
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModel
 from vllm import LLM
 from app.core.config import (
@@ -8,8 +9,17 @@ from app.core.config import (
 from app.core.variables_locales import state
 
 
-logging.getLogger("vllm").setLevel(logging.WARNING)
+logging.basicConfig(level=logging.ERROR)
+warnings.filterwarnings("ignore", message=".*PixtralProcessorAdapter.*")
+logging.getLogger("mistral_common").setLevel(logging.ERROR)
+logging.getLogger("mistral_common.tokens.tokenizers.tekken").setLevel(logging.ERROR)
+
+logging.getLogger("vllm").setLevel(logging.ERROR)
+logging.getLogger("vllm.multimodal").setLevel(logging.ERROR)
+logging.getLogger("vllm.multimodal.context").setLevel(logging.ERROR)
+logging.getLogger("vllm.model_executor").setLevel(logging.ERROR)
 logging.getLogger("transformers").setLevel(logging.ERROR)
+
 logger = logging.getLogger("ModelLoader")
 
 
@@ -24,9 +34,7 @@ def cargar_modelos():
     
     Nota: Se utiliza device_map='cuda:0' para asegurar la asignación en la GPU seleccionada (previamente filtrada).
     """
-
-
-    # --- 1. CARGA DEL CLASIFICADOR ---
+    # 1. CARGA DEL CLASIFICADOR
     try:
         logger.info("Cargando modelo: [CLASIFICADOR]")
         state.clf_tokenizer = AutoTokenizer.from_pretrained(CLASIFICADOR, trust_remote_code=True)
@@ -35,12 +43,13 @@ def cargar_modelos():
             dtype=torch.float16,
             device_map={"": "cuda:0"}
         ).eval()
+        
     except Exception as e:
         logger.error(f"Error crítico cargando Clasificador: {e}")
         raise  
 
 
-    # --- 2. CARGA DE EMBEDDINGS ---
+    # 2. CARGA DE EMBEDDINGS
     try:
         logger.info("Cargando modelo: [EMBEDDINGS]")
         state.emb_tokenizer = AutoTokenizer.from_pretrained(
@@ -51,13 +60,14 @@ def cargar_modelos():
             EMBEDDING,
             dtype=torch.float16,
             device_map={"": "cuda:0"}
-        ).eval() 
+        ).eval()
+
     except Exception as e:
         logger.error(f"Error crítico cargando Embeddings: {e}")
         raise
 
 
-    # --- 3. CARGA DEL RERANKER ---
+    # 3. CARGA DEL RERANKER 
     try:
         logger.info("Cargando modelo: [RERANKER]")
         state.rerank_tokenizer = AutoTokenizer.from_pretrained(RERANKER)
@@ -74,15 +84,17 @@ def cargar_modelos():
         raise
 
 
-    # --- 4. CARGA DEL GENERADOR (vLLM) ---
+    # 4. CARGA DEL GENERADOR (vLLM)
     try:
         logger.info("Cargando modelo: [GENERADOR LLM]")
         state.llm = LLM(
-            model=MODELO_GENERADOR,
-            gpu_memory_utilization=UTILIZACION_GPU,
-            max_model_len=MAX_MODEL_LENGTH,
-            disable_log_stats=True
-        )
+                model=MODELO_GENERADOR,
+                gpu_memory_utilization=UTILIZACION_GPU,
+                max_model_len=MAX_MODEL_LENGTH,
+                disable_log_stats=True,
+                trust_remote_code=True
+            )
+
     except torch.cuda.OutOfMemoryError:
         logger.error("Error: Memoria VRAM insuficiente para vLLM. Reduce UTILIZACION_GPU.")
         raise

@@ -16,9 +16,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("VectorOperations")
 
 
-# ------------------------
-# STATE CHECKS
-# ------------------------
 def collection_is_empty(collection_name=COLLECTION_LEY):
     """Comprueba si hay datos en una colección. Retorna True si está vacía."""
     try:
@@ -32,9 +29,6 @@ def collection_is_empty(collection_name=COLLECTION_LEY):
         return True
 
 
-# ------------------------
-# INGESTION LOGIC
-# ------------------------
 def load_dataset_to_qdrant(batch_size=100):
     """Lee el dataset local, genera embeddings y los sube a la base vectorial."""
     logger.info(f"Iniciando carga de datos desde fuente: {DATASET_FILE}")
@@ -69,16 +63,13 @@ def load_dataset_to_qdrant(batch_size=100):
             if points:
                 client.upsert(collection_name=COLLECTION_LEY, points=points)
         logger.info("Carga de datos finalizada correctamente.")
+
     except FileNotFoundError:
         logger.error(f"Archivo de origen no encontrado: {DATASET_FILE}")
     except Exception as e:
         logger.error(f"Error crítico durante la ingesta: {e}")
 
 
-
-# ------------------------
-# RETRIEVAL LOGIC
-# ------------------------
 def search_ley(query_vector, top_k):
     """Realiza una búsqueda semántica en la colección principal."""
     try:
@@ -88,6 +79,7 @@ def search_ley(query_vector, top_k):
             limit=top_k
         )
         return result.points
+    
     except Exception as e:
         logger.error(f"Error en búsqueda de base de conocimientos: {e}")
         return []
@@ -108,14 +100,12 @@ def search_qa_cache(query_emb: np.ndarray, top_k=1):
         if best.score >= QA_SEARCH_THRESHOLD:
             return best.payload, best.score
         return None, best.score
+    
     except Exception as e:
         logger.error(f"Error consultando caché semántica: {e}")
         return None, 0.0
 
 
-# ------------------------
-# VALIDATION LOGIC
-# ------------------------
 def is_duplicate_qa(embedding: np.ndarray, threshold: float):
     """Verifica si una entrada similar ya existe para evitar redundancia."""
     try:
@@ -127,6 +117,7 @@ def is_duplicate_qa(embedding: np.ndarray, threshold: float):
         if not result.points:
             return False
         return result.points[0].score >= threshold
+    
     except Exception as e:
         logger.error(f"Error detectando duplicados: {e}")
         return False

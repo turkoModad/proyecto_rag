@@ -1,6 +1,6 @@
 import os
 import logging
-import hashlib #
+import hashlib 
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
 

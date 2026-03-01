@@ -1,5 +1,6 @@
 import asyncio
 
+
 class AppState:
     """
     Gestor de estado global de la aplicación.
@@ -20,7 +21,7 @@ class AppState:
     # BATCH / LOCKS
     # =========================
     qa_lock = asyncio.Lock()
-    llm_queue = asyncio.Queue()
+    llm_queue = asyncio.Queue(maxsize=100)
 
     # =========================
     # METRICAS

@@ -8,9 +8,7 @@ from app.core.variables_locales import state
 logger = logging.getLogger("EmbeddingService")
 
 
-# =========================
 # NORMALIZACION
-# =========================
 def normalize(v: np.ndarray) -> np.ndarray:
     """
     Realiza la normalización L2 de un vector.
@@ -23,9 +21,7 @@ def normalize(v: np.ndarray) -> np.ndarray:
     return v / norm
 
 
-# =========================
 # POOLING PARA E5
-# =========================
 def average_pool(last_hidden_states: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
     """
     Aplica masked mean pooling recomendado para modelos E5.
@@ -38,9 +34,7 @@ def average_pool(last_hidden_states: torch.Tensor, attention_mask: torch.Tensor)
     return last_hidden.sum(dim=1) / attention_mask.sum(dim=1)[..., None]
 
 
-# =========================
 # EMBEDDING
-# =========================
 def get_embedding(text: str, prefix="query") -> np.ndarray:
     """
     Genera embedding usando prefijo correcto para E5.

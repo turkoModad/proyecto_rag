@@ -2,7 +2,6 @@ import os
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-import torch
 import logging
 from app.core.security import get_secret
 
@@ -10,9 +9,7 @@ from app.core.security import get_secret
 logger = logging.getLogger("Config")
 
 
-# ==========================================
 # 1. SECRETS
-# ==========================================
 try:
     EMBEDDING = get_secret("EMBEDDING")
     MODELO_GENERADOR = get_secret("MODELO_GENERADOR")
@@ -44,57 +41,41 @@ except Exception as e:
     logger.critical("Fallo crítico: No se pudieron cargar los recursos base.")
     raise e
 
-# ==========================================
 # 2. INFRAESTRUCTURA Y HARDWARE
-# ==========================================
-VECTOR_PORT = 6333  
+VECTOR_PORT = 443  
 EMB_DIM = 1024
 
-# ==========================================
+
 # 3. LÓGICA DE RECUPERACIÓN (RETRIEVAL)
-# ==========================================
-TOP_K = 7
-RERANK_TOP_K = 3
+TOP_K = 5
+RERANK_TOP_K = 2
 SECURITY = 0.86   
 
-# ==========================================
+
 # 4. LÓGICA DE CACHÉ Y CALIDAD
-# ==========================================
-QA_SEARCH_THRESHOLD = 0.87
+QA_SEARCH_THRESHOLD = 0.90
 QA_DUPLICATE_THRESHOLD = 0.91
 AUTO_CACHE_THRESHOLD = 0.89
-AUTO_CACHE_GAP = 0.01
-AUTO_CACHE_DUPLICATE_THRESHOLD = 0.90
-MIN_GEN_CTX_SIM = 0.88
-MIN_ANSWER_LENGTH = 12
-MAX_ANSWER_LENGTH = 800
-SIM_CTX = 0.80
+AUTO_CACHE_GAP = 0.005
+AUTO_CACHE_DUPLICATE_THRESHOLD = 0.92
+MIN_GEN_CTX_SIM = 0.86
+MIN_ANSWER_LENGTH = 6
+MAX_ANSWER_LENGTH = 600
+SIM_CTX = 0.86
 
-# ==========================================
+
 # 5. PARÁMETROS DEL GENERADOR (LLM)
-# ==========================================
-LLM_BATCH_SIZE = 12
-LLM_BATCH_TIMEOUT = 0.02
+LLM_BATCH_SIZE = 10
+LLM_BATCH_TIMEOUT = 0.05
 UTILIZACION_GPU = 0.65
-MAX_MODEL_LENGTH = 1680
+MAX_MODEL_LENGTH = 1280
 MAX_NEW_TOKENS = 220
 TEMPERATURE = 0.05
 
-
-try:
-    if torch.cuda.is_available():
-        DEVICE = torch.device("cuda:0")
-    else:
-        logger.warning("GPU no disponible, usando CPU (Rendimiento degradado)")
-        DEVICE = torch.device("cpu")
-except Exception as e:
-    logger.error(f"Error al inicializar el dispositivo: {e}")
-    DEVICE = torch.device("cpu")
+DEVICE = "cuda:0"
 
 
-# ==========================================
 # 6. PROMPT DEL SISTEMA
-# ==========================================
 SYSTEM_PROMPT = (
     "Sos un asistente especializado en normas de tránsito argentinas.\n"
     "Respondé SOLO con la información del CONTEXTO.\n"

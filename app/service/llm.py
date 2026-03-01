@@ -31,6 +31,7 @@ async def generate(question_text, context_text):
             "future": future
         })
         return await future
+    
     except Exception as e:
         logger.error(f"Error en generación LLM: {e}")
         from fastapi import HTTPException

@@ -50,7 +50,7 @@ body {
     gap: 12px;
 }
 
-/* Logout button estilo premium */
+/* Logout button */
 .logout-btn {
     background: linear-gradient(135deg, #ff4d4f, #d9363e);
     color: #ffffff;

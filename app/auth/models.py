@@ -16,6 +16,12 @@ class User(Base):
     is_active = Column(Boolean, default=True)    
     created_at = Column(DateTime(timezone=True), server_default=func.now())    
     last_login = Column(DateTime(timezone=True), nullable=True)
+    is_verified = Column(Boolean, default=False)
+    otp_hash = Column(String, nullable=True)
+    otp_expires = Column(DateTime(timezone=True), nullable=True)
+    otp_attempts = Column(Integer, default=0)
+    otp_purpose = Column(String, nullable=True)
+    is_blocked = Column(Boolean, default=False)
     
     query_logs = relationship("QueryLog", back_populates="user", cascade="all, delete-orphan")
 

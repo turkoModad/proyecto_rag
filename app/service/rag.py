@@ -19,18 +19,14 @@ def retrieve_context(question_text: str):
     3) Aplica rerank si es necesario
     4) Construye contexto final
     """
-
     try:
-        # --------------------------------------------------
-        # 1- VALIDACIÓN
-        # --------------------------------------------------
+        # 1- VALIDACIÓN  
         if not isinstance(question_text, str) or not question_text.strip():
             logger.warning("Pregunta vacía en retrieve_context.")
             return "", []
 
-        # --------------------------------------------------
+
         # 2- GENERAR EMBEDDING
-        # --------------------------------------------------
         query_embedding = get_embedding(question_text, prefix="query")
 
         if isinstance(query_embedding, list):
@@ -45,18 +41,16 @@ def retrieve_context(question_text: str):
         if norm > 0:
             query_embedding = query_embedding / norm
 
-        # --------------------------------------------------
+
         # 3- BÚSQUEDA VECTORIAL
-        # --------------------------------------------------
         results = search_ley(query_embedding, TOP_K)
 
         if not results:
             logger.info("Sin resultados en búsqueda vectorial.")
             return "", []
 
-        # --------------------------------------------------
+
         # 4- RERANK CONDICIONAL
-        # --------------------------------------------------
         if len(results) > 1 and results[0].score < SECURITY:
             logger.info("Aplicando rerank por score bajo.")
             results = rerank(question_text, results)
@@ -64,9 +58,8 @@ def retrieve_context(question_text: str):
         # Limitar resultados finales
         results = results[:RERANK_TOP_K]
 
-        # --------------------------------------------------
+
         # 5- CONSTRUIR CONTEXTO
-        # --------------------------------------------------
         context_parts = []
         top_scores = []
 

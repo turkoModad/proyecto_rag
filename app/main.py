@@ -1,7 +1,12 @@
+import multiprocessing as mp
+mp.set_start_method("spawn", force=True)
+import torch
+torch.multiprocessing.set_start_method("spawn", force=True)
+import os
+os.environ["VLLM_WORKER_MULTIPROC_METHOD"] = "spawn"
+
 import gc
 import asyncio
-import os
-import torch
 import logging
 import warnings
 from contextlib import asynccontextmanager
@@ -28,19 +33,13 @@ from app.db.vector_operations import (
     load_dataset_to_qdrant
 )
 
-# ============================================================
 # LOGGING
-# ============================================================
-
 logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger("Main")
 
 
-# ============================================================
 # LIFESPAN
-# ============================================================
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
@@ -67,8 +66,7 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    # ================= SHUTDOWN =================
-
+    # SHUTDOWN 
     logger.info("Cerrando servicios...")
 
     app.state.worker_task.cancel()
@@ -78,8 +76,9 @@ async def lifespan(app: FastAPI):
         logger.info("Worker detenido correctamente.")
 
     await close_db_connections()
+    
 
-    # Limpieza GPU
+    # LIMPIEZA GPU
     state.clf_model = None
     state.llm = None
 
@@ -91,10 +90,7 @@ async def lifespan(app: FastAPI):
     logger.info("Sistema cerrado correctamente.")
 
 
-# ============================================================
 # APP
-# ============================================================
-
 app = FastAPI(
     title="Seguridad Vial API",
     version="1.0.0",
@@ -105,10 +101,7 @@ app.include_router(ask_router)
 app.include_router(auth_router)
 
 
-# ============================================================
 # CORS
-# ============================================================
-
 ALLOWED_ORIGINS = [
     "https://seguridadvial.codepyhub.com",
     "http://localhost:8000",
@@ -123,10 +116,7 @@ app.add_middleware(
 )
 
 
-# ============================================================
 # FRONTEND
-# ============================================================
-
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
 
@@ -139,10 +129,6 @@ if os.path.exists(FRONTEND_DIR):
 else:
     logger.warning("Directorio frontend no encontrado.")
 
-
-# ============================================================
-# ENTRYPOINT
-# ============================================================
 
 if __name__ == "__main__":
     logger.info("Ejecutando servidor...")
@@ -159,6 +145,7 @@ if __name__ == "__main__":
             forwarded_allow_ips="*",
             server_header=False,
         )
+
     except Exception as e:
         logger.error(f"El servidor no pudo iniciarse: {e}")
     finally:
