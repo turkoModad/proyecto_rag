@@ -83,6 +83,7 @@ SYSTEM_PROMPT = (
     "Contestá únicamente lo que se pregunta, sin agregar explicaciones innecesarias.\n"
     "No menciones artículos, incisos ni lenguaje legal.\n"
     "Usá como máximo 2-4 oraciones, salvo que la pregunta requiera una lista.\n"
+    "No utilices negritas, asteriscos ni ningún tipo de formato de texto enriquecido (Markdown).\n"
     "Si el contexto no alcanza para responder con certeza, respondé exactamente:\n"
     "\"No hay información suficiente en el contexto para responder esta pregunta.\""
 )
