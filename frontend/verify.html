@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verificar Cuenta - Asistente Vial</title>
-    <link rel="stylesheet" href="/frontend/css/styles.css?v=2">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verificar Cuenta - Asistente Vial</title>
+<link rel="stylesheet" href="/frontend/css/styles.css?v=2">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -17,12 +17,6 @@
         </div>
 
         <form id="verifyForm" class="auth-form">
-
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="email" placeholder="tu@email.com" required>
-            </div>
-
             <div class="form-group">
                 <label>Código OTP</label>
                 <input type="text" id="otp" placeholder="123456" required>
@@ -30,58 +24,64 @@
 
             <button type="submit" class="auth-btn">Verificar</button>
 
-            <p id="error" style="
-                color:#dc2626;
-                font-size:0.85rem;
-                text-align:center;
-                margin-top:8px;">
-            </p>
-
+            <p id="error" style="color:#dc2626;font-size:0.85rem;text-align:center;margin-top:8px;"></p>
         </form>
 
         <div class="auth-footer">
             <span>¿Ya verificaste tu cuenta?</span>
-            <a href="/auth/login">Iniciar sesión</a>
+            <a href="/frontend/login.html">Iniciar sesión</a>
         </div>
     </div>
 </div>
 
 <script>
-const params = new URLSearchParams(window.location.search);
-const emailFromUrl = params.get("email");
-
-if (emailFromUrl) {
-    document.getElementById("email").value = emailFromUrl;
-}
-
-document.getElementById("verifyForm").onsubmit = async (e) => {
-    e.preventDefault();
-
-    const email = document.getElementById("email").value;
-    const otp = document.getElementById("otp").value;
-
-    const response = await fetch("/auth/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp }),
-        credentials: "include" 
+document.addEventListener("DOMContentLoaded", () => {
+    // Bloquear botón atrás
+    history.replaceState(null, document.title, location.href);
+    window.addEventListener('popstate', () => {
+        history.replaceState(null, document.title, location.href);
     });
 
-    const data = await response.json();
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
 
-    if (response.ok) {
-       
-        if (data.redirect) {
-            window.location.href = data.redirect;
-        } else {
-            window.location.href = "/";
-        }
-
-    } else {
-        document.getElementById("error").innerText =
-            data.detail || "OTP incorrecto, intenta nuevamente";
+    if (!token) {
+        document.getElementById("error").innerText = "Token no encontrado en la URL.";
+        document.getElementById("verifyForm").querySelector("button").disabled = true;
+        return;
     }
-};
+
+    document.getElementById("verifyForm").onsubmit = async (e) => {
+        e.preventDefault();
+
+        const otp = document.getElementById("otp").value.trim();
+        if (!otp) return;
+
+        try {
+            const response = await fetch("/auth/verify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token, otp }),
+                credentials: "include"
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                localStorage.setItem("isLogged", "true");
+                // Reemplazar historial para que no vuelva a verify
+                window.location.replace(data.redirect || "/frontend/index.html");
+            } else {
+                document.getElementById("error").innerText =
+                    data.detail || "OTP incorrecto, intenta nuevamente";
+            }
+
+        } catch (err) {
+            console.error(err);
+            document.getElementById("error").innerText = "Error de conexión con el servidor.";
+        }
+    };
+});
 </script>
 
 </body>

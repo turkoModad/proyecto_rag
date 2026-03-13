@@ -1,38 +1,57 @@
+import logging
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.auth.models import User, QueryLog  
+from app.auth.models import User, QueryLog, OTPLog
 from app.auth.security import hash_password, verify_password
-import logging
-
+from app.core.security import encrypt_value, hash_email
 
 logger = logging.getLogger("AuthService")
 
 
+# ----------------------------
+# USUARIOS
+# ----------------------------
 async def get_user_by_email(db: AsyncSession, email: str):
-    result = await db.execute(select(User).where(User.email == email))
+    """Busca un usuario usando hash determinístico de email"""
+    email_hashed = hash_email(email)
+    result = await db.execute(select(User).where(User.email_hash == email_hashed))
     return result.scalar_one_or_none()
 
 
 async def create_user(db: AsyncSession, email: str, password: str):
-    user = User(
-        email=email,
-        password_hash=hash_password(password)
+    """
+    Crea un usuario, devuelve objeto y hash determinístico de email usado para búsquedas/OTP
+    """
+    encrypted_email = encrypt_value(email)   # email cifrado para recuperación
+    email_hashed = hash_email(email)         # hash determinístico para búsquedas
+    hashed_password = hash_password(password)
+    
+    new_user = User(
+        email=encrypted_email,
+        email_hash=email_hashed,
+        password_hash=hashed_password,
+        is_verified=False,
+        is_blocked=False,
+        otp_attempts=0
     )
-    db.add(user)
-    await db.commit()
-    await db.refresh(user)
-    return user
+    db.add(new_user)
+    await db.flush()  
+    return new_user, email_hashed
 
 
 async def authenticate_user(db: AsyncSession, email: str, password: str):
+    """Autentica usuario comparando contraseña y hash determinístico"""
     user = await get_user_by_email(db, email)
     if not user:
         return None
-    if not verify_password(password, user.password_hash):
+    if not verify_password(password, user.password_hash):  
         return None
     return user
 
 
+# ----------------------------
+# LOGS DE CONSULTAS
+# ----------------------------
 async def log_query(
     db: AsyncSession,
     user_id: str | None,
@@ -69,27 +88,26 @@ async def log_query(
         retrieval_score=retrieval_score,
         grounding_score=grounding_score
     )
-    
     db.add(query_log)
     await db.commit()
     return query_log
 
 
 async def count_user_queries(db: AsyncSession, user_id: str) -> int:
-    """Cuenta el total de consultas de un usuario (para límites) usando QueryLog"""
+    """Cuenta consultas de un usuario (para límites)"""
     result = await db.execute(
         select(func.count()).select_from(QueryLog).where(
             (QueryLog.user_id == user_id) &
-            (QueryLog.decision != "pending") 
+            (QueryLog.decision != "pending")
         )
     )
     return result.scalar() or 0
 
 
 async def count_anonymous_queries(db: AsyncSession, ip_address: str, endpoint: str = "/ask") -> int:
-    """Cuenta las consultas anónimas desde una IP"""
+    """Cuenta consultas anónimas desde una IP"""
     result = await db.execute(
-        select(func.count()).where(
+        select(func.count()).select_from(QueryLog).where(
             (QueryLog.user_id == None) &
             (QueryLog.ip_address == ip_address) &
             (QueryLog.endpoint == endpoint) &
@@ -97,3 +115,49 @@ async def count_anonymous_queries(db: AsyncSession, ip_address: str, endpoint: s
         )
     )
     return result.scalar() or 0
+
+
+# ----------------------------
+# LOGS DE OTP
+# ----------------------------
+async def count_otp_ip_today(db: AsyncSession, ip_address: str):
+    """Cuenta OTPs enviados desde una IP hoy"""
+    result = await db.execute(
+        select(func.count()).select_from(OTPLog).where(
+            OTPLog.ip_address == ip_address,
+            func.date(OTPLog.created_at) == func.current_date()
+        )
+    )
+    return result.scalar() or 0
+
+
+async def log_otp(db: AsyncSession, email: str, ip_address: str, purpose: str = None):
+    """
+    Registra un OTP enviado.
+    Usa hash determinístico de email para búsquedas y limitación de envíos.
+    """
+    # Si ya viene hash (por ejemplo desde create_user) lo usamos tal cual
+    if '@' in email:
+        email_hashed = hash_email(email)
+    else:
+        email_hashed = email
+
+    log = OTPLog(
+        email=email_hashed,
+        ip_address=ip_address,
+        purpose=purpose
+    )
+    db.add(log)
+    await db.commit()
+    return log
+
+
+async def get_user_by_token(db: AsyncSession, token: str):
+    """
+    Busca un usuario por OTP token.
+    Retorna None si no existe.
+    """
+    query = select(User).where(User.otp_token == token)
+    result = await db.execute(query)
+    user = result.scalars().first()
+    return user

@@ -1,124 +1,266 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const chat = document.getElementById("chat");
-    const input = document.getElementById("question");
-    const button = document.getElementById("send");
-    const logoutBtn = document.getElementById("logoutBtn");
 
-    if (!chat || !input || !button) {
-        console.error("Error crítico: No se encontraron elementos del DOM");
-        return;
+const $ = (id) => document.getElementById(id);
+
+const chat = $("chat");
+const input = $("question");
+const button = $("send");
+const logoutBtn = $("logoutBtn");
+
+const queryCountEl = $("queryCount");
+const limitEl = $("queryLimit");
+const labelEl = $("queryLabel");
+
+const statusEl = document.querySelector(".status");
+
+const welcomeBlocks = document.querySelectorAll(".welcome");
+
+const ctaSection = $("ctaLogin");
+const ctaTitle = $("ctaTitle");
+
+let isLogged = false;
+
+if (!chat || !input || !button) {
+    console.error("DOM incompleto");
+    return;
+}
+
+input.disabled = true;
+button.disabled = true;
+
+function hideWelcome(){
+    welcomeBlocks.forEach(el => el.style.display = "none");
+}
+
+function addMessage(text, type, typing=false){
+
+    if (chat.children.length <= 2) hideWelcome();
+
+    const div = document.createElement("div");
+    div.className = `message ${type}`;
+
+    if (typing){
+        div.classList.add("typing");
+        div.innerHTML = `
+            <span>Escribiendo</span>
+            <div class="typing-indicator">
+                <span></span><span></span><span></span>
+            </div>
+        `;
+    } else {
+        div.textContent = text;
     }
 
-    const welcomeDiv = document.querySelector(".welcome");
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+}
 
-    function addMessage(text, type, isTyping = false) {
-        if (welcomeDiv && chat.children.length === 1) {
-            welcomeDiv.style.display = "none";
+function updateCounter(used, limit, logged){
+
+    if (!queryCountEl || !limitEl || !labelEl) return;
+
+    if (logged){
+        queryCountEl.textContent = used;
+        limitEl.textContent = "de " + limit;
+        labelEl.textContent = "Consultas usadas:";
+    } else {
+        const remaining = Math.max(limit - used,0);
+        queryCountEl.textContent = remaining;
+        limitEl.textContent = "de " + limit;
+        labelEl.textContent = "Te quedan";
+    }
+}
+
+function updateStatus(logged){
+
+    if (!statusEl) return;
+
+    if (logged){
+        statusEl.classList.add("online");
+        statusEl.textContent = "Conectado";
+    } else {
+        statusEl.classList.remove("online");
+        statusEl.textContent = "Modo prueba";
+    }
+}
+
+function updateCTA(show, text){
+
+    if (!ctaSection) return;
+
+    ctaSection.style.display = show ? "block" : "none";
+
+    if (ctaTitle && text){
+        ctaTitle.textContent = text;
+    }
+}
+
+function toggleInputs(enabled){
+    input.disabled = !enabled;
+    button.disabled = !enabled;
+}
+
+function updateAuthButtons(logged){
+
+    const loginBtn = document.querySelector(".login-btn");
+    const registerBtn = document.querySelector(".register-btn");
+    const accountBtn = document.querySelector(".account-btn");
+
+    if (loginBtn) loginBtn.style.display = logged ? "none" : "inline-block";
+    if (registerBtn) registerBtn.style.display = logged ? "none" : "inline-block";
+    if (accountBtn) accountBtn.style.display = logged ? "inline-block" : "none";
+
+    if (logoutBtn) logoutBtn.style.display = logged ? "inline-block" : "none";
+}
+
+async function loadUsage(){
+
+    try{
+
+        const res = await fetch("/usage",{credentials:"include"});
+
+        if(!res.ok) throw new Error("usage error");
+
+        const data = await res.json();
+
+        const used = Number(data.used ?? 0);
+        const limit = Number(data.limit ?? 5);
+
+        isLogged = data.is_logged ?? false;
+
+        updateCounter(used,limit,isLogged);
+        updateStatus(isLogged);
+        updateAuthButtons(isLogged);
+
+        if(isLogged){
+
+            updateCTA(false);
+
+            if(used >= limit){
+                toggleInputs(false);
+                updateCTA(true,"¿Querés seguir consultando?");
+            }else{
+                toggleInputs(true);
+            }
+
+        }else{
+
+            const remaining = Math.max(limit-used,0);
+
+            if(remaining > 0){
+                toggleInputs(true);
+                updateCTA(true,`Podés realizar hasta ${limit} consultas sin loguearte`);
+            }else{
+                toggleInputs(false);
+                updateCTA(true,"¿Querés seguir consultando?");
+            }
+
         }
 
-        const div = document.createElement("div");
-        div.className = `message ${type}`;
-        
-        if (isTyping) {
-            div.classList.add("typing");
-            div.innerHTML = `
-                <span>Escribiendo</span>
-                <div class="typing-indicator">
-                    <span></span><span></span><span></span>
-                </div>
-            `;
-        } else {
-            div.textContent = text;
+    }catch(err){
+
+        console.error("Error usage:",err);
+
+        if(statusEl) statusEl.textContent="Error conexión";
+
+    }
+
+}
+
+async function sendQuestion(){
+
+    const question = input.value.trim();
+    if(!question) return;
+
+    addMessage(question,"user");
+    input.value="";
+
+    addMessage("","bot",true);
+
+    try{
+
+        const response = await fetch("/ask",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            credentials:"include",
+            body:JSON.stringify({text:question})
+        });
+
+        if(chat.lastChild?.classList.contains("typing")){
+            chat.removeChild(chat.lastChild);
         }
 
-        chat.appendChild(div);
-        chat.scrollTop = chat.scrollHeight;
-    }
+        let data={};
+        try{
+            data=await response.json();
+        }catch{}
 
-    async function sendQuestion() {
-        const question = input.value.trim();
-        if (!question) return;
+        if(response.status===401 || response.status===403){
 
-        addMessage(question, "user");
-        input.value = "";
+            const message =
+                typeof data.detail==="object"
+                ? data.detail.message
+                : data.detail;
 
-        addMessage("", "bot", true);
+            addMessage(message || "Límite alcanzado.","bot");
 
-        try {
-            const response = await fetch("/ask", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({ text: question })
-            });
-
-            // Remover typing
-            if (chat.lastChild?.classList.contains("typing")) {
-                chat.removeChild(chat.lastChild);
-            }
-
-            // 401 → no autenticado
-            if (response.status === 401) {
-                window.location.href = "/auth/login";
-                return;
-            }
-
-            const data = await response.json();
-
-            // 403 → fuera de dominio o prohibido
-            if (response.status === 403) {
-                addMessage(
-                    data.detail || "Solo puedo responder preguntas sobre seguridad vial.",
-                    "bot"
-                );
-                return;
-            }
-
-            // Otros errores
-            if (!response.ok) {
-                addMessage("Ocurrió un error en el servidor.", "bot");
-                return;
-            }
-
-            addMessage(data.response || "Sin respuesta", "bot");
-
-        } catch (error) {
-            if (chat.lastChild?.classList.contains("typing")) {
-                chat.removeChild(chat.lastChild);
-            }
-
-            addMessage("Error de conexión con el servidor.", "bot");
-            console.error("Error:", error);
+            await loadUsage();
+            return;
         }
-    }
 
-    async function logout() {
-        try {
-            const response = await fetch("/auth/logout", {
-                method: "POST",
-                credentials: "include"
-            });
-
-            if (response.ok) {
-                window.location.href = "/auth/login";
-            } else {
-                alert("Error al cerrar sesión");
-            }
-
-        } catch (error) {
-            alert("Error de conexión con el servidor");
+        if(!response.ok){
+            addMessage("Error en el servidor.","bot");
+            return;
         }
+
+        addMessage(data.response || "Sin respuesta","bot");
+
+        await loadUsage();
+
+    }catch(err){
+
+        if(chat.lastChild?.classList.contains("typing")){
+            chat.removeChild(chat.lastChild);
+        }
+
+        addMessage("Error de conexión con el servidor.","bot");
+        console.error(err);
     }
+}
 
-    button.addEventListener("click", sendQuestion);
-    input.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") sendQuestion();
-    });
+async function logout(){
 
-    if (logoutBtn) {
-        logoutBtn.addEventListener("click", logout);
+    try{
+
+        const res = await fetch("/auth/logout",{
+            method:"POST",
+            credentials:"include"
+        });
+
+        if(!res.ok){
+            console.error("Error logout");
+            return;
+        }
+
+        window.location.replace("/frontend/login.html");
+
+    }catch(err){
+        console.error("Error logout:",err);
     }
+}
 
-    input.focus();
-    console.log("Asistente de Seguridad Vial listo");
+button.addEventListener("click",sendQuestion);
+
+input.addEventListener("keypress",(e)=>{
+    if(e.key==="Enter") sendQuestion();
+});
+
+if(logoutBtn){
+    logoutBtn.addEventListener("click",logout);
+}
+
+loadUsage();
+
+console.log("Asistente Vial listo");
+
 });

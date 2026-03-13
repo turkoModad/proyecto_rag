@@ -10,32 +10,33 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    email = Column(String(255), unique=True, nullable=False)
+    email = Column(String(255), unique=True, nullable=False)   # cifrado Fernet
+    email_hash = Column(String(64), unique=True, nullable=False)  # sha256 determinístico
     password_hash = Column(String, nullable=False)
     role = Column(String(20), default="free")
-    is_active = Column(Boolean, default=True)    
-    created_at = Column(DateTime(timezone=True), server_default=func.now())    
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
     last_login = Column(DateTime(timezone=True), nullable=True)
     is_verified = Column(Boolean, default=False)
     otp_hash = Column(String, nullable=True)
     otp_expires = Column(DateTime(timezone=True), nullable=True)
     otp_attempts = Column(Integer, default=0)
     otp_purpose = Column(String, nullable=True)
+    otp_token = Column(String, unique=True, nullable=True)
     is_blocked = Column(Boolean, default=False)
     
     query_logs = relationship("QueryLog", back_populates="user", cascade="all, delete-orphan")
-
 
 class QueryLog(Base):  
     __tablename__ = "query_logs"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
-    ip_address = Column(String(50), nullable=False)
+    ip_address = Column(String(255), nullable=False)  
     user_agent = Column(String(255), nullable=True)
     question = Column(Text, nullable=False)
     response = Column(Text, nullable=False)
-    decision = Column(String(50), nullable=False)  
+    decision = Column(String(255), nullable=False)  
     tokens_generated = Column(Integer, nullable=True)
     response_time_ms = Column(Integer, nullable=True)
     endpoint = Column(String(50), nullable=False)
@@ -49,3 +50,13 @@ class QueryLog(Base):
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="query_logs")
+
+
+class OTPLog(Base):
+    __tablename__ = "otp_logs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    ip_address = Column(String(255), nullable=False)  
+    email = Column(String(255), nullable=True)        
+    purpose = Column(String(50), nullable=True)        
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

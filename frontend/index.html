@@ -1,44 +1,281 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asistente de Seguridad Vial</title>
-    <link rel="stylesheet" href="/frontend/css/styles.css?v=0.2">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Asistente de Seguridad Vial con IA | Ley Nacional de Tránsito 24.449 Argentina</title>
+
+<meta name="description" content="Consultá gratis a una inteligencia artificial sobre la Ley Nacional de Tránsito 24.449 en Argentina. Resolvé dudas sobre multas, licencias de conducir, señales viales, prioridades de paso y normas de circulación.">
+
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+<link rel="canonical" href="https://seguridadvial.codepyhub.com/">
+
+<link rel="stylesheet" href="/frontend/css/styles.css?v=1.1">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Asistente de Seguridad Vial IA">
+<meta property="og:description" content="Consultá normas de tránsito, multas y licencias en Argentina usando inteligencia artificial.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://seguridadvial.codepyhub.com/">
+<meta property="og:locale" content="es_AR">
+<meta property="og:site_name" content="Asistente Vial IA">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Asistente de Seguridad Vial IA">
+<meta name="twitter:description" content="Consultá la Ley Nacional de Tránsito 24.449 con inteligencia artificial">
+
+<!-- Structured data Website -->
+
+<script type="application/ld+json">
+{
+"@context":"https://schema.org",
+"@type":"WebSite",
+"name":"Asistente de Seguridad Vial IA",
+"url":"https://seguridadvial.codepyhub.com/",
+"description":"Asistente inteligente para consultar la Ley Nacional de Tránsito 24.449 en Argentina.",
+"inLanguage":"es-AR"
+}
+</script>
+
+<!-- Structured data FAQ -->
+
+<script type="application/ld+json">
+{
+"@context":"https://schema.org",
+"@type":"FAQPage",
+"mainEntity":[
+{
+"@type":"Question",
+"name":"¿Quién tiene prioridad en una rotonda?",
+"acceptedAnswer":{
+"@type":"Answer",
+"text":"Tiene prioridad el vehículo que ya circula dentro de la rotonda."
+}
+},
+{
+"@type":"Question",
+"name":"¿Cuál es la velocidad máxima en avenidas?",
+"acceptedAnswer":{
+"@type":"Answer",
+"text":"La velocidad máxima general en avenidas es de 60 km/h salvo señalización diferente."
+}
+},
+{
+"@type":"Question",
+"name":"¿Qué documentos debo llevar para conducir?",
+"acceptedAnswer":{
+"@type":"Answer",
+"text":"Debes portar licencia de conducir vigente, DNI, cédula del vehículo y comprobante de seguro obligatorio."
+}
+}
+]
+}
+</script>
+
+<script src="https://analytics.ahrefs.com/analytics.js" data-key="5gba/mo6naqTxAq/7fGZrQ" async></script>
+
 </head>
+
 <body>
-    <div class="app">
-        <header class="header">
-            <div class="header-left">
-                <div class="logo">🛡️ Asistente Vial</div>
-                <span class="badge">Beta</span>
-            </div>
 
-            <div class="header-right">
-                <div class="status online">● Conectado</div>
-                <button id="logoutBtn" class="logout-btn">Cerrar sesión</button>
-            </div>
-        </header>
+<div class="page">
 
-        <main id="chat" class="chat-window">
-            <div class="welcome">
-                <h3>Bienvenido al Asistente de Seguridad Vial</h3>
-                <p>Consulta sobre normas de tránsito, señales, multas y más.</p>
-            </div>
-        </main>
+<div class="app">
 
-        <footer class="input-area">
-            <input 
-                type="text"
-                id="question" 
-                placeholder="Ej: ¿Qué tipo de Seguridad usar para niños menores de 10 años?" 
-                autocomplete="off"
-            >
-            <button id="send">Enviar</button>
-        </footer>
-    </div>
+<header class="header">
 
-    <script type="module" src="/frontend/js/app.js?v0.2"></script>
+<div class="header-left">
+<div class="logo">🛡️ Asistente Vial</div>
+<span class="badge">Beta</span>
+</div>
+
+<div class="header-right">
+
+<div class="query-counter" id="queryCounter">
+<span id="queryLabel">Consultas</span>
+<strong id="queryCount">0</strong>
+<span id="queryLimit">de 5</span>
+</div>
+
+<div class="status online">
+Conectado
+</div>
+
+<button id="logoutBtn" class="logout-btn" style="display:none;">
+Cerrar sesión
+</button>
+
+</div>
+
+</header>
+
+<main id="chat" class="chat-window">
+
+<section class="welcome">
+
+<span>🚦</span>
+
+<h1>Asistente de Seguridad Vial con Inteligencia Artificial</h1>
+
+<p>
+Este asistente responde consultas sobre la <strong>Ley Nacional de Tránsito 24.449</strong> en Argentina.
+Puedes preguntar sobre multas, licencias de conducir, prioridades de paso, señales viales y normas de circulación.
+</p>
+
+</section>
+
+<section class="welcome">
+
+<h2>Ejemplos de preguntas sobre tránsito</h2>
+
+<ul class="faq-list">
+
+<li>¿Cuál es la prioridad de paso en una rotonda?</li>
+<li>¿Qué documentación necesito para circular en Argentina?</li>
+<li>¿Cuál es el límite de velocidad en avenidas?</li>
+<li>¿Qué significa una señal de tránsito amarilla?</li>
+<li>¿A qué edad pueden viajar los niños en el asiento delantero?</li>
+
+</ul>
+
+</section>
+
+</main>
+
+<footer class="input-area">
+
+<input
+type="text"
+id="question"
+placeholder="Ej: ¿Cuál es la prioridad de paso en una rotonda?"
+autocomplete="off">
+
+<button id="send">
+✈ Enviar
+</button>
+
+</footer>
+
+</div>
+
+<!-- CTA LOGIN -->
+
+<section class="cta-login" id="ctaLogin" style="display:none;">
+
+<h3>Consultas gratuitas sobre tránsito</h3>
+
+<p>
+Creá una cuenta gratuita para seguir consultando al asistente inteligente sobre normas viales en Argentina.
+</p>
+
+<div class="cta-buttons" id="authButtons">
+
+<a href="/frontend/login.html" class="auth-btn login-btn">
+Iniciar sesión
+</a>
+
+<a href="/frontend/register.html" class="auth-btn register-btn">
+Crear cuenta
+</a>
+
+<a href="/frontend/account.html" class="auth-btn account-btn" style="display:none;">
+Mi cuenta
+</a>
+
+</div>
+
+</section>
+
+<!-- CONTENIDO SEO -->
+
+<section class="seo-content">
+
+<h2>Asistente de Seguridad Vial basado en IA</h2>
+
+<p>
+El asistente de seguridad vial utiliza inteligencia artificial entrenada con la legislación de tránsito argentina para responder preguntas sobre normas de circulación, multas e infracciones.
+</p>
+
+<p>
+Está diseñado para ayudar a conductores, estudiantes que preparan el examen de conducir y ciudadanos que desean comprender mejor las normas de tránsito.
+</p>
+
+<h2>Qué consultas puedes realizar</h2>
+
+<ul class="faq-list">
+
+<li>Prioridad de paso en intersecciones</li>
+<li>Normas para circular en rotondas</li>
+<li>Límites de velocidad en calles y avenidas</li>
+<li>Documentación obligatoria para conducir</li>
+<li>Multas de tránsito en Argentina</li>
+<li>Licencias de conducir y renovación</li>
+<li>Señales de tránsito y su significado</li>
+
+</ul>
+
+<h2>Normas básicas de tránsito en Argentina</h2>
+
+<p>
+La Ley Nacional de Tránsito 24.449 establece reglas claras para garantizar la seguridad vial en todo el país.
+</p>
+
+<ul>
+
+<li>La prioridad de paso corresponde al vehículo que circula por la derecha.</li>
+<li>En rotondas tiene prioridad el vehículo que ya circula dentro de ella.</li>
+<li>El uso del cinturón de seguridad es obligatorio para todos los ocupantes.</li>
+<li>Las luces bajas deben utilizarse en rutas nacionales durante las 24 horas.</li>
+<li>Los límites de velocidad dependen del tipo de vía.</li>
+
+</ul>
+
+<h2>Límites de velocidad en Argentina</h2>
+
+<p>
+Los límites de velocidad pueden variar según la jurisdicción y la señalización, pero generalmente son:
+</p>
+
+<ul>
+
+<li>Calles urbanas: 40 km/h</li>
+<li>Avenidas: 60 km/h</li>
+<li>Rutas: entre 80 y 110 km/h</li>
+<li>Autopistas: hasta 130 km/h</li>
+
+</ul>
+
+<h2>Preguntas frecuentes sobre tránsito</h2>
+
+<p>
+Si buscas respuestas a las dudas más comunes sobre multas, licencias de conducir o normas viales,
+puedes consultar nuestra guía completa de preguntas frecuentes.
+</p>
+
+<div style="text-align:center;margin-top:30px;">
+
+<a href="/faq/" class="faq-cta-btn">
+Ver guía completa de preguntas frecuentes sobre tránsito
+</a>
+
+<p class="faq-cta-sub">
+Más de 100 respuestas basadas en la Ley Nacional de Tránsito 24.449
+</p>
+
+</div>
+
+</section>
+
+</div>
+
+<script src="/frontend/js/app.js?v=1.1"></script>
+
 </body>
 </html>

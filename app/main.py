@@ -32,6 +32,10 @@ from app.db.vector_operations import (
     collection_is_empty,
     load_dataset_to_qdrant
 )
+from app.routes import seo
+from app.routes.usage import router as usage_router
+from app.routes.faq import router as faq_router
+
 
 # LOGGING
 logging.basicConfig(level=logging.INFO)
@@ -99,6 +103,9 @@ app = FastAPI(
 
 app.include_router(ask_router)
 app.include_router(auth_router)
+app.include_router(seo.router)
+app.include_router(usage_router)
+app.include_router(faq_router)
 
 
 # CORS
@@ -119,6 +126,20 @@ app.add_middleware(
 # FRONTEND
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+
+
+@app.get("/googledc5eef5fbf5f93f5.html")
+async def google_verify():
+    return FileResponse(
+        os.path.join(STATIC_DIR, "googledc5eef5fbf5f93f5.html")
+    )
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return FileResponse(os.path.join(STATIC_DIR, "favicon.ico"))
+
 
 if os.path.exists(FRONTEND_DIR):
     app.mount("/frontend", StaticFiles(directory=FRONTEND_DIR), name="frontend")

@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Asistente Vial</title>
-    <link rel="stylesheet" href="/frontend/css/styles.css?v=2">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Login - Asistente Vial</title>
+
+<link rel="stylesheet" href="/frontend/css/styles.css?v=2.2">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -24,20 +26,40 @@
 
             <div class="form-group">
                 <label>Contraseña</label>
-                <input type="password" name="password" placeholder="••••••••" required>
+
+                <div class="password-wrapper">
+                    <input type="password" name="password" placeholder="••••••••" required>
+                    <span class="toggle-pass">👁️</span>
+                </div>
+
             </div>
 
             <button type="submit" class="auth-btn">Entrar</button>
         </form>
 
         <div class="auth-footer">
-            <span>¿No tienes cuenta?</span>
-            <a href="/frontend/register.html">Crear cuenta</a>
+            <p>¿No tienes cuenta?</p>
+            <a href="/frontend/register.html" class="auth-btn" style="color: white">Crear cuenta</a>
         </div>
     </div>
 </div>
 
 <script>
+// Toggle password visibility
+document.querySelectorAll('.toggle-pass').forEach(el => {
+    el.addEventListener('click', () => {
+        const input = el.previousElementSibling;
+        if (input.type === 'password') {
+            input.type = 'text';
+            el.textContent = '🙈';
+        } else {
+            input.type = 'password';
+            el.textContent = '👁️';
+        }
+    });
+});
+
+// Login form submission
 document.getElementById('loginForm').onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -51,16 +73,14 @@ document.getElementById('loginForm').onsubmit = async (e) => {
     const data = await response.json();
 
     if (response.ok) {
-        if (data.redirect) {
-            window.location.href = data.redirect;
-        } else {
-            window.location.href = "/";
-        }
+        // Reemplazar historial para que no pueda volver a verify
+        window.location.replace(data.redirect || "/frontend/index.html");
     } else {
         alert(data.detail || "Error al iniciar sesión");
     }
 };
 </script>
 
+<script src="/frontend/js/app.js?v=1.0"></script>
 </body>
 </html>
