@@ -14,22 +14,70 @@ body {
     padding: 32px 16px;
 }
 
-.app {
-    width: 85%;
-    max-width: 900px;
-    min-height: 720px;
-    height: 70vh;
-    background: #2530d6;
-    border-radius: 32px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    margin: 0 auto 20px auto;
+.page{
+    width:100%;
+    max-width:1100px;
+    margin:0 auto;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:40px;
+    padding-left:16px;
+    padding-right:16px;
 }
 
+/* ========================= */
+/* HERO TITLE */
+/* ========================= */
+.welcome-title{
+    width:100%;
+    max-width:900px;
+    text-align:center;
+    background:white;
+    padding:36px 32px;
+    border-radius:24px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.08);
+    border:1px solid rgba(0,0,0,0.05);
+}
+
+.welcome-title span{
+    font-size:3rem;
+    display:block;
+    margin-bottom:14px;
+}
+
+.welcome-title h1{
+    font-size:1.9rem;
+    font-weight:600;
+    color:#0b2a4f;
+    margin-bottom:14px;
+    line-height:1.3;
+}
+
+.welcome-title p{
+    color:#546e7a;
+    font-size:0.98rem;
+    margin-bottom:10px;
+}
+
+/* ========================= */
+/* APP CONTAINER */
+/* ========================= */
+.app{
+    width:100%;
+    max-width:900px;
+    height:70vh;
+    min-height:680px;
+    background:#2530d6;
+    border-radius:32px;
+    box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,0.3);
+}
+
+/* HEADER */
 .header {
     background: #052850;
     color: rgb(226, 226, 226);
@@ -52,32 +100,6 @@ body {
     gap: 12px;
 }
 
-/* Logout button */
-.logout-btn {
-    background: linear-gradient(135deg, #ff4d4f, #d9363e);
-    color: #ffffff;
-    border: none;
-    padding: 8px 18px;
-    border-radius: 40px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    box-shadow: 0 4px 12px rgba(217, 54, 62, 0.35);
-    letter-spacing: 0.3px;
-}
-
-.logout-btn:hover {
-    background: linear-gradient(135deg, #ff7875, #cf1322);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(217, 54, 62, 0.45);
-}
-
-.logout-btn:active {
-    transform: scale(0.96);
-    box-shadow: 0 3px 8px rgba(217, 54, 62, 0.35);
-}
-
 .logo {
     font-weight: 600;
     font-size: 1.25rem;
@@ -90,7 +112,7 @@ body {
 
 .badge {
     background: rgba(255, 255, 255, 0.15);
-    padding: 4px 10px;
+    padding: 4px 7px;
     border-radius: 40px;
     font-size: 0.7rem;
     font-weight: 500;
@@ -120,6 +142,17 @@ body {
     margin-right: 6px;
 }
 
+/* QUERY COUNTER */
+.query-counter{
+    font-size:0.8rem;
+    background:rgba(255,255,255,0.15);
+    padding:6px 12px;
+    border-radius:40px;
+    border:1px solid rgba(255,255,255,0.25);
+    font-weight:500;
+}
+
+/* CHAT WINDOW */
 .chat-window {
     flex: 1;
     overflow-y: auto;
@@ -131,34 +164,31 @@ body {
     scroll-behavior: smooth;
 }
 
-.welcome {
-    text-align: center;
-    padding: 20px 16px;
-    background: white;
-    border-radius: 24px;
-    box-shadow: 0 8px 20px -8px rgba(0, 20, 40, 0.1);
-    margin-bottom: 8px;
-    border: 1px solid rgba(0, 0, 0, 0.02);
+/* ========================= */
+/* CHAT INTRO QUESTIONS */
+/* ========================= */
+.welcome{
+    text-align:center;
+    padding:24px 20px;
+    background:white;
+    border-radius:20px;
+    box-shadow:0 8px 20px -8px rgba(0,20,40,0.1);
+    border:1px solid rgba(0,0,0,0.04);
 }
 
-.welcome span {
-    font-size: 3rem;
-    display: block;
-    margin-bottom: 12px;
+.welcome h2{
+    font-size:1.4rem;
+    color:#0b2a4f;
+    margin-bottom:16px;
 }
 
-.welcome h3 {
-    font-weight: 600;
-    color: #0b2a4f;
-    margin-bottom: 8px;
-    font-size: 1.4rem;
+.welcome p{
+    color:#546e7a;
+    font-size:0.95rem;
 }
 
-.welcome p {
-    color: #546e7a;
-    font-size: 0.95rem;
-}
-
+/* ========================= */
+/* MESSAGES */
 .message {
     max-width: 65%;
     padding: 14px 18px;
@@ -220,8 +250,7 @@ body {
     30% { opacity: 1; transform: translateY(-4px); }
 }
 
-
-/* Input area */
+/* INPUT AREA */
 .input-area {
     display: flex;
     padding: 20px 24px;
@@ -231,10 +260,9 @@ body {
     align-items: center;
 }
 
-/* INPUT */
 .input-area input {
     flex: 1;
-    min-width: 0;   /* evita que el input se rompa en flex */
+    min-width: 0;
     padding: 14px 18px;
     border: 1px solid #e2e8f0;
     border-radius: 40px;
@@ -254,9 +282,8 @@ body {
     color: #94a3b8;
 }
 
-/* BOTÓN */
 .input-area button {
-    flex: 0 0 auto;   /* evita que se estire */
+    flex: 0 0 auto;
     background: #0b2a4f;
     color: white;
     border: none;
@@ -280,7 +307,7 @@ body {
     transform: scale(0.98);
 }
 
-/* Scrollbar */
+/* SCROLLBAR */
 .chat-window::-webkit-scrollbar {
     width: 6px;
 }
@@ -298,35 +325,29 @@ body {
     background: #94a3b8;
 }
 
-/* PAGE LAYOUT */
-.page {
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 40px;
-}
-
+/* ========================= */
+/* SEO / FAQ CONTENT */
 .seo-content {
-    background: white;
-    border-radius: 24px;
-    padding: 40px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    border: 1px solid rgba(0,0,0,0.05);
-    line-height: 1.6;
+    width:100%;
+    max-width:900px;
+    background:white;
+    border-radius:24px;
+    padding:42px 40px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.08);
+    border:1px solid rgba(0,0,0,0.05);
+    line-height:1.7;
 }
 
-.seo-content h2 {
-    font-size: 1.6rem;
-    color: #0b2a4f;
-    margin-bottom: 16px;
+.seo-content h2{
+    font-size:1.55rem;
+    color:#0b2a4f;
+    margin-top:28px;
+    margin-bottom:16px;
 }
 
-.seo-content p {
-    color: #475569;
-    margin-bottom: 16px;
+.seo-content p{
+    color:#475569;
+    margin-bottom:16px;
 }
 
 .faq-list {
@@ -352,479 +373,225 @@ body {
     color: #0b2a4f;
 }
 
-/* Mobile */
-@media (max-width: 600px) {
-    body {
-        padding: 0;
-    }
-
-    .app {
-        height: 100vh;
-        border-radius: 0;
-    }
-
-    .header {
-        padding: 14px 18px;
-    }
-
-    .logo {
-        font-size: 1rem;
-    }
-
-    .badge {
-        font-size: 0.6rem;
-        padding: 3px 8px;
-    }
-
-    .status {
-        font-size: 0.75rem;
-        padding: 4px 10px;
-    }
-
-    .chat-window {
-        padding: 16px;
-    }
-
-    .message {
-        max-width: 85%;
-        font-size: 0.9rem;
-    }
-
-    .input-area {
-        padding: 14px 16px;
-    }
-
-    .input-area input {
-        padding: 12px 16px;
-    }
-
-    .input-area button {
-        padding: 12px 18px;
-    }
-
-    .welcome span {
-        font-size: 2.5rem;
-    }
-
-    .welcome h3 {
-        font-size: 1.1rem;
-    }
-}
-
-
-/* ========================= */
-/* AUTH PAGES */
-/* ========================= */
-
-.auth-container {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(145deg, #eef2f6 0%, #f8fafc 100%);
-}
-
-.auth-card {
-    width: 100%;
-    max-width: 420px;
-    background: white;
-    padding: 40px;
-    border-radius: 24px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(0, 0, 0, 0.03);
-}
-
-.auth-header {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.auth-header h2 {
-    font-weight: 600;
-    color: #0b2a4f;
-    margin-bottom: 8px;
-}
-
-.auth-header p {
-    color: #64748b;
-    font-size: 0.9rem;
-}
-
-.auth-form {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.form-group label {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: #334155;
-}
-
-.form-group input {
-    padding: 12px 16px;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    background: #f8fafc;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-}
-
-.form-group input:focus {
-    border-color: #0b2a4f;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(11, 42, 79, 0.08);
-    outline: none;
-}
-
-.auth-btn {
+.faq-cta-btn {
+    display: inline-block;
     background: #0b2a4f;
     color: white;
-    border: none;
-    padding: 14px;
+    text-decoration: none;
+    padding: 14px 28px;
     border-radius: 40px;
     font-weight: 500;
+    font-size: 0.95rem;
     cursor: pointer;
-    transition: all 0.2s ease;
-    margin-top: 10px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(11, 42, 79, 0.2);
 }
 
-.auth-btn:hover {
+.faq-cta-btn:hover {
     background: #15457c;
     transform: scale(1.02);
+    box-shadow: 0 6px 16px rgba(11, 42, 79, 0.3);
 }
 
-.auth-btn:active {
+.faq-cta-btn:active {
     transform: scale(0.98);
 }
 
-.auth-footer {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 0.85rem;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:10px;
-}
-
-.auth-footer a {
-    color: #0b2a4f;
+/* ========================= */
+/* BOTÓN CERRAR SESIÓN */
+.logout-btn {
+    background: #dc2626;             
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 40px;
     font-weight: 500;
-    text-decoration: none;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
 
-.auth-footer a:hover {
-    text-decoration: underline;
+.logout-btn:hover {
+    background: #b91c1c;             
+    transform: scale(1.02);
+    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
 }
 
-
-
-/* ========================= */
-/* QUERY COUNTER */
-/* ========================= */
-
-.query-counter{
-
-font-size:0.8rem;
-background:rgba(255,255,255,0.15);
-padding:6px 12px;
-border-radius:40px;
-border:1px solid rgba(255,255,255,0.25);
-font-weight:500;
-
+.logout-btn:active {
+    transform: scale(0.98);
 }
 
-
-/* ========================= */
-/* TOAST LOGIN LIMIT */
-/* ========================= */
-
-.toast{
-
-position:fixed;
-bottom:60px;
-left:50%;
-transform:translateX(-50%);
-background:white;
-padding:20px;
-border-radius:16px;
-box-shadow:0 10px 30px rgba(0,0,0,0.2);
-z-index:9999;
-animation:toastFade 0.4s ease;
-
-}
-
-.toast-content{
-
-text-align:center;
-max-width:280px;
-
-}
-
-.toast strong{
-
-color:#0b2a4f;
-font-size:1rem;
-
-}
-
-.toast p{
-
-font-size:0.85rem;
-color:#475569;
-margin:10px 0;
-
-}
-
-.toast button{
-
-background:#0b2a4f;
-color:white;
-border:none;
-padding:10px 16px;
-border-radius:30px;
-cursor:pointer;
-font-size:0.85rem;
-
-}
-
-.toast button:hover{
-
-background:#15457c;
-
-}
-
-@keyframes toastFade{
-
-from{
-
-opacity:0;
-transform:translate(-50%,20px);
-
-}
-
-to{
-
-opacity:1;
-transform:translate(-50%,0);
-
-}
-
-}
-
-
-/* ========================= */
-/* SEND BUTTON ICON */
-/* ========================= */
-
-#send{
-
-display:flex;
-align-items:center;
-gap:8px;
-
-}
-
-
-/* ========================= */
-/* STATUS COLOR */
-/* ========================= */
-
-.status{
-
-color:#ffffff;
-
-}
-
-.status.online{
-
-background:rgba(74,222,128,0.2);
-border:1px solid rgba(74,222,128,0.4);
-color:#4ade80;
-
-}
-
-
-/* ========================= */
-/* AUTH CTA BUTTON */
-/* ========================= */
-
-.auth-footer .auth-btn{
-
-display:inline-block;
-margin-top:10px;
-padding:10px 18px;
-font-size:0.85rem;
-
-}
-
-
-/* ========================= */
-/* PASSWORD ERROR */
-/* ========================= */
-
-#passError{
-
-margin-top:4px;
-
-}
-
-/* ========================= */
-/* CTA LOGIN SECTION */
-/* ========================= */
-
+/* CTA LOGIN */
 .cta-login{
-
-width:100%;
-max-width:900px;
-background:white;
-padding:40px;
-border-radius:24px;
-text-align:center;
-box-shadow:0 10px 30px rgba(0,0,0,0.08);
-border:1px solid rgba(0,0,0,0.05);
-
+    width:100%;
+    max-width:900px;
+    background:white;
+    padding:36px;
+    border-radius:24px;
+    text-align:center;
+    box-shadow:0 10px 30px rgba(0,0,0,0.08);
+    border:1px solid rgba(0,0,0,0.05);
 }
 
 .cta-login h3{
-
-color:#0b2a4f;
-font-size:1.4rem;
-margin-bottom:10px;
-
+    font-size:1.5rem;
+    color:#0b2a4f;
+    margin-bottom:10px;
 }
 
 .cta-login p{
-
-color:#64748b;
-margin-bottom:24px;
-
+    color:#64748b;
+    margin-bottom:24px;
 }
 
 .cta-buttons{
-
-display:flex;
-justify-content:center;
-gap:16px;
-margin-top:20px;
-flex-wrap:wrap;
-
-}
-
-.cta-btn{
-
-padding:14px 26px;
-border-radius:40px;
-font-weight:500;
-text-decoration:none;
-transition:all 0.2s;
-
-}
-
-.cta-btn.login{
-
-background:#0b2a4f;
-color:white;
-
-}
-
-.cta-btn.login:hover{
-
-background:#15457c;
-
-}
-
-.cta-btn.register{
-
-background:#4ade80;
-color:#052850;
-
-}
-
-.cta-btn.register:hover{
-
-background:#22c55e;
-
+    display:flex;
+    justify-content:center;
+    gap:16px;
+    margin-top:20px;
+    flex-wrap:wrap;
 }
 
 .cta-btn,
 .cta-btn:visited,
 .cta-btn:hover,
 .cta-btn:active{
-
-text-decoration:none;
-display:inline-block;
-
+    text-decoration:none;
+    display:inline-block;
 }
 
-a{
-
-text-decoration:none;
-color:inherit;
-
+/* ======================
+   ENLACES COMO BOTONES 
+========================= */
+.auth-btn {
+    display: inline-block;
+    background: #0b2a4f;       
+    color: white;
+    text-decoration: none;      
+    padding: 14px 28px;
+    border-radius: 40px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(11, 42, 79, 0.2);
+    text-align: center;
 }
 
-.password-wrapper{
-position:relative;
-width:100%;
+.auth-btn:hover {
+    background: #15457c;
+    transform: scale(1.02);
+    box-shadow: 0 6px 16px rgba(11, 42, 79, 0.3);
 }
 
-.password-wrapper input{
-width:100%;
-padding-right:40px;
+.auth-btn:active {
+    transform: scale(0.98);
 }
 
-.toggle-pass{
-position:absolute;
-right:12px;
-top:50%;
-transform:translateY(-50%);
-cursor:pointer;
-font-size:16px;
-opacity:0.9;
+
+/* ========================= */
+/* AI DISCLAIMER */
+.ai-disclaimer{
+    width:100%;
+    max-width:900px;
+    background:#ffffff;
+    border-radius:16px;
+    padding:32px 36px;
+    border:1px solid #e6e8ec;
+    box-shadow:0 2px 10px rgba(0,0,0,0.05);
+    font-size:14px;
+    line-height:1.7;
+    color:#444;
 }
 
-.toggle-pass:hover{
-opacity:1;
+.ai-disclaimer h2{
+    font-size:18px;
+    margin-bottom:12px;
+    color:#1a1a1a;
 }
 
-/* CTA FAQ SEO */
-
-.faq-cta-container{
-text-align:center;
-margin-top:35px;
-margin-bottom:10px;
+.ai-update{
+    margin-top:14px;
+    font-size:13px;
+    color:#6b7280;
 }
 
-.faq-cta-btn{
-display:inline-block;
-background:linear-gradient(135deg,#2563eb,#1d4ed8);
-color:white;
-padding:14px 28px;
-font-size:16px;
-font-weight:600;
-border-radius:10px;
-text-decoration:none;
-box-shadow:0 6px 16px rgba(0,0,0,0.25);
-transition:all 0.2s ease;
+/* ========================= */
+/* TOAST LOGIN LIMIT */
+.toast{
+    position:fixed;
+    bottom:60px;
+    left:50%;
+    transform:translateX(-50%);
+    background:white;
+    padding:20px;
+    border-radius:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.2);
+    z-index:9999;
+    animation:toastFade 0.4s ease;
 }
 
-.faq-cta-btn:hover{
-transform:translateY(-2px);
-box-shadow:0 10px 20px rgba(0,0,0,0.35);
-background:linear-gradient(135deg,#3b82f6,#2563eb);
+.toast-content{
+    text-align:center;
+    max-width:280px;
 }
 
-.faq-cta-sub{
-margin-top:10px;
-font-size:14px;
-opacity:0.75;
+.toast strong{
+    color:#0b2a4f;
+    font-size:1rem;
+}
+
+.toast p{
+    font-size:0.85rem;
+    color:#475569;
+    margin:10px 0;
+}
+
+.toast button{
+    background:#0b2a4f;
+    color:white;
+    border:none;
+    padding:10px 16px;
+    border-radius:30px;
+    cursor:pointer;
+    font-size:0.85rem;
+}
+
+.toast button:hover{
+    background:#15457c;
+}
+
+@keyframes toastFade{
+    from{
+        opacity:0;
+        transform:translate(-50%,20px);
+    }
+    to{
+        opacity:1;
+        transform:translate(-50%,0);
+    }
+}
+
+/* ========================= */
+/* MOBILE */
+@media (max-width:900px){
+    .welcome-title{
+        padding:28px 22px;
+    }
+    .welcome-title h1{
+        font-size:1.5rem;
+    }
+    .seo-content{
+        padding:32px 24px;
+    }
+    .cta-login{
+        padding:30px 24px;
+    }
+    .ai-disclaimer{
+        padding:26px 22px;
+    }
+    .app{
+        height:75vh;
+    }
 }

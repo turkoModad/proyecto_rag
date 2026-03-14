@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Response
 import json
+from datetime import date
 
 router = APIRouter()
 
 BASE_URL = "https://seguridadvial.codepyhub.com"
+TODAY = date.today().isoformat()
 
 
 @router.get("/robots.txt", include_in_schema=False)
@@ -15,9 +17,11 @@ Allow: /
 Disallow: /ask
 Disallow: /docs
 Disallow: /openapi.json
+Disallow: /auth/
 
 Sitemap: {BASE_URL}/sitemap.xml
 
+# Block AI training crawlers
 User-agent: GPTBot
 Disallow: /
 
@@ -43,39 +47,57 @@ def sitemap():
 
 <url>
 <loc>{BASE_URL}/</loc>
-<priority>1.0</priority>
+<lastmod>{TODAY}</lastmod>
 <changefreq>weekly</changefreq>
+<priority>1.0</priority>
 </url>
 
 <url>
 <loc>{BASE_URL}/faq/</loc>
-<priority>0.9</priority>
+<lastmod>{TODAY}</lastmod>
 <changefreq>monthly</changefreq>
+<priority>0.9</priority>
 </url>
 
 <url>
-<loc>{BASE_URL}/auth/login</loc>
-<priority>0.3</priority>
-<changefreq>yearly</changefreq>
+<loc>{BASE_URL}/faq/examen/</loc>
+<lastmod>{TODAY}</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.8</priority>
 </url>
 
 <url>
-<loc>{BASE_URL}/auth/register</loc>
-<priority>0.4</priority>
-<changefreq>yearly</changefreq>
+<loc>{BASE_URL}/faq/licencias/</loc>
+<lastmod>{TODAY}</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.8</priority>
 </url>
 
 <url>
-<loc>{BASE_URL}/auth/verify</loc>
-<priority>0.3</priority>
-<changefreq>yearly</changefreq>
+<loc>{BASE_URL}/faq/multas/</loc>
+<lastmod>{TODAY}</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.8</priority>
+</url>
+
+<url>
+<loc>{BASE_URL}/faq/normas/</loc>
+<lastmod>{TODAY}</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.8</priority>
+</url>
+
+<url>
+<loc>{BASE_URL}/faq/documentacion/</loc>
+<lastmod>{TODAY}</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.8</priority>
 </url>
 
 </urlset>
 """
 
     return Response(content=content, media_type="application/xml")
-
 
 
 @router.get("/.well-known/traffic-advice", include_in_schema=False)
@@ -89,6 +111,6 @@ def traffic_advice():
         }
     ]
     return Response(
-        content=json.dumps(data), 
+        content=json.dumps(data),
         media_type="application/trafficadvice+json"
     )

@@ -72,15 +72,13 @@ async def process_query(
         )
 
         # -----------------------------
-        # LOGUEAR PREGUNTA (incluso fuera de dominio)
+        # RESPUESTA PARA PREGUNTAS FUERA DE DOMINIO
         # -----------------------------
-        try:
-            answer_for_log = "" if in_domain else "OUT_OF_DOMAIN"
-            decision_for_log = "pending" if in_domain else "out_of_domain"
-
+        if not in_domain:
+            # Guardar la pregunta fuera de dominio antes de retornar
             await qa_cache.log_final(
                 question=query.text,
-                answer=answer_for_log,
+                answer="La pregunta está fuera del dominio legal de tránsito.",
                 current_user=current_user,
                 db=db,
                 ip_address=ip_address,
@@ -89,15 +87,9 @@ async def process_query(
                 top_scores=None,
                 was_autocached=False,
                 grounding_score=0.0,
-                decision=decision_for_log
+                decision="out_of_domain"
             )
-        except Exception as log_error:
-            logger.warning(f"No se pudo loguear la pregunta inicial: {log_error}")
 
-        # -----------------------------
-        # RESPUESTA PARA PREGUNTAS FUERA DE DOMINIO
-        # -----------------------------
-        if not in_domain:
             return {
                 "question": query.text,
                 "response": "La pregunta está fuera del dominio legal de tránsito.",
