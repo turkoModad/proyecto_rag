@@ -18,6 +18,7 @@ Disallow: /ask
 Disallow: /docs
 Disallow: /openapi.json
 Disallow: /auth/
+Disallow: /admin/ingest_qa
 
 Sitemap: {BASE_URL}/sitemap.xml
 

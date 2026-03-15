@@ -46,21 +46,21 @@ except Exception as e:
 VECTOR_PORT = 443  
 EMB_DIM = 1024
 LIMITE_SIN_AUTH = 10
-LIMITE_CON_AUTH = 50
+LIMITE_CON_AUTH = 2500
 MAX_OTP_PER_IP = 10
 BASE_URL = "https://seguridadvial.codepyhub.com"
 
 
 # 3. LÓGICA DE RECUPERACIÓN (RETRIEVAL)
 TOP_K = 5
-RERANK_TOP_K = 2
+RERANK_TOP_K = 4
 SECURITY = 0.86   
 
 
 # 4. LÓGICA DE CACHÉ Y CALIDAD
-QA_SEARCH_THRESHOLD = 0.88
+QA_SEARCH_THRESHOLD = 0.90
 QA_DUPLICATE_THRESHOLD = 0.90
-AUTO_CACHE_THRESHOLD = 0.89
+AUTO_CACHE_THRESHOLD = 0.95
 AUTO_CACHE_GAP = 0.005
 AUTO_CACHE_DUPLICATE_THRESHOLD = 0.90
 MIN_GEN_CTX_SIM = 0.82
@@ -85,7 +85,7 @@ SYSTEM_PROMPT = (
     "Sos un asistente especializado en normas de tránsito argentinas.\n"
     "Respondé SOLO con la información del CONTEXTO.\n"
     "Respondé de forma breve, clara y directa, como para un ciudadano común.\n"
-    "Contestá únicamente lo que se pregunta, sin agregar explicaciones innecesarias.\n"
+    "Incluí siempre una breve razón o justificación basada en el contexto para evitar respuestas de una sola palabra.\n"
     "No menciones artículos, incisos ni lenguaje legal.\n"
     "Usá como máximo 2-4 oraciones, salvo que la pregunta requiera una lista.\n"
     "No utilices negritas, asteriscos ni ningún tipo de formato de texto enriquecido (Markdown).\n"

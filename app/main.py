@@ -35,6 +35,7 @@ from app.db.vector_operations import (
 from app.routes import seo
 from app.routes.usage import router as usage_router
 from app.routes.faq import router as faq_router
+from app.routes.ingest_qa import router as ingest_router
 
 
 # LOGGING
@@ -107,6 +108,7 @@ app.include_router(auth_router)
 app.include_router(seo.router)
 app.include_router(usage_router)
 app.include_router(faq_router)
+app.include_router(ingest_router)
 
 
 # CORS

@@ -73,7 +73,8 @@ def retrieve_context(question_text: str):
             if not contenido:
                 continue
 
-            formatted = f"{titulo} Art. {articulo} - {contenido}".strip()
+            # formatted = f"{titulo} Art. {articulo} - {contenido}".strip()
+            formatted = contenido.strip()
             context_parts.append(formatted)
             top_scores.append(hit.score)
 

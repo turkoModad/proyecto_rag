@@ -55,13 +55,30 @@ async def process_query(
             queries_used = await qa_cache.check_user_limit(db, current_user)
             queries_limit = LIMITE_CON_AUTH
 
+        if queries_used is None:
+            queries_used = 0
+
         # -----------------------------
         # CACHE PREVIO
         # -----------------------------
         cached = await qa_cache.try_cache(
             query.text, current_user, db, ip_address, user_agent, start_time
         )
+        
+        # -----------------------------
+        # DEBUG CACHE
+        # -----------------------------
         if cached:
+            logger.info("========== QA CACHE DEBUG ==========")
+            logger.info(f"PREGUNTA USUARIO: {query.text}")
+
+            try:
+                logger.info(f"RESPUESTA CACHE: {cached.get('response')}")
+            except Exception:
+                logger.info("No se pudo leer respuesta cache")
+
+            logger.info("====================================")
+
             return cached
 
         # -----------------------------
@@ -106,6 +123,23 @@ async def process_query(
             rag.retrieve_context,
             query.text
         )
+
+        # -----------------------------
+        # DEBUG CONTEXTO RECUPERADO
+        # -----------------------------
+        logger.info("========== RAG CONTEXT DEBUG ==========")
+        logger.info(f"PREGUNTA: {query.text}")
+        logger.info(f"SCORES: {top_scores}")
+        logger.info(f"Tamaño contexto LLM: {len(context_text)} caracteres")
+
+        if context_text:
+            logger.info("CONTEXTO RECUPERADO:")
+            for i, chunk in enumerate(context_text.split("\n\n"), 1):
+                logger.info(f"[CTX {i}] {chunk}")
+        else:
+            logger.info("CONTEXTO VACÍO")
+
+        logger.info("=======================================")
 
         # -----------------------------
         # LLM

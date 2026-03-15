@@ -22,6 +22,19 @@ async def is_in_domain(text, current_user, db, ip_address, user_agent, start_tim
             logits = state.clf_model(**inputs).logits
             probs = torch.softmax(logits, dim=1).cpu().numpy()[0]
             predicted_class = torch.argmax(logits, dim=1).item()
+
+        in_domain_prob = float(probs[IN_DOMAIN_LABEL])
+        out_domain_prob = float(probs[1 - IN_DOMAIN_LABEL])
+
+        # -----------------------------
+        # DEBUG CLASIFICADOR
+        # -----------------------------
+        logger.info("========== DOMAIN CLASSIFIER DEBUG ==========")
+        logger.info(f"PREGUNTA: {text}")
+        logger.info(f"IN_DOMAIN_PROB: {in_domain_prob:.4f}")
+        logger.info(f"OUT_DOMAIN_PROB: {out_domain_prob:.4f}")
+        logger.info(f"PREDICTED_CLASS: {predicted_class}")
+        logger.info("==============================================")
   
         return predicted_class == IN_DOMAIN_LABEL
 
