@@ -5,6 +5,7 @@ from app.auth.models import User, QueryLog, OTPLog
 from app.auth.security import hash_password, verify_password
 from app.core.security import encrypt_value, hash_email
 
+
 logger = logging.getLogger("AuthService")
 
 

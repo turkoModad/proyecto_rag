@@ -55,26 +55,26 @@ async def check_user_limit(db, current_user: dict):
 # ----------------------------
 async def try_cache(query_text, current_user, db, ip_address, user_agent, start_time):
     try:
-        q_emb = get_embedding(query_text)
+        # embedding de la consulta (E5 usa prefix query)
+        q_emb = get_embedding(query_text, prefix="query")
+
+        # búsqueda en cache vectorial
         qa_hit, qa_score = search_qa_cache(q_emb)
 
         if qa_hit:
-            contexto_cache = qa_hit.get("contexto")
-            sim_ctx = 0.0
+            logger.info("========== QA CACHE VALIDATION ==========")
+            logger.info(f"[QA DEBUG] QA_SCORE={qa_score:.4f}")
+            logger.info(f"[QA DEBUG] SIM_THRESHOLD={SIM_CTX:.4f}")
+            logger.info(f"[QA DEBUG] Pregunta: {query_text}")
+            logger.info(f"[QA DEBUG] Respuesta cache: {qa_hit.get('respuesta')}")
+            logger.info("==========================================")
 
-            if contexto_cache:
-                emb_context_cache = get_embedding(contexto_cache)
-                sim_ctx = float(cosine_similarity([q_emb], [emb_context_cache])[0][0])
-                logger.info(f"Validación cache sim_ctx={sim_ctx:.4f}")
-                logger.info(f"[QA DEBUG] QA_SCORE={qa_score:.4f}")
-                logger.info(f"[QA DEBUG] SIM_CTX={sim_ctx:.4f}")
-                logger.info(f"[QA DEBUG] SIM_THRESHOLD={SIM_CTX:.4f}")
-                logger.info(f"[QA DEBUG] Pregunta: {query_text}")
-                logger.info(f"[QA DEBUG] Respuesta cache: {qa_hit.get('respuesta')}")
+            # validación directa con score del vector search
+            if qa_score >= SIM_CTX:
 
-            if sim_ctx >= SIM_CTX:
                 end_time = time.time()
                 response_time_ms = int((end_time - start_time) * 1000)
+
                 generated_text = qa_hit["respuesta"]
                 tokens_generated = len(generated_text.split())
 
@@ -91,7 +91,7 @@ async def try_cache(query_text, current_user, db, ip_address, user_agent, start_
                     endpoint="/ask",
                     model_used="cache",
                     qa_cache_score=qa_score,
-                    grounding_score=sim_ctx
+                    grounding_score=qa_score
                 )
 
                 return {
@@ -99,7 +99,7 @@ async def try_cache(query_text, current_user, db, ip_address, user_agent, start_
                     "response": generated_text,
                     "decision": "qa_cache",
                     "qa_score": qa_score,
-                    "ctx_validation": sim_ctx,
+                    "ctx_validation": qa_score,
                     "queries_used": None,
                     "queries_limit": None
                 }

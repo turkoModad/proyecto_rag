@@ -6,13 +6,17 @@ from qdrant_client.models import PointStruct
 from app.service.embedding import get_embedding
 from app.db.vector_client import client
 from app.core.config import COLLECTION_QA
-from app.auth.dependencies import get_current_user
+from app.auth.admin_security import require_admin
 
-router = APIRouter(prefix="/admin")
+
+router = APIRouter(
+    prefix="/admin",
+    dependencies=[Depends(require_admin)]
+)
 
 
 @router.post("/ingest_qa")
-async def ingest(data: dict, user=Depends(get_current_user)):
+async def ingest(data: dict):
 
     pregunta = data.get("pregunta")
     respuesta = data.get("respuesta")

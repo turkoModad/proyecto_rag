@@ -34,9 +34,10 @@ async def is_in_domain(text, current_user, db, ip_address, user_agent, start_tim
         logger.info(f"IN_DOMAIN_PROB: {in_domain_prob:.4f}")
         logger.info(f"OUT_DOMAIN_PROB: {out_domain_prob:.4f}")
         logger.info(f"PREDICTED_CLASS: {predicted_class}")
-        logger.info("==============================================")
-  
-        return predicted_class == IN_DOMAIN_LABEL
+        logger.info("==============================================")        
+
+        return predicted_class == IN_DOMAIN_LABEL  
+
 
     except Exception as e:
         logger.error(f"Error en Clasificador: {e}", exc_info=True)

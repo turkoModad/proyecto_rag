@@ -83,6 +83,7 @@ def search_ley(query_vector, top_k):
     except Exception as e:
         logger.error(f"Error en búsqueda de base de conocimientos: {e}")
         return []
+    
 
 def search_qa_cache(query_emb: np.ndarray, top_k=1):
     """Busca en la caché semántica de respuestas previas."""

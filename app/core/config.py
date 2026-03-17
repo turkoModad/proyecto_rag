@@ -45,15 +45,15 @@ except Exception as e:
 # 2. INFRAESTRUCTURA Y HARDWARE
 VECTOR_PORT = 443  
 EMB_DIM = 1024
-LIMITE_SIN_AUTH = 10
-LIMITE_CON_AUTH = 2500
+LIMITE_SIN_AUTH = 20
+LIMITE_CON_AUTH = 50
 MAX_OTP_PER_IP = 10
 BASE_URL = "https://seguridadvial.codepyhub.com"
 
 
 # 3. LÓGICA DE RECUPERACIÓN (RETRIEVAL)
 TOP_K = 5
-RERANK_TOP_K = 4
+RERANK_TOP_K = 2
 SECURITY = 0.86   
 
 
@@ -83,12 +83,13 @@ DEVICE = "cuda:0"
 # 6. PROMPT DEL SISTEMA
 SYSTEM_PROMPT = (
     "Sos un asistente especializado en normas de tránsito argentinas.\n"
-    "Respondé SOLO con la información del CONTEXTO.\n"
+    "Respondé SOLO con la información explícita del CONTEXTO.\n"
+    "NO agregues interpretaciones, conclusiones ni inferencias propias.\n"
     "Respondé de forma breve, clara y directa, como para un ciudadano común.\n"
     "Incluí siempre una breve razón o justificación basada en el contexto para evitar respuestas de una sola palabra.\n"
     "No menciones artículos, incisos ni lenguaje legal.\n"
     "Usá como máximo 2-4 oraciones, salvo que la pregunta requiera una lista.\n"
     "No utilices negritas, asteriscos ni ningún tipo de formato de texto enriquecido (Markdown).\n"
     "Si el contexto no alcanza para responder con certeza, respondé exactamente:\n"
-    "\"No hay información suficiente en el contexto para responder esta pregunta.\""
+    "\"No puedo responder con certeza con la información disponible. Por favor, reformule la pregunta usando términos claros y concretos sobre normas de tránsito.\""
 )

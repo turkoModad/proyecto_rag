@@ -34,15 +34,7 @@ def average_pool(last_hidden_states: torch.Tensor, attention_mask: torch.Tensor)
     return last_hidden.sum(dim=1) / attention_mask.sum(dim=1)[..., None]
 
 
-# EMBEDDING
 def get_embedding(text: str, prefix="query") -> np.ndarray:
-    """
-    Genera embedding usando prefijo correcto para E5.
-    
-    prefix:
-        "query"   -> consultas
-        "passage" -> documentos
-    """
 
     if not text or not isinstance(text, str):
         logger.error("Texto inválido para embedding.")
@@ -50,21 +42,25 @@ def get_embedding(text: str, prefix="query") -> np.ndarray:
         return np.zeros(dim)
 
     try:
+
         formatted_text = f"{prefix}: {text}"
 
         inputs = state.emb_tokenizer(
             formatted_text,
             return_tensors="pt",
-            truncation=True,
-            max_length=512
+            truncation=True
         ).to(DEVICE)
 
         with torch.no_grad():
+
             outputs = state.emb_model(**inputs)
+
             emb = average_pool(
                 outputs.last_hidden_state,
                 inputs["attention_mask"]
             )
+
+            emb = emb.float()
 
         emb_np = emb.cpu().numpy().flatten()
         emb_np = normalize(emb_np)
@@ -72,6 +68,8 @@ def get_embedding(text: str, prefix="query") -> np.ndarray:
         return emb_np
 
     except Exception as e:
+
         logger.error(f"Error generando embedding: {e}")
+
         dim = state.emb_model.config.hidden_size
-        return np.zeros(dim)
+        return np.zeros(dim) 
