@@ -14,7 +14,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="/static/android-chrome-512x512.png">
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
 <link rel="manifest" href="/static/site.webmanifest">
-<link rel="stylesheet" href="/frontend/css/styles.css?v=1.0.12">
+<link rel="stylesheet" href="/frontend/css/styles.css?v=1.0.20">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <meta property="og:title" content="Asistente IA de la Ley de Tránsito 24.449">
 <meta property="og:description" content="Consultá normas de tránsito y la Ley 24.449 usando inteligencia artificial.">
@@ -111,8 +111,9 @@
 <body>
 <div class="page">
 <section class="welcome-title">
-<span>🚦</span>
-<h1>Asistente IA para consultar la Ley Nacional de Tránsito 24.449</h1>
+<div class="logo-icon">
+  <img src="/static/apple-touch-icon.png" alt="Asistente Vial IA" />
+</div><h1>Asistente IA para consultar la Ley Nacional de Tránsito 24.449</h1>
 <p>
 Este asistente utiliza <strong>inteligencia artificial</strong> entrenada con la legislación vial argentina para responder preguntas sobre normas de circulación, multas, licencias de conducir y señales de tránsito.
 </p>
@@ -132,7 +133,7 @@ Puedes hacer preguntas en lenguaje natural sobre la <strong>Ley Nacional de Trá
 <div class="query-counter" id="queryCounter">
 <span id="queryLabel">Consultas</span>
 <strong id="queryCount">0</strong>
-<span id="queryLimit">de 5</span>
+<span id="queryLimit">de 20</span>
 </div>
 
 <div class="status online">
@@ -227,46 +228,40 @@ La <strong>Ley Nacional de Tránsito 24.449</strong> establece reglas fundamenta
 <li>Autopistas: hasta 130 km/h</li>
 </ul>
 
-<h2>Preguntas frecuentes sobre tránsito en Argentina</h2>
-
-<p>
-Consulta respuestas claras sobre normas de tránsito, licencias de conducir,
-multas y documentación según la <strong>Ley Nacional de Tránsito 24.449</strong>.
-Estas preguntas frecuentes te ayudarán a entender las reglas de seguridad vial
-y resolver dudas comunes antes de utilizar el asistente de tránsito.
-</p>
-
-<div style="text-align:center;margin-top:30px;">
-
-<a href="/faq/" class="faq-cta-btn">
-Ver preguntas frecuentes sobre tránsito
-</a>
-
-<p class="faq-cta-sub">
-Información basada en la Ley Nacional de Tránsito 24.449
-</p>
-</div>
 </section>
+ 
+<section class="faq-topics" id="seccion-enlaces" style="max-width: 900px; margin-left: auto; margin-right: auto;">
+  <h2>Explora más temas</h2>
+  <div class="faq-links">
+    <a href="/examen/">Simulador de Examen</a>
+    <a href="/faq/licencias/">Trámite de Licencias</a>
+    <a href="/faq/multas/">Consulta de Multas</a>
+    <a href="/faq/normas/">Reglas de Tránsito</a>
+    <a href="/faq/documentacion/">Requisitos y Documentos</a>
+    <a href="/faq/examen/">Banco de Preguntas</a>
+  </div>
+</section>
+
 <section class="ai-disclaimer">
 <h2>Precisión y uso del asistente de inteligencia artificial</h2>
 <p>
 Este asistente utiliza modelos de <strong>inteligencia artificial</strong> entrenados con información relacionada con la 
 <strong>Ley Nacional de Tránsito 24.449</strong>, normativa vial argentina y material educativo sobre seguridad vial.
 El sistema está diseñado para responder consultas en lenguaje natural y facilitar el acceso a información normativa.
-</p><br><br>
+</p><br>
 
 <p>
 Si bien el modelo ha sido evaluado mediante pruebas internas con preguntas reales y escenarios basados en la legislación vigente,
 las respuestas generadas por sistemas de inteligencia artificial pueden contener imprecisiones o interpretaciones incompletas
 de la normativa.
-</p><br><br>
+</p><br>
 
 <p>
 De acuerdo con evaluaciones realizadas sobre un conjunto representativo de consultas, el asistente presenta actualmente una
 <strong>precisión aproximada del 93% en la calidad de las respuestas</strong>. Nuestro equipo trabaja de manera continua en el
 entrenamiento del modelo, la incorporación de nuevas fuentes de información y la optimización del sistema para mejorar
 progresivamente su exactitud.
-</p><br><br>
+</p><br>
 
 <p>
 La información proporcionada por este asistente debe considerarse de carácter orientativo y educativo. No reemplaza la consulta
@@ -278,6 +273,6 @@ directa de la legislación vigente ni el asesoramiento de organismos oficiales o
 </p>
 </section>
 </div>
-<script src="/frontend/js/app.js?v=1.3"></script>
+<script src="/frontend/js/app.js?v=1.4"></script>
 </body>
 </html>

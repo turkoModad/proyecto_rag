@@ -95,6 +95,13 @@ def sitemap():
 <priority>0.8</priority>
 </url>
 
+<url>
+<loc>{BASE_URL}/examen/</loc>
+<lastmod>{TODAY}</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.8</priority>
+</url>
+
 </urlset>
 """
 

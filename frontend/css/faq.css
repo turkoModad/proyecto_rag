@@ -1,24 +1,20 @@
-/* ===========================
-FAQ STYLES
-=========================== */
 
+/* ===========================
+FAQ STYLES (código original intacto)
+=========================== */
 main{
     max-width:900px;
     margin:auto;
-    padding:40px 20px;
+    padding:20px 20px;
     font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Ubuntu;
     line-height:1.6;
 }
 
-/* TITULO PRINCIPAL */
-
 h1{
     font-size:32px;
-    margin-bottom:15px;
+    margin-bottom:5px;
     color:#1a1a1a;
 }
-
-/* SUBTITULOS */
 
 h2{
     margin-top:40px;
@@ -29,22 +25,16 @@ h2{
     color:#222;
 }
 
-/* PREGUNTAS */
-
 h3{
     font-size:18px;
     margin-bottom:8px;
     color:#333;
 }
 
-/* PARRAFOS */
-
 p{
     color:#555;
     margin-bottom:12px;
 }
-
-/* ITEM FAQ */
 
 .faq-item{
     padding:18px;
@@ -60,31 +50,32 @@ p{
     border-color:#d7e3f8;
 }
 
-/* HEADER INTRO */
-
 header p{
     font-size:16px;
 }
-
-/* BOTON ASISTENTE */
 
 .back-btn{
     display:inline-block;
     margin-top:20px;
     padding:10px 16px;
-    border-radius:6px;
-    background:#2d6cdf;
+    border-radius:40px;
+    background:#0b2a4f;
     color:white;
     text-decoration:none;
     font-weight:500;
-    transition:background 0.2s;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(11, 42, 79, 0.2);
 }
 
 .back-btn:hover{
-    background:#1f4ea3;
+    background: #15457c;
+    transform: scale(1.02);
+    box-shadow: 0 6px 16px rgba(11, 42, 79, 0.3);
 }
 
-/* SECCION FINAL */
+.back-btn:active {
+    transform: scale(0.98);
+}
 
 section:last-child{
     background:#f8fafc;
@@ -94,27 +85,17 @@ section:last-child{
     border:1px solid #eaeaea;
 }
 
-/* RESPONSIVE */
-
 @media (max-width:700px){
-
     main{
         padding:30px 15px;
     }
-
     h1{
         font-size:26px;
     }
-
     h2{
         font-size:20px;
     }
-
 }
-
-/* ===========================
-FAQ TOPIC LINKS
-=========================== */
 
 .faq-topics{
     margin-top:60px;
@@ -129,8 +110,6 @@ FAQ TOPIC LINKS
     border:none;
 }
 
-/* GRID DE TARJETAS */
-
 .faq-links{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
@@ -138,32 +117,21 @@ FAQ TOPIC LINKS
     margin-top:20px;
 }
 
-/* TARJETAS */
-
 .faq-links a{
-
     display:flex;
     align-items:center;
     justify-content:space-between;
-
     padding:18px 20px;
-
     background:white;
     border:1px solid #e5e7eb;
     border-radius:10px;
-
     text-decoration:none;
     color:#1f2937;
-
     font-weight:600;
     font-size:15px;
-
     transition:all 0.2s ease;
-
     box-shadow:0 2px 6px rgba(0,0,0,0.05);
 }
-
-/* FLECHA */
 
 .faq-links a::after{
     content:"→";
@@ -171,14 +139,452 @@ FAQ TOPIC LINKS
     color:#2d6cdf;
 }
 
-/* HOVER */
-
 .faq-links a:hover{
-
     border-color:#2d6cdf;
     background:#f3f6fb;
-
     transform:translateY(-2px);
-
     box-shadow:0 8px 20px rgba(0,0,0,0.08);
+}
+
+.skeleton-card {
+    margin-bottom: 25px;
+    padding: 20px;
+    border-radius: 12px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: pulse 1.5s infinite;
+}
+
+.skeleton.title {
+    height: 22px;
+    width: 65%;
+    margin-bottom: 20px;
+    border-radius: 6px;
+}
+
+.skeleton.option {
+    height: 18px;
+    width: 90%;
+    border-radius: 6px;
+    margin-bottom: 12px;
+}
+
+@media (max-width: 600px) {
+    .pregunta {
+        padding: 16px;
+    }
+    .opcion {
+        padding: 10px 14px;
+    }
+    h3 {
+        font-size: 16px;
+    }
+}
+
+.pregunta {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.pregunta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+}
+
+.pregunta h3 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: #1f2937;
+}
+
+.opciones {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.opcion {
+    padding: 12px 18px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.opcion:hover:not(.selected):not(.correcta):not(.incorrecta) {
+    background: #e5f0ff;
+    border-color: #93c5fd;
+}
+
+.opcion.selected {
+    border-color: #3b82f6;
+    background: #dbeafe;
+}
+
+.opcion.correcta {
+    background: linear-gradient(90deg, #d4edda 0%, #a8e5a1 100%);
+    border-color: #28a745;
+    color: #155724;
+    font-weight: 600;
+}
+
+.opcion.incorrecta {
+    background: linear-gradient(90deg, #f8d7da 0%, #f1a6a8 100%);
+    border-color: #dc3545;
+    color: #721c24;
+    font-weight: 600;
+}
+
+.btn-examen {
+    padding: 18px 28px;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 18px;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    color: white;
+}
+
+#btn-calificar {
+    background-color: #dc3545;
+    color: white;
+    padding: 16px 28px;
+    border-radius: 50px;
+    border: none;
+    font-weight: 600;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#btn-calificar:disabled {
+    background-color: #f5a5ab;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+#btn-calificar:hover:not(:disabled) {
+    background-color: #851621;
+    transform: translateY(-2px) scale(1.03);
+}
+
+/* ===== ELIMINADO EL DISPLAY:NONE DE #btn-reintentar ===== */
+#btn-reintentar {
+    background-color: #007bff;
+    /* display: none;  ← se ha quitado */
+}
+
+#btn-reintentar:hover {
+    background-color: #274e77;
+    transform: translateY(-2px) scale(1.03);
+}
+
+.timer-box span {
+    font-variant-numeric: tabular-nums;
+}
+
+.timer-box:hover {
+    background: linear-gradient(90deg, #dbeafe, #ffffff);
+    box-shadow: 0 6px 16px rgba(45, 108, 223, 0.25);
+}
+
+.resultado-card{
+    text-align:center;
+    padding:20px;
+    border-radius:10px;
+    margin-top:20px;
+}
+.resultado-card.aprobado{
+    background:#d4edda;
+    color:#155724;
+    border:1px solid #c3e6cb;
+}
+.resultado-card.desaprobado{
+    background:#f8d7da;
+    color:#721c24;
+    border:1px solid #f5c6cb;
+}
+.resultado.hidden {
+    display: none;   
+}
+
+@keyframes pulse{
+    0% {background-position: 100% 0;}
+    100% {background-position: -100% 0;}
+}
+
+.contenedor-botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: flex-start;
+    align-items: center;
+    margin-top: 30px;
+}
+
+#btn-iniciar, #btn-calificar, #btn-reintentar {
+    padding: 16px 28px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 18px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    color: white;
+}
+
+#btn-iniciar {
+    background-color: #28a745;
+    display: block;
+    margin: 20px auto;
+}
+#btn-iniciar:hover {
+    background-color: #218838;
+    transform: translateY(-2px) scale(1.03);
+}
+
+#btn-reintentar {
+    background: #007bff;
+    color: white;
+}
+#btn-reintentar:hover {
+    background-color: #274e77;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+
+.back-btn-examen {
+    margin-right: auto; 
+    padding: 16px 28px;
+    border-radius: 50px;
+    background: #0b2a4f;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 18px;
+    box-shadow: 0 4px 12px rgba(11,42,79,0.2);
+    transition: all 0.3s ease;
+}
+.back-btn-examen:hover {
+    background: #15457c;
+    transform: scale(1.02);
+    box-shadow: 0 6px 16px rgba(11,42,79,0.3);
+}
+
+@media (max-width: 600px) {
+    .contenedor-botones {
+        flex-direction: column;
+    }
+    #btn-iniciar, #btn-reintentar, .back-btn-examen {
+        width: 100%;
+        text-align: center;
+        margin-left: 0;
+    }
+}
+
+#cantidad {
+    padding: 12px 16px;
+    font-size: 16px;
+    border-radius: 12px;
+    border: 1px solid #d1d5db;
+    background: white;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12'><polygon points='0,0 12,0 6,6' fill='%233b82f6'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+}
+
+#cantidad:hover {
+    border-color: #3b82f6;
+}
+
+#cantidad:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3);
+}
+
+.btn-dinamico {
+    padding: 16px 28px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 18px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    color: white;
+}
+
+.btn-dinamico.calificar {
+    background-color: #dc3545;
+}
+
+.btn-dinamico.calificar:disabled {
+    background-color: #f5a5ab;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.btn-dinamico.calificar:hover:not(:disabled) {
+    background-color: #851621;
+    transform: translateY(-2px) scale(1.03);
+}
+
+.btn-dinamico.reintentar {
+    background-color: #007bff;
+}
+
+.btn-dinamico.reintentar:hover {
+    background-color: #274e77;
+    transform: translateY(-2px) scale(1.03);
+}
+
+/* ===============================
+   NUEVOS ESTILOS ESPECÍFICOS DEL EXAMEN
+   =============================== */
+
+.config {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin: 20px 0;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+}
+
+.config label {
+    font-weight: 600;
+    color: #333;
+    margin-right: 5px;
+}
+
+.config select {
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 30px;
+    border: 1px solid #ccc;
+    background-color: white;
+    cursor: pointer;
+    transition: border 0.2s;
+}
+
+.config select:hover {
+    border-color: #2d6cdf;
+}
+
+.config select:focus {
+    outline: none;
+    border-color: #2d6cdf;
+    box-shadow: 0 0 0 3px rgba(45,108,223,0.2);
+}
+
+.config-instruccion {
+    color: #666;
+    font-style: italic;
+    font-size: 0.95rem;
+    margin-left: 5px;
+}
+
+.timer-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(145deg, #ffffff, #f0f5ff);
+    border: 2px solid #2d6cdf;
+    border-radius: 60px;
+    padding: 12px 25px;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1e3a8a;
+    box-shadow: 0 8px 20px rgba(0,60,130,0.15);
+    margin: 20px auto 25px;
+    letter-spacing: 1px;
+}
+
+#btn-calificar,
+#btn-reintentar {
+    display: inline-block;
+    padding: 14px 28px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 18px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    color: white;
+    margin-right: 15px;
+}
+
+#btn-calificar {
+    background-color: #dc3545;
+}
+
+#btn-calificar:disabled {
+    background-color: #f5a5ab;
+    cursor: not-allowed;
+    opacity: 0.7;
+    box-shadow: none;
+    transform: none;
+}
+
+#btn-reintentar {
+    background-color: #007bff;
+}
+
+#btn-reintentar:disabled {
+    background-color: #8bb9e0;
+    cursor: not-allowed;
+    opacity: 0.7;
+    box-shadow: none;
+    transform: none;
+}
+
+#botones-examen {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin-top: 25px;
+    box-shadow: none;
+}
+
+#botones-examen > div {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+@media (max-width: 600px) {
+    .config {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .config-instruccion {
+        margin-left: 0;
+    }
+    #btn-calificar,
+    #btn-reintentar {
+        width: 100%;
+        margin-right: 0;
+    }
 }

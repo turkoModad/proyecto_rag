@@ -40,8 +40,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
 
+    const errorEl = document.getElementById("error");
+
+    function mostrarError(mensaje) {
+        errorEl.innerText = mensaje;
+        errorEl.style.display = "block"; // Hacer visible
+    }
+
     if (!token) {
-        document.getElementById("error").innerText = "Token no encontrado en la URL.";
+        mostrarError("Token no encontrado en la URL.");
         document.getElementById("verifyForm").querySelector("button").disabled = true;
         return;
     }
@@ -67,13 +74,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Reemplazar historial para que no vuelva a verify
                 window.location.replace(data.redirect || "/frontend/index.html");
             } else {
-                document.getElementById("error").innerText =
-                    data.detail || "OTP incorrecto, intenta nuevamente";
+                mostrarError(data.detail || "OTP incorrecto, intenta nuevamente");
             }
 
         } catch (err) {
             console.error(err);
-            document.getElementById("error").innerText = "Error de conexión con el servidor.";
+            mostrarError("Error de conexión con el servidor.");
         }
     };
 });
