@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let startTimeBackend = null;
     let examenActivo = false;
     let timerInterval = null;
-    let duracionMaxima = 600; // 10 minutos por defecto
+    let duracionMaxima = 600;
     let tiempoAgotado = false;
 
     function mostrarSkeletons(cantidad) {
@@ -51,7 +51,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 op.dataset.opcionIndex = i;
 
                 op.addEventListener("click", () => {
-                    if (!examenActivo || tiempoAgotado) return; // No permitir si el tiempo se agotó
+                    if (!examenActivo || tiempoAgotado) return;
+
                     opcionesDiv.querySelectorAll(".opcion").forEach(el => el.classList.remove("selected"));
                     op.classList.add("selected");
                     respuestasUsuario[p.id] = i;
@@ -72,25 +73,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function iniciarTimer(backendTime, duracion) {
         if (!timerSpan) return;
+
+        // 🔥 limpiar cualquier timer previo
+        detenerTimer();
+
         duracionMaxima = duracion || 600;
-        
+
         const startTime = new Date(backendTime);
         const endTime = new Date(startTime.getTime() + duracionMaxima * 1000);
-        
+
         timerInterval = setInterval(() => {
             const now = new Date();
-            const diff = Math.floor((endTime - now) / 1000); // Tiempo restante en segundos
-            
+            const diff = Math.floor((endTime - now) / 1000);
+
             if (diff <= 0) {
-                // Tiempo agotado
                 detenerTimer();
                 tiempoAgotado = true;
                 examenActivo = false;
+
                 btnCalificar.disabled = true;
                 btnIniciar.disabled = false;
                 selectCantidad.disabled = false;
-                
-                // Mostrar mensaje de tiempo agotado
+
                 resultadoDiv.innerHTML = `
                     <div class="resultado-card desaprobado">
                         <h2>⏰ Tiempo agotado</h2>
@@ -99,16 +103,15 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                 `;
                 resultadoDiv.classList.remove("hidden");
-                
-                // Bloquear todas las opciones
+
                 document.querySelectorAll(".opcion").forEach(op => {
                     op.style.pointerEvents = "none";
                 });
-                
+
                 timerSpan.textContent = "00:00";
                 return;
             }
-            
+
             const min = String(Math.floor(diff / 60)).padStart(2, "0");
             const sec = String(diff % 60).padStart(2, "0");
             timerSpan.textContent = `${min}:${sec}`;
@@ -137,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="resultado-card ${aprobado ? 'aprobado' : 'desaprobado'}">
                     <h2>${aprobado ? '¡Aprobaste!' : 'Desaprobaste'}</h2>
                     <p><strong>${data.resultado}</strong> / ${data.total}</p>
-                    <p><strong>Tiempo: ${timerSpan.textContent}</strong> </p>
+                    <p><strong>Tiempo: ${timerSpan.textContent}</strong></p>
                 </div>
             `;
         }
@@ -160,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("El tiempo ya se agotó. No se puede calificar.");
             return;
         }
-        
+
         examenActivo = false;
         btnCalificar.disabled = true;
         detenerTimer();
@@ -180,39 +183,47 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             });
+
             const data = await res.json();
             mostrarResultado(data);
-            
+
             if (!data.error) {
                 marcarCorrecciones();
             }
-            
+
             btnReintentar.disabled = false;
+
         } catch (e) {
             console.error("Error evaluando:", e);
-            alert("Error al calificar. Intente nuevamente.");
+            alert("Error al calificar.");
             btnCalificar.disabled = false;
         }
     }
 
     btnIniciar.addEventListener("click", async () => {
+        // 🔥 RESET TOTAL DEL ESTADO
+        detenerTimer();
+        if (timerSpan) timerSpan.textContent = "00:00";
+
+        tiempoAgotado = false;
+        examenActivo = false;
+
+        resultadoDiv.classList.add("hidden");
+        resultadoDiv.innerHTML = "";
+
         btnIniciar.disabled = true;
         btnCalificar.disabled = true;
         btnReintentar.disabled = true;
         selectCantidad.disabled = true;
-        tiempoAgotado = false;
 
         const cantidad = selectCantidad ? parseInt(selectCantidad.value) : 20;
         mostrarSkeletons(cantidad);
 
         try {
             const res = await fetch(`/examen/data?cantidad=${cantidad}`);
-            if (!res.ok) throw new Error(`Error al obtener preguntas: ${res.status}`);
-            const data = await res.json();
+            if (!res.ok) throw new Error();
 
-            if (!data.preguntas || !Array.isArray(data.preguntas)) {
-                throw new Error("Estructura de datos incorrecta del backend");
-            }
+            const data = await res.json();
 
             examenData = data.preguntas;
             respuestasUsuario = {};
@@ -221,13 +232,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
             ocultarSkeletons();
             renderExamen(examenData);
+
             iniciarTimer(startTimeBackend, data.duracion_max);
+
         } catch (e) {
             console.error("Error iniciando examen:", e);
             ocultarSkeletons();
             btnIniciar.disabled = false;
             selectCantidad.disabled = false;
-            alert("No se pudo iniciar el examen. Intente recargar la página.");
+            alert("No se pudo iniciar el examen.");
         }
     });
 
