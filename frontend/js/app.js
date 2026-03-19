@@ -19,6 +19,8 @@ const ctaSection = $("ctaLogin");
 const ctaTitle = $("ctaTitle");
 
 let isLogged = false;
+let isUnlimited = false;
+let userPlan = "anonymous";
 
 if (!chat || !input || !button) {
     console.error("DOM incompleto");
@@ -28,6 +30,25 @@ if (!chat || !input || !button) {
 input.disabled = true;
 button.disabled = true;
 
+// =========================
+// FUNCIÓN DE REFRESH TOKEN (NUEVA)
+// =========================
+async function refreshToken() {
+    try {
+        const response = await fetch("/auth/refresh", {
+            method: "POST",
+            credentials: "include"
+        });
+        return response.ok;
+    } catch (error) {
+        console.error("Error en refresh:", error);
+        return false;
+    }
+}
+
+// =========================
+// UI HELPERS
+// =========================
 function hideWelcome(){
     welcomeBlocks.forEach(el => el.style.display = "none");
 }
@@ -55,22 +76,35 @@ function addMessage(text, type, typing=false){
     chat.scrollTop = chat.scrollHeight;
 }
 
-function updateCounter(used, limit, logged){
+// =========================
+// CONTADOR
+// =========================
+function updateCounter(used, limit, logged, unlimited){
 
     if (!queryCountEl || !limitEl || !labelEl) return;
+
+    if (unlimited){
+        queryCountEl.textContent = "∞";
+        limitEl.textContent = "";
+        labelEl.textContent = "Consultas ilimitadas";
+        return;
+    }
 
     if (logged){
         queryCountEl.textContent = used;
         limitEl.textContent = "de " + limit;
         labelEl.textContent = "Consultas usadas:";
     } else {
-        const remaining = Math.max(limit - used,0);
+        const remaining = Math.max(limit - used, 0);
         queryCountEl.textContent = remaining;
         limitEl.textContent = "de " + limit;
         labelEl.textContent = "Te quedan";
     }
 }
 
+// =========================
+// STATUS
+// =========================
 function updateStatus(logged){
 
     if (!statusEl) return;
@@ -84,6 +118,9 @@ function updateStatus(logged){
     }
 }
 
+// =========================
+// CTA
+// =========================
 function updateCTA(show, text){
 
     if (!ctaSection) return;
@@ -95,11 +132,17 @@ function updateCTA(show, text){
     }
 }
 
+// =========================
+// INPUTS
+// =========================
 function toggleInputs(enabled){
     input.disabled = !enabled;
     button.disabled = !enabled;
 }
 
+// =========================
+// AUTH BUTTONS
+// =========================
 function updateAuthButtons(logged){
 
     const loginBtn = document.querySelector(".login-btn");
@@ -113,6 +156,9 @@ function updateAuthButtons(logged){
     if (logoutBtn) logoutBtn.style.display = logged ? "inline-block" : "none";
 }
 
+// =========================
+// LOAD USAGE
+// =========================
 async function loadUsage(){
 
     try{
@@ -124,18 +170,30 @@ async function loadUsage(){
         const data = await res.json();
 
         const used = Number(data.used ?? 0);
-        const limit = Number(data.limit ?? 5);
+        const limit = data.limit === null ? null : Number(data.limit);
 
         isLogged = data.is_logged ?? false;
+        isUnlimited = data.is_unlimited ?? false;
+        userPlan = data.plan ?? "anonymous";
 
-        updateCounter(used,limit,isLogged);
+        updateCounter(used, limit, isLogged, isUnlimited);
         updateStatus(isLogged);
         updateAuthButtons(isLogged);
 
+        // =========================
+        // LÓGICA PRINCIPAL
+        // =========================
         if(isLogged){
 
             updateCTA(false);
 
+            //  PREMIUM / ADMIN
+            if(isUnlimited){
+                toggleInputs(true);
+                return;
+            }
+
+            //  USUARIO FREE
             if(used >= limit){
                 toggleInputs(false);
                 updateCTA(true,"¿Querés seguir consultando?");
@@ -145,7 +203,7 @@ async function loadUsage(){
 
         }else{
 
-            const remaining = Math.max(limit-used,0);
+            const remaining = Math.max(limit - used, 0);
 
             if(remaining > 0){
                 toggleInputs(true);
@@ -161,12 +219,15 @@ async function loadUsage(){
 
         console.error("Error usage:",err);
 
+        toggleInputs(false);
+
         if(statusEl) statusEl.textContent="Error conexión";
-
     }
-
 }
 
+// =========================
+// SEND QUESTION (MODIFICADO)
+// =========================
 async function sendQuestion(){
 
     const question = input.value.trim();
@@ -179,12 +240,37 @@ async function sendQuestion(){
 
     try{
 
-        const response = await fetch("/ask",{
+        let response = await fetch("/ask",{
             method:"POST",
             headers:{"Content-Type":"application/json"},
             credentials:"include",
             body:JSON.stringify({text:question})
         });
+
+        // =========================
+        // NUEVO: MANEJO DE 401 CON REFRESH
+        // =========================
+        if (response.status === 401) {
+            console.log("Token expirado, intentando refresh...");
+            
+            // Intentar refresh
+            const refreshOk = await refreshToken();
+            
+            if (refreshOk) {
+                console.log("Refresh exitoso, reintentando pregunta...");
+                // Reintentar la pregunta original
+                response = await fetch("/ask",{
+                    method:"POST",
+                    headers:{"Content-Type":"application/json"},
+                    credentials:"include",
+                    body:JSON.stringify({text:question})
+                });
+            } else {
+                console.log("Refresh falló, redirigiendo a login...");
+                window.location.replace("/frontend/login.html");
+                return;
+            }
+        }
 
         if(chat.lastChild?.classList.contains("typing")){
             chat.removeChild(chat.lastChild);
@@ -195,6 +281,9 @@ async function sendQuestion(){
             data=await response.json();
         }catch{}
 
+        // =========================
+        // ERRORES DE LÍMITE / AUTH
+        // =========================
         if(response.status===401 || response.status===403){
 
             const message =
@@ -228,6 +317,9 @@ async function sendQuestion(){
     }
 }
 
+// =========================
+// LOGOUT
+// =========================
 async function logout(){
 
     try{
@@ -249,6 +341,9 @@ async function logout(){
     }
 }
 
+// =========================
+// EVENTS
+// =========================
 button.addEventListener("click",sendQuestion);
 
 input.addEventListener("keypress",(e)=>{
@@ -259,6 +354,7 @@ if(logoutBtn){
     logoutBtn.addEventListener("click",logout);
 }
 
+// INIT
 loadUsage();
 
 console.log("Asistente Vial listo");

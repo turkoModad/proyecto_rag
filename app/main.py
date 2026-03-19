@@ -10,12 +10,14 @@ import asyncio
 import logging
 import warnings
 from contextlib import asynccontextmanager
+import time
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI,  Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from app.routes.ask import router as ask_router
 from app.auth.routes import router as auth_router
 from app.auth.init_db import (
@@ -37,7 +39,12 @@ from app.routes.usage import router as usage_router
 from app.routes.faq import router as faq_router
 from app.routes.ingest_qa import router as ingest_router
 from app.routes.examen import router as examen_router
-
+from app.middleware.security_middleware import SecurityMiddleware
+from app.core.middleware import AutoRefreshMiddleware
+from app.auth.access_log_service import log_access
+from app.routes.ask import get_real_ip
+from app.auth.dependencies import get_current_user_from_request
+from app.routes import security_monitor
 
 # LOGGING
 logging.basicConfig(level=logging.INFO)
@@ -104,6 +111,10 @@ app = FastAPI(
     redirect_slashes=False,
 )
 
+app.add_middleware(SecurityMiddleware)
+app.add_middleware(AutoRefreshMiddleware)
+
+
 app.include_router(ask_router)
 app.include_router(auth_router)
 app.include_router(seo.router)
@@ -111,6 +122,7 @@ app.include_router(usage_router)
 app.include_router(faq_router)
 app.include_router(ingest_router)
 app.include_router(examen_router)
+app.include_router(security_monitor.router)
 
 
 # CORS
@@ -125,6 +137,16 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=[
+        "seguridadvial.codepyhub.com",
+        "localhost",
+        "127.0.0.1"
+    ]
 )
 
 

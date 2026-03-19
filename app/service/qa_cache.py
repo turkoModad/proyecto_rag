@@ -13,52 +13,60 @@ logger = logging.getLogger("QACacheService")
 
 
 # ----------------------------
-# LÍMITES DE CONSULTAS
+# LÍMITES DE CONSULTAS (MODIFICADO)
 # ----------------------------
 async def check_anonymous_limit(db, ip_address: str):
+    """
+    Verifica límite para usuarios anónimos
+    Retorna dict con información del límite en lugar de lanzar excepción
+    """
     count = await count_anonymous_queries(db, ip_address, "/ask")
     logger.info(f"Anon query #{count+1} from {ip_address}")
-
-    if count >= LIMITE_SIN_AUTH:
-        raise HTTPException(
-            status_code=401,
-            detail={
-                "message": f"Límite de {LIMITE_SIN_AUTH} consultas anónimo alcanzado.",
-                "queries_used": count,
-                "queries_limit": LIMITE_SIN_AUTH
-            }
-        )
-
-    return count
+    
+    is_limited = count >= LIMITE_SIN_AUTH
+    
+    return {
+        "count": count,
+        "limit": LIMITE_SIN_AUTH,
+        "is_limited": is_limited,
+        "remaining": max(LIMITE_SIN_AUTH - count, 0)
+    }
 
 
 async def check_user_limit(db, current_user: dict):
-    if current_user["role"] == "free":
-        count = await count_user_queries(db, current_user["sub"])
-        logger.info(f"User {current_user['sub']} queries: {count}")
-
-        if count >= LIMITE_CON_AUTH:
-            raise HTTPException(
-                status_code=403,
-                detail={
-                    "message": f"Límite de {LIMITE_CON_AUTH} consultas alcanzado.",
-                    "queries_used": count,
-                    "queries_limit": LIMITE_CON_AUTH
-                }
-            )
-
-        return count
+    """
+    Verifica límite para usuarios autenticados
+    Retorna dict con información del límite
+    """
+    logger.info(f"CHECK USER LIMIT - User: {current_user.get('sub')}, Role: {current_user.get('role')}")
+    # Usuarios admin o premium no tienen límite
+    if current_user["role"] != "free":
+        return {
+            "count": 0,
+            "limit": None,  # Sin límite
+            "is_limited": False,
+            "remaining": None  # Ilimitado
+        }
+    
+    count = await count_user_queries(db, current_user["sub"])
+    logger.info(f"User {current_user['sub']} queries: {count}")
+    
+    is_limited = count >= LIMITE_CON_AUTH
+    
+    return {
+        "count": count,
+        "limit": LIMITE_CON_AUTH,
+        "is_limited": is_limited,
+        "remaining": max(LIMITE_CON_AUTH - count, 0)
+    }
 
 
 # ----------------------------
-# CACHÉ DE PREGUNTAS
+# CACHÉ DE PREGUNTAS (SIN CAMBIOS)
 # ----------------------------
 async def try_cache(query_text, current_user, db, ip_address, user_agent, start_time):
     try:
-        # embedding de la consulta (E5 usa prefix query)
         q_emb = get_embedding(query_text, prefix="query")
-
-        # búsqueda en cache vectorial
         qa_hit, qa_score = search_qa_cache(q_emb)
 
         if qa_hit:
@@ -69,12 +77,9 @@ async def try_cache(query_text, current_user, db, ip_address, user_agent, start_
             logger.info(f"[QA DEBUG] Respuesta cache: {qa_hit.get('respuesta')}")
             logger.info("==========================================")
 
-            # validación directa con score del vector search
             if qa_score >= SIM_CTX:
-
                 end_time = time.time()
                 response_time_ms = int((end_time - start_time) * 1000)
-
                 generated_text = qa_hit["respuesta"]
                 tokens_generated = len(generated_text.split())
 
@@ -99,9 +104,7 @@ async def try_cache(query_text, current_user, db, ip_address, user_agent, start_
                     "response": generated_text,
                     "decision": "qa_cache",
                     "qa_score": qa_score,
-                    "ctx_validation": qa_score,
-                    "queries_used": None,
-                    "queries_limit": None
+                    "ctx_validation": qa_score
                 }
 
     except Exception as e:
@@ -111,7 +114,7 @@ async def try_cache(query_text, current_user, db, ip_address, user_agent, start_
 
 
 # ----------------------------
-# AUTO-CACHE DE RESPUESTAS
+# AUTO-CACHE DE RESPUESTAS (SIN CAMBIOS)
 # ----------------------------
 async def auto_cache(question, answer, context_text, top_scores):
     try:
@@ -145,7 +148,7 @@ async def auto_cache(question, answer, context_text, top_scores):
 
 
 # ----------------------------
-# LOG FINAL DE PREGUNTAS
+# LOG FINAL DE PREGUNTAS (SIN CAMBIOS)
 # ----------------------------
 async def log_final(
     question,
@@ -160,25 +163,16 @@ async def log_final(
     grounding_score: float = 0.0,
     decision: str | None = None
 ):
-    """
-    Guarda la pregunta/respuesta en DB, soportando:
-    - Preguntas fuera de dominio
-    - Preguntas pendientes
-    - Preguntas procesadas con RAG o Auto-cache
-    """
-
     end_time = time.time()
     response_time_ms = int((end_time - start_time) * 1000)
     tokens_generated = len(answer.split())
 
-    # Determinar decision si no se pasó
     if decision is None:
         if not answer:
             decision = "out_of_domain"
         else:
             decision = "rag_autocached" if was_autocached else "rag"
 
-    # Determinar modelo usado
     if decision == "qa_cache":
         model_used = "cache"
     elif decision == "out_of_domain":

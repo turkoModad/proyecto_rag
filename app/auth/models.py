@@ -1,9 +1,10 @@
 import uuid
-from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Text, Integer, Float
+from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Text, Integer, Float, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.auth.database import Base
+from datetime import datetime, timezone
 
 
 class User(Base):
@@ -60,3 +61,25 @@ class OTPLog(Base):
     email = Column(String(255), nullable=True)        
     purpose = Column(String(50), nullable=True)        
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class AccessLog(Base):
+    __tablename__ = "access_logs"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    ip_address = Column(String(255), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    method = Column(String(10), nullable=False) 
+    endpoint = Column(String(255), nullable=False)
+    status_code = Column(Integer, nullable=False)
+    user_agent = Column(String(255), nullable=True)
+    referer = Column(String(255), nullable=True)
+    response_time_ms = Column(Integer, nullable=True)
+    timestamp = Column(DateTime(timezone=True), server_default=func.now())
+    cf_country = Column(String(2), nullable=True)
+
+    __table_args__ = (
+        Index('idx_access_logs_ip', 'ip_address'),
+        Index('idx_access_logs_timestamp', 'timestamp'),
+        Index('idx_access_logs_endpoint', 'endpoint'),
+    )

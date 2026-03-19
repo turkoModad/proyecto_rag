@@ -1,5 +1,5 @@
 import os
-from fastapi import APIRouter, Depends, HTTPException, Response, Request
+from fastapi import APIRouter, Depends, HTTPException, Response, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import FileResponse, JSONResponse
@@ -12,13 +12,20 @@ from app.auth.service import (
     authenticate_user,
     log_otp,
     get_user_by_token,
-    get_user_by_email
+    get_user_by_email, 
+    get_user_by_id
 )
-from app.auth.jwt_handler import create_access_token, create_refresh_token
+from app.auth.jwt_handler import create_access_token, create_refresh_token, ACCESS_EXPIRE_MINUTES, REFRESH_EXPIRE_DAYS, verify_token
 from app.service.otp_service import check_otp_rate_limit
 from email_service.email_sender import enviar_otp
 from app.auth.security import hash_otp, verify_otp
 from app.core.security import hash_email
+import logging
+
+
+logger = logging.getLogger("rou")
+
+
 
 AUTH_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(os.path.dirname(AUTH_DIR))
@@ -225,20 +232,83 @@ def _set_auth_cookies(response: Response, access: str, refresh: str):
     cookie_config = {
         "httponly": True,
         "secure": True,
-        "samesite": "Lax",
-        "path": "/"
+        "samesite": "Strict", 
+        "path": "/",
+        "domain": None  
     }
 
     response.set_cookie(
         key="access_token",
         value=access,
-        max_age=60 * 15,
+        max_age=ACCESS_EXPIRE_MINUTES * 60,  
         **cookie_config
     )
 
     response.set_cookie(
         key="refresh_token",
         value=refresh,
-        max_age=60 * 60 * 24 * 7,
+        max_age=REFRESH_EXPIRE_DAYS * 24 * 60 * 60,  
         **cookie_config
     )
+
+
+@router.post("/refresh")
+async def refresh_token(
+    request: Request,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Renueva el access token usando el refresh token
+    """
+    refresh_token = request.cookies.get("refresh_token")
+    ip_address = get_real_ip(request)
+    
+    logger.info(f" INTENTO DE REFRESH | IP: {ip_address}")
+    
+    if not refresh_token:
+        logger.warning(f" REFRESH SIN TOKEN | IP: {ip_address}")
+        raise HTTPException(status_code=401, detail="No refresh token provided")
+    
+    # Verificar refresh token
+    payload = verify_token(refresh_token)
+    
+    if payload.get("type") != "refresh" or "error" in payload:
+        logger.warning(f" REFRESH TOKEN INVÁLIDO | IP: {ip_address} | Error: {payload.get('error', 'unknown')}")
+        response = JSONResponse(status_code=401, content={"detail": "Invalid refresh token"})
+        _clear_auth_cookies(response)
+        return response    
+
+    user_id = payload.get("sub")
+    logger.info(f" REFRESH TOKEN VÁLIDO | Usuario: {user_id} | IP: {ip_address}")
+    
+    # Obtener usuario de la base de datos
+    user = await get_user_by_id(db, user_id)
+    
+    if not user or user.is_blocked:
+        logger.warning(f" USUARIO NO VÁLIDO PARA REFRESH | ID: {user_id} | IP: {ip_address}")
+        response = JSONResponse(status_code=401, content={"detail": "User not found or blocked"})
+        _clear_auth_cookies(response)
+        return response
+    
+    # Crear NUEVOS tokens (rotación)
+    new_access = create_access_token(str(user.id), user.role)
+    new_refresh = create_refresh_token(str(user.id))
+    
+    logger.info(f"TOKENS RENOVADOS | Usuario: {user.email} | ID: {user.id} | IP: {ip_address}")
+    
+    response = JSONResponse({"message": "Tokens refreshed successfully"})
+    _set_auth_cookies(response, new_access, new_refresh)
+    
+    return response
+
+
+def _clear_auth_cookies(response: Response):
+    """Limpia las cookies de autenticación"""
+    cookie_config = {
+        "httponly": True,
+        "secure": True,
+        "samesite": "Lax",
+        "path": "/"
+    }
+    response.delete_cookie("access_token", **cookie_config)
+    response.delete_cookie("refresh_token", **cookie_config)

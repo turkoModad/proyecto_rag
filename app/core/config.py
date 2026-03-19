@@ -93,3 +93,10 @@ SYSTEM_PROMPT = (
     "Si el contexto no alcanza para responder con certeza, respondé exactamente:\n"
     "\"No puedo responder con certeza con la información disponible. Por favor, reformule la pregunta usando términos claros y concretos sobre normas de tránsito.\""
 )
+
+
+# 7. SEGURIDAD Y RATE LIMITING
+RATE_LIMIT_REQUESTS_PER_MINUTE = 60  # Máximo 60 requests por minuto por IP
+RATE_LIMIT_WINDOW_MINUTES = 1        # Ventana de 1 minuto
+BLOCK_DURATION_MINUTES = 15          # Bloquear IP por 15 minutos
+MAX_FAILED_ATTEMPTS = 10              # Máximo intentos fallidos antes de bloqueo

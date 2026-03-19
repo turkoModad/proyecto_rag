@@ -8,29 +8,31 @@ logger = logging.getLogger("JWT")
 
 
 ALGORITHM = "HS256"
-ACCESS_EXPIRE_MINUTES = 240
-REFRESH_EXPIRE_DAYS = 7
+ACCESS_EXPIRE_MINUTES = 15
+REFRESH_EXPIRE_DAYS = 1
 
 
 def create_access_token(user_id: str, role: str):
     now = datetime.now(timezone.utc)
+    expires = now + timedelta(minutes=ACCESS_EXPIRE_MINUTES)
     payload = {
         "sub": str(user_id),
         "role": role,
         "type": "access",
         "iat": now,
-        "exp": now + timedelta(minutes=ACCESS_EXPIRE_MINUTES)
+        "exp": expires
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=ALGORITHM)
 
 
 def create_refresh_token(user_id: str):
     now = datetime.now(timezone.utc)
+    expires = now + timedelta(days=REFRESH_EXPIRE_DAYS)
     payload = {
         "sub": str(user_id),
         "type": "refresh",
         "iat": now,
-        "exp": now + timedelta(days=REFRESH_EXPIRE_DAYS)
+        "exp": expires
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=ALGORITHM)
 
@@ -42,11 +44,12 @@ def verify_token(token: str):
     """
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[ALGORITHM])
-        logger.debug(f"Token verified successfully for user: {payload.get('sub')}")
         return payload
+        
     except jwt.ExpiredSignatureError:
-        logger.debug("Token expired")
+        logger.warning(f"TOKEN EXPIRADO | Token: {token[:15]}...")
         return {"error": "Token expirado"}
+    
     except jwt.InvalidTokenError as e:
-        logger.debug(f"Invalid token: {e}")
+        logger.warning(f"TOKEN INVÁLIDO | Error: {e}")
         return {"error": "Token inválido"}

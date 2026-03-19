@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Request, Depends, HTTPException
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, model_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user, get_db
@@ -46,17 +47,40 @@ async def process_query(
 
     try:
         # -----------------------------
-        # CONTROL DE USO
+        # CONTROL DE USO (MODIFICADO)
         # -----------------------------
         if current_user is None:
-            queries_used = await qa_cache.check_anonymous_limit(db, ip_address)
-            queries_limit = LIMITE_SIN_AUTH
+            limit_info = await qa_cache.check_anonymous_limit(db, ip_address)
         else:
-            queries_used = await qa_cache.check_user_limit(db, current_user)
-            queries_limit = LIMITE_CON_AUTH
-
-        if queries_used is None:
-            queries_used = 0
+            limit_info = await qa_cache.check_user_limit(db, current_user)
+        
+        # Verificar si excedió el límite
+        if limit_info["is_limited"]:
+            logger.warning(f"Límite excedido para IP {ip_address if not current_user else current_user['sub']}")
+            
+            # Loggear el intento fallido (pero no contar como consulta válida)
+            await qa_cache.log_final(
+                question=query.text,
+                answer="Límite de consultas alcanzado",
+                current_user=current_user,
+                db=db,
+                ip_address=ip_address,
+                user_agent=user_agent,
+                start_time=start_time,
+                decision="limit_exceeded"
+            )
+            
+            return JSONResponse(
+                status_code=429,
+                content={
+                    "question": query.text,
+                    "response": f"Has alcanzado el límite de {limit_info['limit']} consultas.",
+                    "decision": "limit_exceeded",
+                    "queries_used": limit_info["count"],
+                    "queries_limit": limit_info["limit"],
+                    "remaining": 0
+                }
+            )
 
         # -----------------------------
         # CACHE PREVIO
@@ -65,21 +89,16 @@ async def process_query(
             query.text, current_user, db, ip_address, user_agent, start_time
         )
         
-        # -----------------------------
-        # DEBUG CACHE
-        # -----------------------------
         if cached:
-            logger.info("========== QA CACHE DEBUG ==========")
-            logger.info(f"PREGUNTA USUARIO: {query.text}")
-
             try:
                 logger.info(f"RESPUESTA CACHE: {cached.get('response')}")
             except Exception:
                 logger.info("No se pudo leer respuesta cache")
-
-            logger.info("====================================")
-
-            return cached
+            
+            # Agregar info de límites a la respuesta cache
+            cached["queries_used"] = limit_info["count"] + 1
+            cached["queries_limit"] = limit_info["limit"]
+            cached["remaining"] = limit_info["remaining"] - 1 if limit_info["remaining"] is not None else None
 
         # -----------------------------
         # CLASIFICADOR DE DOMINIO
@@ -92,10 +111,9 @@ async def process_query(
         # RESPUESTA PARA PREGUNTAS FUERA DE DOMINIO
         # -----------------------------
         if not in_domain:
-            # Guardar la pregunta fuera de dominio antes de retornar
             await qa_cache.log_final(
                 question=query.text,
-                answer="La pregunta está fuera del dominio legal de tránsito.",
+                answer="Lo siento, solo puedo responder preguntas relacionadas con la Ley de Tránsito (24.449) y sus normas complementarias. Tu consulta parece tratar sobre otro tema. Si crees que me equivoqué, por favor intenta redactar tu pregunta de nuevo dándome más detalles sobre la situación vial que te interesa.",
                 current_user=current_user,
                 db=db,
                 ip_address=ip_address,
@@ -109,11 +127,12 @@ async def process_query(
 
             return {
                 "question": query.text,
-                "response": "La pregunta está fuera del dominio legal de tránsito.",
+                "response": "Lo siento, solo puedo responder preguntas relacionadas con la Ley de Tránsito (24.449) y sus normas complementarias. Tu consulta parece tratar sobre otro tema. Si crees que me equivoqué, por favor intenta redactar tu pregunta de nuevo dándome más detalles sobre la situación vial que te interesa.",
                 "is_domain": False,
                 "decision": "out_of_domain",
-                "queries_used": queries_used + 1,
-                "queries_limit": queries_limit
+                "queries_used": limit_info["count"] + 1,
+                "queries_limit": limit_info["limit"],
+                "remaining": limit_info["remaining"] - 1 if limit_info["remaining"] is not None else None
             }
 
         # -----------------------------
@@ -128,18 +147,14 @@ async def process_query(
         # DEBUG CONTEXTO RECUPERADO
         # -----------------------------
         logger.info("========== RAG CONTEXT DEBUG ==========")
-        logger.info(f"PREGUNTA: {query.text}")
         logger.info(f"SCORES: {top_scores}")
         logger.info(f"Tamaño contexto LLM: {len(context_text)} caracteres")
-
         if context_text:
             logger.info("CONTEXTO RECUPERADO:")
             for i, chunk in enumerate(context_text.split("\n\n"), 1):
-                logger.info(f"[CTX {i}] {chunk}")
+                logger.info(f"[CTX {i}] {chunk[:200]}...") 
         else:
             logger.info("CONTEXTO VACÍO")
-
-        logger.info("=======================================")
 
         # -----------------------------
         # LLM
@@ -183,7 +198,7 @@ async def process_query(
             )
         except Exception as log_error:
             logger.warning(f"No se pudo loguear la respuesta generada: {log_error}")
-
+        
         # -----------------------------
         # RETORNAR RESPUESTA FINAL
         # -----------------------------
@@ -192,13 +207,13 @@ async def process_query(
             "response": generated_text,
             "is_domain": True,
             "decision": "rag_autocached" if was_autocached else "rag",
-            "queries_used": queries_used + 1,
-            "queries_limit": queries_limit
+            "queries_used": limit_info["count"] + 1,
+            "queries_limit": limit_info["limit"],
+            "remaining": limit_info["remaining"] - 1 if limit_info["remaining"] is not None else None
         }
 
     except HTTPException:
         raise
-
     except Exception as e:
         logger.error(f"Error no controlado en /ask: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
