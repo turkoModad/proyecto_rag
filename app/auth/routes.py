@@ -263,52 +263,123 @@ async def refresh_token(
     refresh_token = request.cookies.get("refresh_token")
     ip_address = get_real_ip(request)
     
-    logger.info(f" INTENTO DE REFRESH | IP: {ip_address}")
-    
+    # ============================================
+    # PASO 1: Verificar existencia del token
+    # ============================================
     if not refresh_token:
-        logger.warning(f" REFRESH SIN TOKEN | IP: {ip_address}")
         raise HTTPException(status_code=401, detail="No refresh token provided")
     
-    # Verificar refresh token
+    # ============================================
+    # PASO 2: Verificar validez del token
+    # ============================================
     payload = verify_token(refresh_token)
     
-    if payload.get("type") != "refresh" or "error" in payload:
-        logger.warning(f" REFRESH TOKEN INVÁLIDO | IP: {ip_address} | Error: {payload.get('error', 'unknown')}")
-        response = JSONResponse(status_code=401, content={"detail": "Invalid refresh token"})
-        _clear_auth_cookies(response)
-        return response    
-
-    user_id = payload.get("sub")
-    logger.info(f" REFRESH TOKEN VÁLIDO | Usuario: {user_id} | IP: {ip_address}")
-    
-    # Obtener usuario de la base de datos
-    user = await get_user_by_id(db, user_id)
-    
-    if not user or user.is_blocked:
-        logger.warning(f" USUARIO NO VÁLIDO PARA REFRESH | ID: {user_id} | IP: {ip_address}")
-        response = JSONResponse(status_code=401, content={"detail": "User not found or blocked"})
+    # Verificar si hay error en el payload
+    if "error" in payload:
+        error_msg = payload.get("error")
+        
+        if error_msg == "Token expirado":
+            logger.warning(f"   El refresh token expiró después de {REFRESH_EXPIRE_DAYS} días")
+        
+        response = JSONResponse(
+            status_code=401, 
+            content={"detail": f"Invalid refresh token: {error_msg}"}
+        )
         _clear_auth_cookies(response)
         return response
     
-    # Crear NUEVOS tokens (rotación)
-    new_access = create_access_token(str(user.id), user.role)
-    new_refresh = create_refresh_token(str(user.id))
+    # Verificar que sea refresh token (no access)
+    token_type = payload.get("type")
+    if token_type != "refresh":
+        response = JSONResponse(
+            status_code=401, 
+            content={"detail": "Invalid token type"}
+        )
+        _clear_auth_cookies(response)
+        return response
     
-    logger.info(f"TOKENS RENOVADOS | Usuario: {user.email} | ID: {user.id} | IP: {ip_address}")
+    user_id = payload.get("sub")
+    exp_timestamp = payload.get("exp")
+    exp_date = datetime.fromtimestamp(exp_timestamp, timezone.utc) if exp_timestamp else "unknown"
     
-    response = JSONResponse({"message": "Tokens refreshed successfully"})
-    _set_auth_cookies(response, new_access, new_refresh)
+    # ============================================
+    # PASO 3: Obtener usuario de la BD
+    # ============================================
+    user = await get_user_by_id(db, user_id)
+    
+    if not user:
+        response = JSONResponse(
+            status_code=401, 
+            content={"detail": "User not found"}
+        )
+        _clear_auth_cookies(response)
+        return response
+        
+    if user.is_blocked:
+        response = JSONResponse(
+            status_code=403, 
+            content={"detail": "User blocked"}
+        )
+        _clear_auth_cookies(response)
+        return response
+    
+    # ============================================
+    # PASO 4: Crear nuevos tokens
+    # ============================================
+    try:
+        new_access = create_access_token(str(user.id), user.role)
+        new_refresh = create_refresh_token(str(user.id))
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Error creating tokens")
+    
+    # ============================================
+    # PASO 5: Configurar cookies y respuesta
+    # ============================================
+    response = JSONResponse({
+        "message": "Tokens refreshed successfully",
+        "user_id": str(user.id),
+        "email": user.email,
+        "role": user.role
+    })
+    
+    cookie_config = {
+        "httponly": True,
+        "secure": True,  
+        "samesite": "Lax",
+        "path": "/",
+        "domain": None  
+    }
+    
+    access_max_age = ACCESS_EXPIRE_MINUTES * 60
+    refresh_max_age = REFRESH_EXPIRE_DAYS * 24 * 60 * 60
+        
+    response.set_cookie(
+        key="access_token",
+        value=new_access,
+        max_age=access_max_age,
+        **cookie_config
+    )
+    
+    response.set_cookie(
+        key="refresh_token",
+        value=new_refresh,
+        max_age=refresh_max_age,
+        **cookie_config
+    )
     
     return response
 
 
 def _clear_auth_cookies(response: Response):
-    """Limpia las cookies de autenticación"""
+    """Limpia las cookies de autenticación con logs"""
+    
     cookie_config = {
         "httponly": True,
         "secure": True,
         "samesite": "Lax",
         "path": "/"
     }
+    
     response.delete_cookie("access_token", **cookie_config)
     response.delete_cookie("refresh_token", **cookie_config)

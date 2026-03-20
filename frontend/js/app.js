@@ -31,19 +31,56 @@ input.disabled = true;
 button.disabled = true;
 
 // =========================
-// FUNCIÓN DE REFRESH TOKEN (NUEVA)
+// VARIABLES PARA CONTROL DE REFRESH
 // =========================
+let isRefreshing = false;
+let refreshSubscribers = [];
+
+function onRefreshComplete(success) {
+    refreshSubscribers.forEach(callback => callback(success));
+    refreshSubscribers = [];
+}
+
 async function refreshToken() {
+    if (isRefreshing) {
+        return new Promise(resolve => {
+            refreshSubscribers.push(resolve);
+        });
+    }
+
+    isRefreshing = true;
+    
     try {
         const response = await fetch("/auth/refresh", {
             method: "POST",
             credentials: "include"
         });
-        return response.ok;
+
+        const success = response.ok;
+        onRefreshComplete(success);
+        return success;
     } catch (error) {
-        console.error("Error en refresh:", error);
+        onRefreshComplete(false);
         return false;
+    } finally {
+        isRefreshing = false;
     }
+}
+
+async function fetchWithAuth(url, options = {}) {
+    let response = await fetch(url, { ...options, credentials: "include" });
+    
+    if (response.status === 401) {
+        const refreshSuccess = await refreshToken();
+        
+        if (refreshSuccess) {
+            response = await fetch(url, { ...options, credentials: "include" });
+        } else {
+            window.location.replace("/frontend/login.html");
+            throw new Error("Sesión expirada");
+        }
+    }
+    return response;
 }
 
 // =========================
@@ -54,7 +91,6 @@ function hideWelcome(){
 }
 
 function addMessage(text, type, typing=false){
-
     if (chat.children.length <= 2) hideWelcome();
 
     const div = document.createElement("div");
@@ -80,7 +116,6 @@ function addMessage(text, type, typing=false){
 // CONTADOR
 // =========================
 function updateCounter(used, limit, logged, unlimited){
-
     if (!queryCountEl || !limitEl || !labelEl) return;
 
     if (unlimited){
@@ -106,7 +141,6 @@ function updateCounter(used, limit, logged, unlimited){
 // STATUS
 // =========================
 function updateStatus(logged){
-
     if (!statusEl) return;
 
     if (logged){
@@ -122,11 +156,8 @@ function updateStatus(logged){
 // CTA
 // =========================
 function updateCTA(show, text){
-
     if (!ctaSection) return;
-
     ctaSection.style.display = show ? "block" : "none";
-
     if (ctaTitle && text){
         ctaTitle.textContent = text;
     }
@@ -144,7 +175,6 @@ function toggleInputs(enabled){
 // AUTH BUTTONS
 // =========================
 function updateAuthButtons(logged){
-
     const loginBtn = document.querySelector(".login-btn");
     const registerBtn = document.querySelector(".register-btn");
     const accountBtn = document.querySelector(".account-btn");
@@ -152,7 +182,6 @@ function updateAuthButtons(logged){
     if (loginBtn) loginBtn.style.display = logged ? "none" : "inline-block";
     if (registerBtn) registerBtn.style.display = logged ? "none" : "inline-block";
     if (accountBtn) accountBtn.style.display = logged ? "inline-block" : "none";
-
     if (logoutBtn) logoutBtn.style.display = logged ? "inline-block" : "none";
 }
 
@@ -160,12 +189,12 @@ function updateAuthButtons(logged){
 // LOAD USAGE
 // =========================
 async function loadUsage(){
-
     try{
+        const res = await fetchWithAuth("/usage", { method: "GET" });
 
-        const res = await fetch("/usage",{credentials:"include"});
-
-        if(!res.ok) throw new Error("usage error");
+        if (!res.ok) {
+            throw new Error("Error en usage");
+        }
 
         const data = await res.json();
 
@@ -180,31 +209,20 @@ async function loadUsage(){
         updateStatus(isLogged);
         updateAuthButtons(isLogged);
 
-        // =========================
-        // LÓGICA PRINCIPAL
-        // =========================
         if(isLogged){
-
             updateCTA(false);
-
-            //  PREMIUM / ADMIN
             if(isUnlimited){
                 toggleInputs(true);
                 return;
             }
-
-            //  USUARIO FREE
             if(used >= limit){
                 toggleInputs(false);
                 updateCTA(true,"¿Querés seguir consultando?");
             }else{
                 toggleInputs(true);
             }
-
         }else{
-
             const remaining = Math.max(limit - used, 0);
-
             if(remaining > 0){
                 toggleInputs(true);
                 updateCTA(true,`Podés realizar hasta ${limit} consultas sin loguearte`);
@@ -212,24 +230,19 @@ async function loadUsage(){
                 toggleInputs(false);
                 updateCTA(true,"¿Querés seguir consultando?");
             }
-
         }
 
     }catch(err){
-
-        console.error("Error usage:",err);
-
+        console.error("Error usage:", err);
         toggleInputs(false);
-
-        if(statusEl) statusEl.textContent="Error conexión";
+        if(statusEl) statusEl.textContent = "Error conexión";
     }
 }
 
 // =========================
-// SEND QUESTION (MODIFICADO)
+// SEND QUESTION
 // =========================
 async function sendQuestion(){
-
     const question = input.value.trim();
     if(!question) return;
 
@@ -239,38 +252,11 @@ async function sendQuestion(){
     addMessage("","bot",true);
 
     try{
-
-        let response = await fetch("/ask",{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            credentials:"include",
-            body:JSON.stringify({text:question})
+        const response = await fetchWithAuth("/ask", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({text: question})
         });
-
-        // =========================
-        // NUEVO: MANEJO DE 401 CON REFRESH
-        // =========================
-        if (response.status === 401) {
-            console.log("Token expirado, intentando refresh...");
-            
-            // Intentar refresh
-            const refreshOk = await refreshToken();
-            
-            if (refreshOk) {
-                console.log("Refresh exitoso, reintentando pregunta...");
-                // Reintentar la pregunta original
-                response = await fetch("/ask",{
-                    method:"POST",
-                    headers:{"Content-Type":"application/json"},
-                    credentials:"include",
-                    body:JSON.stringify({text:question})
-                });
-            } else {
-                console.log("Refresh falló, redirigiendo a login...");
-                window.location.replace("/frontend/login.html");
-                return;
-            }
-        }
 
         if(chat.lastChild?.classList.contains("typing")){
             chat.removeChild(chat.lastChild);
@@ -278,41 +264,29 @@ async function sendQuestion(){
 
         let data={};
         try{
-            data=await response.json();
+            data = await response.json();
         }catch{}
 
-        // =========================
-        // ERRORES DE LÍMITE / AUTH
-        // =========================
-        if(response.status===401 || response.status===403){
-
-            const message =
-                typeof data.detail==="object"
-                ? data.detail.message
-                : data.detail;
-
-            addMessage(message || "Límite alcanzado.","bot");
-
+        if(response.status === 401 || response.status === 403){
+            const message = typeof data.detail === "object" ? data.detail.message : data.detail;
+            addMessage(message || "Límite alcanzado.", "bot");
             await loadUsage();
             return;
         }
 
         if(!response.ok){
-            addMessage("Error en el servidor.","bot");
+            addMessage("Error en el servidor.", "bot");
             return;
         }
 
-        addMessage(data.response || "Sin respuesta","bot");
-
+        addMessage(data.response || "Sin respuesta", "bot");
         await loadUsage();
 
     }catch(err){
-
         if(chat.lastChild?.classList.contains("typing")){
             chat.removeChild(chat.lastChild);
         }
-
-        addMessage("Error de conexión con el servidor.","bot");
+        addMessage("Error de conexión con el servidor.", "bot");
         console.error(err);
     }
 }
@@ -321,42 +295,34 @@ async function sendQuestion(){
 // LOGOUT
 // =========================
 async function logout(){
-
     try{
-
-        const res = await fetch("/auth/logout",{
-            method:"POST",
-            credentials:"include"
+        const res = await fetch("/auth/logout", {
+            method: "POST",
+            credentials: "include"
         });
-
         if(!res.ok){
             console.error("Error logout");
             return;
         }
-
         window.location.replace("/frontend/login.html");
-
     }catch(err){
-        console.error("Error logout:",err);
+        console.error("Error logout:", err);
     }
 }
 
 // =========================
-// EVENTS
+// EVENTOS
 // =========================
-button.addEventListener("click",sendQuestion);
-
-input.addEventListener("keypress",(e)=>{
-    if(e.key==="Enter") sendQuestion();
+button.addEventListener("click", sendQuestion);
+input.addEventListener("keypress", (e) => {
+    if(e.key === "Enter") sendQuestion();
 });
 
 if(logoutBtn){
-    logoutBtn.addEventListener("click",logout);
+    logoutBtn.addEventListener("click", logout);
 }
 
 // INIT
 loadUsage();
-
-console.log("Asistente Vial listo");
 
 });

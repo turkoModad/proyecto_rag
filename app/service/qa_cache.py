@@ -38,7 +38,6 @@ async def check_user_limit(db, current_user: dict):
     Verifica límite para usuarios autenticados
     Retorna dict con información del límite
     """
-    logger.info(f"CHECK USER LIMIT - User: {current_user.get('sub')}, Role: {current_user.get('role')}")
     # Usuarios admin o premium no tienen límite
     if current_user["role"] != "free":
         return {

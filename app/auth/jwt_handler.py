@@ -8,7 +8,7 @@ logger = logging.getLogger("JWT")
 
 
 ALGORITHM = "HS256"
-ACCESS_EXPIRE_MINUTES = 15
+ACCESS_EXPIRE_MINUTES = 1
 REFRESH_EXPIRE_DAYS = 1
 
 
@@ -22,7 +22,8 @@ def create_access_token(user_id: str, role: str):
         "iat": now,
         "exp": expires
     }
-    return jwt.encode(payload, JWT_SECRET, algorithm=ALGORITHM)
+    token = jwt.encode(payload, JWT_SECRET, algorithm=ALGORITHM)
+    return token
 
 
 def create_refresh_token(user_id: str):
@@ -34,7 +35,8 @@ def create_refresh_token(user_id: str):
         "iat": now,
         "exp": expires
     }
-    return jwt.encode(payload, JWT_SECRET, algorithm=ALGORITHM)
+    token = jwt.encode(payload, JWT_SECRET, algorithm=ALGORITHM)
+    return token
 
 
 def verify_token(token: str):
@@ -42,14 +44,13 @@ def verify_token(token: str):
     Verifica un token JWT.
     Retorna el payload si es válido, o un diccionario con error si no.
     """
+    
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[ALGORITHM])
         return payload
         
     except jwt.ExpiredSignatureError:
-        logger.warning(f"TOKEN EXPIRADO | Token: {token[:15]}...")
         return {"error": "Token expirado"}
     
     except jwt.InvalidTokenError as e:
-        logger.warning(f"TOKEN INVÁLIDO | Error: {e}")
         return {"error": "Token inválido"}
