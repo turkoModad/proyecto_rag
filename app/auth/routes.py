@@ -63,8 +63,11 @@ async def register(request: Request, user: UserCreate, db: AsyncSession = Depend
     if existing:
         raise HTTPException(400, "Usuario ya existe")
 
-    # Crear usuario y obtener hash determinístico de email
-    new_user, email_hash = await create_user(db, user.email, user.password)
+    try:
+        # Crear usuario y obtener hash determinístico de email
+        new_user, email_hash = await create_user(db, user.email, user.password)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
 
     # Generar OTP y token seguro
     otp_data = enviar_otp(user.email)

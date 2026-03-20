@@ -11,6 +11,8 @@ from app.core.security import hash_email
 
 logger = logging.getLogger("email_service")
 logger.setLevel(logging.INFO)
+
+
 if not logger.handlers:
     handler = logging.StreamHandler()
     formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s")
@@ -69,7 +71,7 @@ def enviar_otp(receiver_email: str) -> dict:
     """
     otp = generar_otp()
     token = generar_token_verificacion()
-    email_hash = hash_email(receiver_email)  # Para logs y auditoría
+    email_hash = hash_email(receiver_email)  
 
     verify_link = f"{BASE_URL}/auth/verify?token={token}"
 
@@ -99,8 +101,6 @@ def enviar_otp(receiver_email: str) -> dict:
     """
 
     masked_email = _mask_email(receiver_email)
-    logger.info(f"Generando OTP y token de verificación para {masked_email} (hash: {email_hash})")
-
     enviado = enviar_email(receiver_email, "Código OTP de Verificación", html_body)
     if enviado:
         logger.info(f"OTP y token enviados exitosamente a {masked_email}")

@@ -1,4 +1,5 @@
 import logging
+import re
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.models import User, QueryLog, OTPLog
@@ -183,3 +184,47 @@ async def get_user_by_id(db: AsyncSession, user_id: str):
     except Exception as e:
         logger.error(f"Error al buscar usuario por ID {user_id}: {e}")
         return None
+
+
+def validate_password_strength(password: str) -> tuple[bool, str]:
+    """
+    Valida que la contraseña tenga:
+    - Mínimo 8 caracteres
+    - Al menos una letra mayúscula
+    - Al menos un número
+    - Al menos un carácter especial
+    """
+    if len(password) < 8:
+        return False, "La contraseña debe tener al menos 8 caracteres"
+    if not re.search(r"[A-Z]", password):
+        return False, "La contraseña debe contener al menos una letra mayúscula"
+    if not re.search(r"\d", password):
+        return False, "La contraseña debe contener al menos un número"
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+        return False, "La contraseña debe contener al menos un carácter especial"
+    return True, ""
+
+
+async def create_user(db: AsyncSession, email: str, password: str):
+    """
+    Crea un usuario, devuelve objeto y hash determinístico de email usado para búsquedas/OTP
+    """
+    is_valid, msg = validate_password_strength(password)
+    if not is_valid:
+        raise ValueError(msg)  
+
+    encrypted_email = encrypt_value(email)   
+    email_hashed = hash_email(email)         
+    hashed_password = hash_password(password)
+    
+    new_user = User(
+        email=encrypted_email,
+        email_hash=email_hashed,
+        password_hash=hashed_password,
+        is_verified=False,
+        is_blocked=False,
+        otp_attempts=0
+    )
+    db.add(new_user)
+    await db.flush()  
+    return new_user, email_hashed

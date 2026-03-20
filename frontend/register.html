@@ -5,19 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
 <title>Registro - Asistente Vial</title>
-<link rel="stylesheet" href="/frontend/css/auth.css?v=1.0.1">
+<link rel="stylesheet" href="/frontend/css/auth.css?v=1.0.6">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-.password-wrapper { position: relative; }
-.password-toggle {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    user-select: none;
-}
-</style>
+
 </head>
 <body>
 
@@ -42,21 +32,41 @@
 <span class="password-toggle" id="togglePassword">👁️</span>
 </div>
 
+<!-- Contenedor de requisitos de contraseña -->
+<div class="requirements-container" id="requirementsContainer">
+    <div class="requirement" id="req-length">
+        <span class="icon">❌</span>
+        <span class="text">Mínimo 8 caracteres</span>
+    </div>
+    <div class="requirement" id="req-uppercase">
+        <span class="icon">❌</span>
+        <span class="text">Una letra mayúscula</span>
+    </div>
+    <div class="requirement" id="req-number">
+        <span class="icon">❌</span>
+        <span class="text">Un número</span>
+    </div>
+    <div class="requirement" id="req-special">
+        <span class="icon">❌</span>
+        <span class="text">Un carácter especial (!@#$%^&*)</span>
+    </div>
+</div>
+
+<div class="password-strength" id="strengthMessage"></div>
+
 <div class="form-group password-wrapper">
 <label>Confirmar contraseña</label>
 <input type="password" id="password2" placeholder="••••••••" required>
 <span class="password-toggle" id="togglePassword2">👁️</span>
-<span id="passError" style="color:red;font-size:0.8rem;display:none;">Las contraseñas no coinciden</span>
 </div>
+<div id="passError" style="color:#e74c3c; font-size:0.75rem; margin-top:5px; display:none;">❌ Las contraseñas no coinciden</div>
 
 <button type="submit" class="auth-btn">Registrarse</button>
 </form>
 
 <div class="auth-footer">
-<span>¿Ya tienes cuenta?</span>
-<a href="/frontend/login.html" class="auth-btn" style="color: white;">
-Iniciar sesión
-</a>
+    <p style="margin-bottom: 10px; color: #666;">¿Ya tienes cuenta?</p>
+    <a href="/frontend/login.html">Iniciar sesión</a>
 </div>
 
 </div>
@@ -76,12 +86,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const toggle1 = document.getElementById("togglePassword");
     const toggle2 = document.getElementById("togglePassword2");
     const error = document.getElementById("passError");
+    const strengthMessage = document.getElementById("strengthMessage");
+    
+    // Elementos de requisitos
+    const reqLength = document.getElementById("req-length");
+    const reqUppercase = document.getElementById("req-uppercase");
+    const reqNumber = document.getElementById("req-number");
+    const reqSpecial = document.getElementById("req-special");
 
     // =========================
-    // VALIDACIÓN CONTRASEÑAS
+    // VALIDACIÓN CONTRASEÑAS IGUALES
     // =========================
     function checkPasswords(){
-        if(pass1.value !== pass2.value){
+        if(pass1.value !== pass2.value && pass2.value !== ""){
             error.style.display = "block";
             return false;
         } else {
@@ -117,12 +134,79 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // =========================
+    // VALIDACIÓN DE FORTALEZA DE CONTRASEÑA
+    // =========================
+    function updatePasswordStrength() {
+        const password = pass1.value;
+        
+        // Validar cada requisito
+        const lengthValid = password.length >= 8;
+        const uppercaseValid = /[A-Z]/.test(password);
+        const numberValid = /\d/.test(password);
+        const specialValid = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+        
+        // Actualizar íconos y colores de requisitos
+        updateRequirement(reqLength, lengthValid, "Mínimo 8 caracteres");
+        updateRequirement(reqUppercase, uppercaseValid, "Una letra mayúscula");
+        updateRequirement(reqNumber, numberValid, "Un número");
+        updateRequirement(reqSpecial, specialValid, "Un carácter especial (!@#$%^&*)");
+        
+        // Calcular fortaleza general
+        const isValid = lengthValid && uppercaseValid && numberValid && specialValid;
+        
+        // Actualizar mensaje de fortaleza
+        if (!password) {
+            strengthMessage.textContent = "";
+            strengthMessage.className = "password-strength";
+        } else if (isValid) {
+            strengthMessage.textContent = "✅ Contraseña segura";
+            strengthMessage.className = "password-strength strong";
+        } else {
+            const missing = [];
+            if (!lengthValid) missing.push("8+ caracteres");
+            if (!uppercaseValid) missing.push("mayúscula");
+            if (!numberValid) missing.push("número");
+            if (!specialValid) missing.push("carácter especial");
+            strengthMessage.textContent = `⚠️ Requiere: ${missing.join(", ")}`;
+            strengthMessage.className = "password-strength weak";
+        }
+        
+        return isValid;
+    }
+    
+    function updateRequirement(element, isValid, text) {
+        if (isValid) {
+            element.classList.add("valid");
+            element.querySelector(".icon").textContent = "✅";
+        } else {
+            element.classList.remove("valid");
+            element.querySelector(".icon").textContent = "❌";
+        }
+    }
+
+    // Escuchar cambios en el campo de contraseña
+    pass1.addEventListener("input", updatePasswordStrength);
+    
+    // Inicializar
+    updatePasswordStrength();
+
+    // =========================
     // REGISTER SUBMIT
     // =========================
     document.getElementById('registerForm').onsubmit = async (e) => {
         e.preventDefault();
 
-        if(!checkPasswords()) return;
+        if(!checkPasswords()) {
+            alert("Las contraseñas no coinciden");
+            return;
+        }
+
+        // Validar fortaleza de contraseña
+        const isValid = updatePasswordStrength();
+        if (!isValid) {
+            alert("La contraseña no cumple los requisitos de seguridad:\n\n• Mínimo 8 caracteres\n• Una letra mayúscula\n• Un número\n• Un carácter especial (!@#$%^&*)");
+            return;
+        }
 
         const email = document.getElementById('email').value;
         const password = pass1.value;
@@ -139,10 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (response.ok) {
                 localStorage.setItem("isLogged", "true");
-
-                // Replace evita volver atrás al register
                 window.location.replace(data.redirect || "/frontend/index.html");
-
             } else {
                 alert(data.detail || "Error al registrarse");
             }

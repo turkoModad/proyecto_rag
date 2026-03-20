@@ -175,3 +175,124 @@ body {
         font-size: 0.95rem;
     }
 }
+
+.password-wrapper { 
+    position: relative; 
+}
+
+.password-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    user-select: none;
+}
+
+.requirements-container {
+    margin-top: 8px;
+    margin-bottom: 15px;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    font-size: 0.75rem;
+}
+
+.requirement {
+    color: #e74c3c;
+    transition: color 0.2s;
+    margin: 3px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.requirement.valid {
+    color: #27ae60;
+}
+
+.requirement .icon {
+    width: 16px;
+    display: inline-block;
+    text-align: center;
+}
+
+.requirement .text {
+    flex: 1;
+}
+
+.password-strength {
+    font-size: 0.75rem;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    background: #f8f9fa;
+}
+
+.password-strength.weak {
+    color: #e74c3c;
+    border-left: 3px solid #e74c3c;
+}
+
+.password-strength.strong {
+    color: #27ae60;
+    border-left: 3px solid #27ae60;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.auth-btn {
+    width: 100%;
+    padding: 12px;
+    background: #2c3e50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.auth-btn:hover {
+    background: #1a2632;
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.auth-footer a {
+    display: inline-block;
+    background: #2c3e50;
+    color: white !important;
+    padding: 8px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background 0.3s;
+    margin-top: 10px;
+}
+
+.auth-footer a:hover {
+    background: #1a2632;
+}
