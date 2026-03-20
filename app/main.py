@@ -10,10 +10,8 @@ import asyncio
 import logging
 import warnings
 from contextlib import asynccontextmanager
-import time
-
 import uvicorn
-from fastapi import FastAPI,  Request
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,6 +24,7 @@ from app.auth.init_db import (
     close_db_connections
 )
 
+from app.service.cleanup_service import scheduled_cleanup
 from app.core.model_loader import cargar_modelos
 from app.core.variables_locales import state
 from app.engine.generator import llm_batch_worker
@@ -41,10 +40,9 @@ from app.routes.ingest_qa import router as ingest_router
 from app.routes.examen import router as examen_router
 from app.middleware.security_middleware import SecurityMiddleware
 from app.core.middleware import AutoRefreshMiddleware
-from app.auth.access_log_service import log_access
-from app.routes.ask import get_real_ip
-from app.auth.dependencies import get_current_user_from_request
 from app.routes import security_monitor
+from app.middleware.seo_middleware import seo_performance_middleware
+
 
 # LOGGING
 logging.basicConfig(level=logging.INFO)
@@ -72,6 +70,7 @@ async def lifespan(app: FastAPI):
         app.state.worker_task = asyncio.create_task(llm_batch_worker())
 
         logger.info("Sistema RAG listo y Worker en ejecución.")
+        app.state.cleanup_task = asyncio.create_task(scheduled_cleanup())
 
     except Exception as e:
         logger.error(f"Fallo crítico en el arranque: {e}", exc_info=True)
@@ -81,6 +80,12 @@ async def lifespan(app: FastAPI):
 
     # SHUTDOWN 
     logger.info("Cerrando servicios...")
+
+    app.state.cleanup_task.cancel()
+    try:
+        await app.state.cleanup_task
+    except asyncio.CancelledError:
+        logger.info("Cleanup detenido correctamente.")
 
     app.state.worker_task.cancel()
     try:
@@ -109,10 +114,14 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
     redirect_slashes=False,
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
 )
 
 app.add_middleware(SecurityMiddleware)
 app.add_middleware(AutoRefreshMiddleware)
+app.middleware("http")(seo_performance_middleware)
 
 
 app.include_router(ask_router)

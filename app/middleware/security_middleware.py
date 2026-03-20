@@ -54,7 +54,7 @@ class InMemoryRateLimiter:
         ips_failed_to_remove = []
         for ip, attempts in self.failed_attempts.items():
             # Si no hay intentos en los últimos 30 min, limpiar
-            if not attempts:  # Vacío
+            if not attempts: 
                 ips_failed_to_remove.append(ip)
         for ip in ips_failed_to_remove:
             del self.failed_attempts[ip]
@@ -72,7 +72,7 @@ class InMemoryRateLimiter:
 
     def is_blocked(self, ip: str) -> Tuple[bool, Optional[str]]:
         """Verifica si una IP está bloqueada"""
-        self._cleanup_old_data()  # Limpieza general
+        self._cleanup_old_data()  
         if ip in self.blocked_ips:
             blocked_until, reason = self.blocked_ips[ip]
             if datetime.now(timezone.utc) < blocked_until:

@@ -97,6 +97,12 @@ SYSTEM_PROMPT = (
 
 # 7. SEGURIDAD Y RATE LIMITING
 RATE_LIMIT_REQUESTS_PER_MINUTE = 60  # Máximo 60 requests por minuto por IP
-RATE_LIMIT_WINDOW_MINUTES = 1        # Ventana de 1 minuto
-BLOCK_DURATION_MINUTES = 15          # Bloquear IP por 15 minutos
-MAX_FAILED_ATTEMPTS = 10              # Máximo intentos fallidos antes de bloqueo
+RATE_LIMIT_WINDOW_MINUTES = 1        
+BLOCK_DURATION_MINUTES = 15          
+MAX_FAILED_ATTEMPTS = 10              
+
+# horarios de limpieza db ip
+CLEANUP_HOURS_LOCAL = [(3, 0), (15, 0),]
+
+# Tiempo de retención de logs (en minutos)
+LOG_RETENTION_MINUTES = 360
