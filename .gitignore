@@ -7,3 +7,4 @@ scripts/
 *.csv
 static/*
 !static/favicon.ico
+!static/site.webmanifest

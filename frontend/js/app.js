@@ -68,21 +68,36 @@ async function refreshToken() {
 }
 
 async function fetchWithAuth(url, options = {}) {
+    // Verificar si tenemos refresh token pero no access token
+    const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+    };
+    
+    const hasRefresh = getCookie('refresh_token') !== null;
+    const hasAccess = getCookie('access_token') !== null;
+    
+    if (hasRefresh && !hasAccess) {
+        console.warn("Access token missing but refresh exists → refreshing before request");
+        const refreshSuccess = await refreshToken();
+        if (!refreshSuccess) {
+            console.warn("Refresh failed, continuing as anonymous");
+        }
+    }
+    
     let response = await fetch(url, { ...options, credentials: "include" });
     
     if (response.status === 401) {
+        console.warn("Access token expirado → intentando refresh");
         const refreshSuccess = await refreshToken();
-        
         if (refreshSuccess) {
             response = await fetch(url, { ...options, credentials: "include" });
-        } else {
-            window.location.replace("/frontend/login.html");
-            throw new Error("Sesión expirada");
         }
     }
     return response;
 }
-
 // =========================
 // UI HELPERS
 // =========================
@@ -240,44 +255,13 @@ async function loadUsage(){
 }
 
 // =========================
-// FUNCIÓN DE VALIDACIÓN DE CONTRASEÑA (NUEVA)
-// =========================
-function validatePasswordStrength(password) {
-    const lengthValid = password.length >= 8;
-    const uppercaseValid = /[A-Z]/.test(password);
-    const numberValid = /\d/.test(password);
-    const specialValid = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-    
-    return lengthValid && uppercaseValid && numberValid && specialValid;
-}
-
-function getPasswordStrengthMessage(password) {
-    if (!password) return "Ingresa una contraseña";
-    const lengthValid = password.length >= 8;
-    const uppercaseValid = /[A-Z]/.test(password);
-    const numberValid = /\d/.test(password);
-    const specialValid = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-    
-    if (lengthValid && uppercaseValid && numberValid && specialValid) {
-        return "Contraseña segura";
-    }
-    
-    const missing = [];
-    if (!lengthValid) missing.push("8+ caracteres");
-    if (!uppercaseValid) missing.push("mayúscula");
-    if (!numberValid) missing.push("número");
-    if (!specialValid) missing.push("carácter especial");
-    
-    return `❌ Requiere: ${missing.join(", ")}`;
-}
-
-// =========================
-// SEND QUESTION
+// SEND QUESTION (MODIFICADO)
 // =========================
 async function sendQuestion(){
     const question = input.value.trim();
     if(!question) return;
 
+    // Bloquear inputs mientras se procesa
     input.disabled = true;
     button.disabled = true;
     const originalButtonText = button.textContent;
@@ -285,10 +269,10 @@ async function sendQuestion(){
 
     addMessage(question,"user");
     input.value="";
-
     addMessage("","bot",true);
 
     try{
+        // ❌ ELIMINADO: await refreshToken().catch(() => {});
         const response = await fetchWithAuth("/ask", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
@@ -329,6 +313,7 @@ async function sendQuestion(){
         await loadUsage();
     } finally {
         button.textContent = originalButtonText;
+        // loadUsage() ya se encarga de habilitar inputs según límites
     }
 }
 
@@ -352,12 +337,6 @@ async function logout(){
 }
 
 // =========================
-// EXPORTAR FUNCIONES PARA USO EXTERNO (opcional)
-// =========================
-window.validatePasswordStrength = validatePasswordStrength;
-window.getPasswordStrengthMessage = getPasswordStrengthMessage;
-
-// =========================
 // EVENTOS
 // =========================
 button.addEventListener("click", sendQuestion);
@@ -369,7 +348,13 @@ if(logoutBtn){
     logoutBtn.addEventListener("click", logout);
 }
 
-// INIT
-loadUsage();
+// =========================
+// INIT CON REFRESH PROACTIVO
+// =========================
+async function initApp(){
+    await loadUsage();
+}
+
+initApp();
 
 });

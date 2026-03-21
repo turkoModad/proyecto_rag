@@ -166,24 +166,17 @@ async def get_user_by_token(db: AsyncSession, token: str):
 
 
 async def get_user_by_id(db: AsyncSession, user_id: str):
-    """
-    Obtiene un usuario por su ID
-    """
     try:
         result = await db.execute(
-            select(User).where(User.id == int(user_id))
+            select(User).where(User.id == user_id) 
         )
         user = result.scalar_one_or_none()
-        
-        if user:
-            logger.debug(f"Usuario encontrado: ID {user_id}")
-        else:
-            logger.debug(f"Usuario no encontrado: ID {user_id}")
-            
         return user
     except Exception as e:
         logger.error(f"Error al buscar usuario por ID {user_id}: {e}")
         return None
+    
+
 
 
 def validate_password_strength(password: str) -> tuple[bool, str]:

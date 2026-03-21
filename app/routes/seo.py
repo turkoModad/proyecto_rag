@@ -51,28 +51,21 @@ def sitemap():
 <url>
 <loc>{BASE_URL}/</loc>
 <lastmod>{TODAY}</lastmod>
-<changefreq>weekly</changefreq>
+<changefreq>daily</changefreq>
 <priority>1.0</priority>
+</url>
+
+<url>
+<loc>{BASE_URL}/examen/</loc>
+<lastmod>{TODAY}</lastmod>
+<changefreq>always</changefreq>
+<priority>0.9</priority>
 </url>
 
 <url>
 <loc>{BASE_URL}/faq/</loc>
 <lastmod>{TODAY}</lastmod>
-<changefreq>monthly</changefreq>
-<priority>0.9</priority>
-</url>
-
-<url>
-<loc>{BASE_URL}/faq/examen/</loc>
-<lastmod>{TODAY}</lastmod>
-<changefreq>monthly</changefreq>
-<priority>0.8</priority>
-</url>
-
-<url>
-<loc>{BASE_URL}/faq/licencias/</loc>
-<lastmod>{TODAY}</lastmod>
-<changefreq>monthly</changefreq>
+<changefreq>weekly</changefreq>
 <priority>0.8</priority>
 </url>
 
@@ -91,17 +84,24 @@ def sitemap():
 </url>
 
 <url>
-<loc>{BASE_URL}/faq/documentacion/</loc>
+<loc>{BASE_URL}/faq/examen/</loc>
 <lastmod>{TODAY}</lastmod>
 <changefreq>monthly</changefreq>
-<priority>0.8</priority>
+<priority>0.7</priority>
 </url>
 
 <url>
-<loc>{BASE_URL}/examen/</loc>
+<loc>{BASE_URL}/faq/licencias/</loc>
 <lastmod>{TODAY}</lastmod>
 <changefreq>monthly</changefreq>
-<priority>0.8</priority>
+<priority>0.7</priority>
+</url>
+
+<url>
+<loc>{BASE_URL}/faq/documentacion/</loc>
+<lastmod>{TODAY}</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
 </url>
 
 </urlset>

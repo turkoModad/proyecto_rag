@@ -235,7 +235,7 @@ def _set_auth_cookies(response: Response, access: str, refresh: str):
     cookie_config = {
         "httponly": True,
         "secure": True,
-        "samesite": "Strict", 
+        "samesite": "Lax", 
         "path": "/",
         "domain": None  
     }

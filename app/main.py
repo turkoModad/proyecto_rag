@@ -39,7 +39,7 @@ from app.routes.faq import router as faq_router
 from app.routes.ingest_qa import router as ingest_router
 from app.routes.examen import router as examen_router
 from app.middleware.security_middleware import SecurityMiddleware
-from app.core.middleware import AutoRefreshMiddleware
+# from app.core.middleware import AutoRefreshMiddleware
 from app.routes import security_monitor
 from app.middleware.seo_middleware import seo_performance_middleware
 
@@ -120,7 +120,7 @@ app = FastAPI(
 )
 
 app.add_middleware(SecurityMiddleware)
-app.add_middleware(AutoRefreshMiddleware)
+# app.add_middleware(AutoRefreshMiddleware)
 app.middleware("http")(seo_performance_middleware)
 
 
