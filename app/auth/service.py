@@ -1,10 +1,12 @@
 import logging
 import re
-from sqlalchemy import select, func
+from sqlalchemy import select, func, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.auth.models import User, QueryLog, OTPLog
+from app.auth.models import User, QueryLog, OTPLog, RefreshToken
 from app.auth.security import hash_password, verify_password
 from app.core.security import encrypt_value, hash_email
+from datetime import datetime, timezone
+from fastapi import Request, Response
 
 
 logger = logging.getLogger("AuthService")
@@ -138,7 +140,6 @@ async def log_otp(db: AsyncSession, email: str, ip_address: str, purpose: str = 
     Registra un OTP enviado.
     Usa hash determinístico de email para búsquedas y limitación de envíos.
     """
-    # Si ya viene hash (por ejemplo desde create_user) lo usamos tal cual
     if '@' in email:
         email_hashed = hash_email(email)
     else:
@@ -221,3 +222,65 @@ async def create_user(db: AsyncSession, email: str, password: str):
     db.add(new_user)
     await db.flush()  
     return new_user, email_hashed
+
+
+async def create_refresh_token_record(db: AsyncSession, user_id: str, jti: str, expires_at: datetime):
+    """Guarda un refresh token en la BD"""
+    token_record = RefreshToken(
+        jti=jti,
+        user_id=user_id,
+        expires_at=expires_at,
+        revoked=False  
+    )
+    db.add(token_record)
+    await db.commit()
+    await db.refresh(token_record)
+    return token_record
+
+
+async def get_refresh_token_by_jti(db: AsyncSession, jti: str):
+    """Obtiene el registro de refresh token por jti (sin filtrar por revocado)"""
+    result = await db.execute(select(RefreshToken).where(RefreshToken.jti == jti))
+    return result.scalar_one_or_none()
+
+
+async def revoke_refresh_token(db: AsyncSession, jti: str):
+    """Marca un refresh token como revocado"""
+    token_record = await get_refresh_token_by_jti(db, jti)
+    if token_record and not token_record.revoked:
+        token_record.revoked = True
+        await db.commit()
+        return True
+    return False
+
+
+def utc_now():
+    return datetime.now(timezone.utc)
+
+def get_real_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.headers.get("CF-Connecting-IP") or request.client.host or "unknown"
+
+
+def clear_auth_cookies(response: Response):
+    cookie_config = {
+        "httponly": True,
+        "secure": True,
+        "samesite": "Lax",
+        "path": "/"
+    }
+    response.delete_cookie("access_token", **cookie_config)
+    response.delete_cookie("refresh_token", **cookie_config)
+
+
+async def revoke_all_user_refresh_tokens(db: AsyncSession, user_id: str):
+    """Revoca todos los refresh tokens activos de un usuario"""
+    stmt = update(RefreshToken).where(
+        RefreshToken.user_id == user_id,
+        RefreshToken.revoked == False
+    ).values(revoked=True)
+    result = await db.execute(stmt)
+    await db.commit()
+    return result.rowcount

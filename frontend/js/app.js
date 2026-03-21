@@ -30,6 +30,79 @@ if (!chat || !input || !button) {
 input.disabled = true;
 button.disabled = true;
 
+// // =========================
+// // VARIABLES PARA CONTROL DE REFRESH
+// // =========================
+// let isRefreshing = false;
+// let refreshSubscribers = [];
+
+// function onRefreshComplete(success) {
+//     refreshSubscribers.forEach(callback => callback(success));
+//     refreshSubscribers = [];
+// }
+
+// async function refreshToken() {
+//     if (isRefreshing) {
+//         return new Promise(resolve => {
+//             refreshSubscribers.push(resolve);
+//         });
+//     }
+
+//     isRefreshing = true;
+    
+//     try {
+//         const response = await fetch("/auth/refresh", {
+//             method: "POST",
+//             credentials: "include"
+//         });
+
+//         const success = response.ok;
+//         onRefreshComplete(success);
+//         return success;
+//     } catch (error) {
+//         onRefreshComplete(false);
+//         return false;
+//     } finally {
+//         isRefreshing = false;
+//     }
+// }
+
+// async function fetchWithAuth(url, options = {}) {
+//     // Verificar si tenemos refresh token pero no access token
+//     const getCookie = (name) => {
+//         const value = `; ${document.cookie}`;
+//         const parts = value.split(`; ${name}=`);
+//         if (parts.length === 2) return parts.pop().split(';').shift();
+//         return null;
+//     };
+    
+//     const hasRefresh = getCookie('refresh_token') !== null;
+//     const hasAccess = getCookie('access_token') !== null;
+    
+//     if (hasRefresh && !hasAccess) {
+//         console.warn("Access token missing but refresh exists → refreshing before request");
+//         const refreshSuccess = await refreshToken();
+//         if (!refreshSuccess) {
+//             console.warn("Refresh failed, continuing as anonymous");
+//         }
+//     }
+    
+//     let response = await fetch(url, { ...options, credentials: "include" });
+    
+//     if (response.status === 401) {
+//         console.warn("Access token expirado → intentando refresh");
+//         const refreshSuccess = await refreshToken();
+//         if (refreshSuccess) {
+//             response = await fetch(url, { ...options, credentials: "include" });
+//         }
+//     }
+//     return response;
+// }
+
+
+
+
+
 // =========================
 // VARIABLES PARA CONTROL DE REFRESH
 // =========================
@@ -57,9 +130,21 @@ async function refreshToken() {
         });
 
         const success = response.ok;
+        
+        // Si el refresh falló, limpiar cookies localmente
+        if (!success) {
+            console.warn("Refresh failed, clearing auth cookies");
+            document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            document.cookie = "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        }
+        
         onRefreshComplete(success);
         return success;
     } catch (error) {
+        console.error("Refresh error:", error);
+        // Limpiar cookies en caso de error de red
+        document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie = "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         onRefreshComplete(false);
         return false;
     } finally {
@@ -84,6 +169,8 @@ async function fetchWithAuth(url, options = {}) {
         const refreshSuccess = await refreshToken();
         if (!refreshSuccess) {
             console.warn("Refresh failed, continuing as anonymous");
+            // No reintentamos, simplemente hacemos la petición sin token
+            return await fetch(url, { ...options, credentials: "include" });
         }
     }
     
@@ -94,10 +181,26 @@ async function fetchWithAuth(url, options = {}) {
         const refreshSuccess = await refreshToken();
         if (refreshSuccess) {
             response = await fetch(url, { ...options, credentials: "include" });
+        } else {
+            // Refresh falló, ya se limpiaron las cookies en refreshToken()
+            // Reintentamos la petición como anónimo (sin cookies)
+            console.warn("Refresh failed, retrying as anonymous");
+            response = await fetch(url, { ...options, credentials: "include" });
         }
     }
     return response;
 }
+
+
+
+
+
+
+
+
+
+
+
 // =========================
 // UI HELPERS
 // =========================

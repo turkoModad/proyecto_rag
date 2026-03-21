@@ -4,7 +4,6 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.auth.database import Base
-from datetime import datetime, timezone
 
 
 class User(Base):
@@ -27,6 +26,8 @@ class User(Base):
     is_blocked = Column(Boolean, default=False)
     
     query_logs = relationship("QueryLog", back_populates="user", cascade="all, delete-orphan")
+    refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
+    
 
 class QueryLog(Base):  
     __tablename__ = "query_logs"
@@ -83,3 +84,16 @@ class AccessLog(Base):
         Index('idx_access_logs_timestamp', 'timestamp'),
         Index('idx_access_logs_endpoint', 'endpoint'),
     )
+
+
+class RefreshToken(Base):
+    __tablename__ = "refresh_tokens"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    jti = Column(String(36), unique=True, nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    revoked = Column(Boolean, default=False)
+    
+    user = relationship("User", back_populates="refresh_tokens")
