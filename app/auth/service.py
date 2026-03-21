@@ -178,8 +178,6 @@ async def get_user_by_id(db: AsyncSession, user_id: str):
         return None
     
 
-
-
 def validate_password_strength(password: str) -> tuple[bool, str]:
     """
     Valida que la contraseña tenga:
