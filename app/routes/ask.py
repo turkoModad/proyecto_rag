@@ -4,6 +4,8 @@ from pydantic import BaseModel, model_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user, get_db
 from app.service import qa_cache, domain_classifier, rag, llm
+from app.auth.contexto import get_last_user_query, build_conversation_context
+
 import logging
 import time
 import asyncio
@@ -46,9 +48,9 @@ async def process_query(
     user_agent = request.headers.get("user-agent", "unknown")
 
     try:
-        # -----------------------------
-        # CONTROL DE USO (MODIFICADO)
-        # -----------------------------
+        # -------------------
+        # CONTROL DE USO 
+        # -------------------
         if current_user is None:
             limit_info = await qa_cache.check_anonymous_limit(db, ip_address)
         else:
@@ -156,12 +158,34 @@ async def process_query(
         else:
             logger.info("CONTEXTO VACÍO")
 
+
+        # =========================================================
+        # CONTEXTO DE CONVERSACIÓN (MEMORIA)
+        # =========================================================
+        last_query = await get_last_user_query(
+            db,
+            user_id=current_user["sub"] if current_user else None,
+            ip_address=ip_address if not current_user else None
+        )
+
+        # Construir el contexto enriquecido
+        conversation_context = build_conversation_context(last_query)
+
+        if conversation_context:
+            logger.info("Incorporando contexto de conversación")
+            enriched_context = f"""{conversation_context}
+CONTEXTO ACTUAL DE LA BASE DE CONOCIMIENTO:
+{context_text}"""
+        else:
+            logger.debug("No hay conversación previa, usando solo contexto RAG")
+            enriched_context = context_text
+
         # -----------------------------
         # LLM
         # -----------------------------
         try:
             generated_text = await asyncio.wait_for(
-                llm.generate(query.text, context_text),
+                llm.generate(query.text, enriched_context),
                 timeout=60
             )
         except asyncio.TimeoutError:
