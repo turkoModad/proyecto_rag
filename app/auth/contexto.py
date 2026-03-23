@@ -52,21 +52,11 @@ async def get_last_user_query(
 
 
 def build_conversation_context(last_query) -> str | None:
-    """
-    Construye el contexto de conversación a partir de la última consulta
-    
-    Args:
-        last_query: Objeto QueryLog con la última consulta
-    
-    Returns:
-        str | None: Texto formateado con el historial de conversación
-    """
     if not last_query:
         return None
-    
-    context = f"""HISTORIAL RECIENTE:
-Usuario preguntó: "{last_query.question}"
-Asistente respondió: "{last_query.response}"
 
-"""
-    return context
+    return (
+        "HISTORIAL RECIENTE:\n"
+        f"Usuario preguntó: \"{last_query.question.strip()}\"\n"
+        f"Asistente respondió: \"{last_query.response.strip()}\"\n"
+    )

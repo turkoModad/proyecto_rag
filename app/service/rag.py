@@ -59,30 +59,39 @@ def retrieve_context(question_text: str):
         results = results[:RERANK_TOP_K]
 
 
-        # 5- CONSTRUIR CONTEXTO
+        # 5- CONSTRUIR CONTEXTO (CORREGIDO)
         context_parts = []
         top_scores = []
 
         for hit in results:
             payload = hit.payload or {}
 
-            titulo = payload.get("titulo", "")
-            articulo = payload.get("numero_articulo", "")
-            contenido = payload.get("contenido", "")
+            titulo = (payload.get("titulo") or "").strip()
+            articulo = (payload.get("numero_articulo") or "").strip()
+            contenido = (payload.get("contenido") or "").strip()
 
             if not contenido:
                 continue
 
-            # formatted = f"{titulo} Art. {articulo} - {contenido}".strip()
-            formatted = contenido.strip()
+            # Construcción limpia (SIN indentación)
+            if titulo and articulo:
+                formatted = f"{titulo} Art. {articulo}: {contenido}"
+            elif titulo:
+                formatted = f"{titulo}: {contenido}"
+            else:
+                formatted = contenido
+
+            # Limpieza extra (por si viene sucio de DB)
+            formatted = "\n".join(line.strip() for line in formatted.splitlines())
+
             context_parts.append(formatted)
             top_scores.append(hit.score)
 
         if not context_parts:
             logger.info("Resultados encontrados pero sin contenido útil.")
             return "", []
-
-        context_text = "\n\n".join(context_parts)
+        
+        context_text = "\n\n---\n\n".join(context_parts)
 
         logger.info(
             f"Retrieval OK | chunks={len(context_parts)} | "

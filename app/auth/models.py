@@ -37,6 +37,7 @@ class QueryLog(Base):
     ip_address = Column(String(255), nullable=False)  
     user_agent = Column(String(255), nullable=True)
     question = Column(Text, nullable=False)
+    rewritten_query = Column(Text, nullable=True)
     response = Column(Text, nullable=False)
     decision = Column(String(255), nullable=False)  
     tokens_generated = Column(Integer, nullable=True)

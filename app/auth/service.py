@@ -56,6 +56,27 @@ async def authenticate_user(db: AsyncSession, email: str, password: str):
 # ----------------------------
 # LOGS DE CONSULTAS
 # ----------------------------
+# async def log_query(
+#     db: AsyncSession,
+#     user_id: str | None,
+#     ip_address: str,
+#     user_agent: str | None,
+#     question: str,
+#     response: str,
+#     decision: str,
+#     rewritten_query=None,
+#     rewritten_query: str | None = None,
+#     response_time_ms: int | None,
+#     endpoint: str,
+#     model_used: str | None = None,
+#     temperature: float | None = None,
+#     top_k_retrieved: int | None = None,
+#     qa_cache_score: float | None = None,
+#     retrieval_score: float | None = None,
+#     grounding_score: float | None = None
+# ):
+
+
 async def log_query(
     db: AsyncSession,
     user_id: str | None,
@@ -67,6 +88,7 @@ async def log_query(
     tokens_generated: int | None,
     response_time_ms: int | None,
     endpoint: str,
+    rewritten_query: str | None = None,
     model_used: str | None = None,
     temperature: float | None = None,
     top_k_retrieved: int | None = None,
@@ -80,6 +102,7 @@ async def log_query(
         ip_address=ip_address,
         user_agent=user_agent,
         question=question,
+        rewritten_query=rewritten_query,
         response=response,
         decision=decision,
         tokens_generated=tokens_generated,

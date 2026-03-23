@@ -63,18 +63,18 @@ async def check_user_limit(db, current_user: dict):
 # ----------------------------
 # CACHÉ DE PREGUNTAS (SIN CAMBIOS)
 # ----------------------------
-async def try_cache(query_text, current_user, db, ip_address, user_agent, start_time):
+async def try_cache(query_text, rewritten_query, current_user, db, ip_address, user_agent, start_time):
     try:
-        q_emb = get_embedding(query_text, prefix="query")
+        q_emb = get_embedding(rewritten_query or query_text, prefix="query")
         qa_hit, qa_score = search_qa_cache(q_emb)
 
         if qa_hit:
-            logger.info("========== QA CACHE VALIDATION ==========")
-            logger.info(f"[QA DEBUG] QA_SCORE={qa_score:.4f}")
-            logger.info(f"[QA DEBUG] SIM_THRESHOLD={SIM_CTX:.4f}")
-            logger.info(f"[QA DEBUG] Pregunta: {query_text}")
-            logger.info(f"[QA DEBUG] Respuesta cache: {qa_hit.get('respuesta')}")
-            logger.info("==========================================")
+            # logger.info("========== QA CACHE VALIDATION ==========")
+            # logger.info(f"[QA DEBUG] QA_SCORE={qa_score:.4f}")
+            # logger.info(f"[QA DEBUG] SIM_THRESHOLD={SIM_CTX:.4f}")
+            # logger.info(f"[QA DEBUG] Pregunta: {query_text}")
+            # logger.info(f"[QA DEBUG] Respuesta cache: {qa_hit.get('respuesta')}")
+            # logger.info("==========================================")
 
             if qa_score >= SIM_CTX:
                 end_time = time.time()
@@ -88,6 +88,7 @@ async def try_cache(query_text, current_user, db, ip_address, user_agent, start_
                     ip_address=ip_address,
                     user_agent=user_agent,
                     question=query_text,
+                    rewritten_query=rewritten_query,
                     response=generated_text,
                     decision="qa_cache",
                     tokens_generated=tokens_generated,
@@ -115,7 +116,7 @@ async def try_cache(query_text, current_user, db, ip_address, user_agent, start_
 # ----------------------------
 # AUTO-CACHE DE RESPUESTAS (SIN CAMBIOS)
 # ----------------------------
-async def auto_cache(question, answer, context_text, top_scores):
+async def auto_cache(question, rewritten_query, answer, context_text, top_scores):
     try:
         decision = should_autocache(top_scores, answer, context_text)
 
@@ -134,7 +135,7 @@ async def auto_cache(question, answer, context_text, top_scores):
             question=question,
             answer=answer,
             context_text=context_text,
-            embedding=get_embedding(question),
+            embedding=get_embedding(rewritten_query or question),
             grounding_score=grounding_score,
             retrieval_score=retrieval_score
         )
@@ -157,6 +158,7 @@ async def log_final(
     ip_address,
     user_agent,
     start_time,
+    rewritten_query: str | None = None,
     top_scores: list[float] | None = None,
     was_autocached: bool = False,
     grounding_score: float = 0.0,
@@ -192,6 +194,7 @@ async def log_final(
         tokens_generated=tokens_generated,
         response_time_ms=response_time_ms,
         endpoint="/ask",
+        rewritten_query=rewritten_query,
         model_used=model_used,
         temperature=TEMPERATURE if answer else None,
         top_k_retrieved=len(top_scores) if top_scores else None,

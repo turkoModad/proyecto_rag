@@ -37,6 +37,7 @@ async def is_in_domain(text, current_user, db, ip_address, user_agent, start_tim
         logger.info("==============================================")        
 
         return predicted_class == IN_DOMAIN_LABEL  
+        # return True
 
 
     except Exception as e:
