@@ -5,11 +5,35 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.models import User, QueryLog, OTPLog, RefreshToken
 from app.auth.security import hash_password, verify_password
 from app.core.security import encrypt_value, hash_email
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from fastapi import Request, Response
 
 
 logger = logging.getLogger("AuthService")
+
+
+def get_argentina_day_bounds_utc():
+    """
+    Devuelve el inicio y fin del día en hora Argentina,
+    pero convertidos a UTC para filtrar en la DB.
+    """
+    utc_now = datetime.now(timezone.utc)
+
+    # Argentina UTC-3
+    argentina_offset = timedelta(hours=-3)
+    argentina_now = utc_now + argentina_offset
+
+    start_local = argentina_now.replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+
+    end_local = start_local + timedelta(days=1)
+
+    # Convertir a UTC nuevamente
+    start_utc = start_local - argentina_offset
+    end_utc = end_local - argentina_offset
+
+    return start_utc, end_utc
 
 
 # ----------------------------
@@ -51,30 +75,6 @@ async def authenticate_user(db: AsyncSession, email: str, password: str):
     if not verify_password(password, user.password_hash):  
         return None
     return user
-
-
-# ----------------------------
-# LOGS DE CONSULTAS
-# ----------------------------
-# async def log_query(
-#     db: AsyncSession,
-#     user_id: str | None,
-#     ip_address: str,
-#     user_agent: str | None,
-#     question: str,
-#     response: str,
-#     decision: str,
-#     rewritten_query=None,
-#     rewritten_query: str | None = None,
-#     response_time_ms: int | None,
-#     endpoint: str,
-#     model_used: str | None = None,
-#     temperature: float | None = None,
-#     top_k_retrieved: int | None = None,
-#     qa_cache_score: float | None = None,
-#     retrieval_score: float | None = None,
-#     grounding_score: float | None = None
-# ):
 
 
 async def log_query(
@@ -121,24 +121,30 @@ async def log_query(
 
 
 async def count_user_queries(db: AsyncSession, user_id: str) -> int:
-    """Cuenta consultas de un usuario (para límites)"""
+    start_utc, end_utc = get_argentina_day_bounds_utc()
+
     result = await db.execute(
         select(func.count()).select_from(QueryLog).where(
             (QueryLog.user_id == user_id) &
-            (QueryLog.decision != "pending")
+            (QueryLog.decision != "pending") &
+            (QueryLog.timestamp >= start_utc) &
+            (QueryLog.timestamp < end_utc)
         )
     )
     return result.scalar() or 0
 
 
 async def count_anonymous_queries(db: AsyncSession, ip_address: str, endpoint: str = "/ask") -> int:
-    """Cuenta consultas anónimas desde una IP"""
+    start_utc, end_utc = get_argentina_day_bounds_utc()
+
     result = await db.execute(
         select(func.count()).select_from(QueryLog).where(
             (QueryLog.user_id == None) &
             (QueryLog.ip_address == ip_address) &
             (QueryLog.endpoint == endpoint) &
-            (QueryLog.decision != "pending")
+            (QueryLog.decision != "pending") &
+            (QueryLog.timestamp >= start_utc) &
+            (QueryLog.timestamp < end_utc)
         )
     )
     return result.scalar() or 0
@@ -148,11 +154,14 @@ async def count_anonymous_queries(db: AsyncSession, ip_address: str, endpoint: s
 # LOGS DE OTP
 # ----------------------------
 async def count_otp_ip_today(db: AsyncSession, ip_address: str):
-    """Cuenta OTPs enviados desde una IP hoy"""
+    """Cuenta OTPs enviados desde una IP hoy (hora Argentina)"""
+    start_utc, end_utc = get_argentina_day_bounds_utc()
+
     result = await db.execute(
         select(func.count()).select_from(OTPLog).where(
-            OTPLog.ip_address == ip_address,
-            func.date(OTPLog.created_at) == func.current_date()
+            (OTPLog.ip_address == ip_address) &
+            (OTPLog.created_at >= start_utc) &
+            (OTPLog.created_at < end_utc)
         )
     )
     return result.scalar() or 0
