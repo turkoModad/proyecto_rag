@@ -45,14 +45,14 @@ except Exception as e:
 # 2. INFRAESTRUCTURA Y HARDWARE
 VECTOR_PORT = 443  
 EMB_DIM = 1024
-LIMITE_SIN_AUTH = 20
-LIMITE_CON_AUTH = 50
+LIMITE_SIN_AUTH = 30
+LIMITE_CON_AUTH = 60
 MAX_OTP_PER_IP = 10
 BASE_URL = "https://seguridadvial.codepyhub.com"
 
 
 # 3. LÓGICA DE RECUPERACIÓN (RETRIEVAL)
-TOP_K = 5
+TOP_K = 4
 RERANK_TOP_K = 2
 SECURITY = 0.86   
 
@@ -105,7 +105,7 @@ BLOCK_DURATION_MINUTES = 15
 MAX_FAILED_ATTEMPTS = 10              
 
 # horarios de limpieza db ip
-CLEANUP_HOURS_LOCAL = [(3, 0), (15, 0),]
+CLEANUP_HOURS_LOCAL = [(0, 0),]
 
 # Tiempo de retención de logs (en minutos)
 LOG_RETENTION_MINUTES = 360

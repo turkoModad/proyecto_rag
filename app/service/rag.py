@@ -59,21 +59,28 @@ def retrieve_context(question_text: str):
         results = results[:RERANK_TOP_K]
 
 
-        # 5- CONSTRUIR CONTEXTO (CORREGIDO)
+        # 5- CONSTRUIR CONTEXTO
         context_parts = []
         top_scores = []
 
-        for hit in results:
+        top_metadata = None
+
+        for i, hit in enumerate(results):
             payload = hit.payload or {}
 
             titulo = (payload.get("titulo") or "").strip()
             articulo = (payload.get("numero_articulo") or "").strip()
             contenido = (payload.get("contenido") or "").strip()
+            metadata = (payload.get("metadata") or "").strip()
+
+            # tomar SOLO el top-1
+            if i == 0 and metadata:
+                top_metadata = metadata
 
             if not contenido:
                 continue
 
-            # Construcción limpia (SIN indentación)
+            # Construcción limpia
             if titulo and articulo:
                 formatted = f"{titulo} Art. {articulo}: {contenido}"
             elif titulo:
@@ -81,16 +88,27 @@ def retrieve_context(question_text: str):
             else:
                 formatted = contenido
 
-            # Limpieza extra (por si viene sucio de DB)
             formatted = "\n".join(line.strip() for line in formatted.splitlines())
 
             context_parts.append(formatted)
             top_scores.append(hit.score)
 
+
+        # si no hay contenido
         if not context_parts:
             logger.info("Resultados encontrados pero sin contenido útil.")
-            return "", []
-        
+            return "", [], None
+
+
+        # fallback: por si el top no tenía metadata
+        if not top_metadata:
+            for hit in results:
+                meta = (hit.payload or {}).get("metadata")
+                if meta:
+                    top_metadata = meta.strip()
+                    break
+
+
         context_text = "\n\n---\n\n".join(context_parts)
 
         logger.info(
@@ -98,7 +116,7 @@ def retrieve_context(question_text: str):
             f"max_score={max(top_scores):.4f}"
         )
 
-        return context_text, top_scores
+        return context_text, top_scores, top_metadata
 
     except HTTPException:
         raise

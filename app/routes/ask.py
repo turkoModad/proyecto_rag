@@ -160,10 +160,13 @@ async def process_query(
         # =========================================================
         # 6. RAG
         # =========================================================
-        context_text, top_scores = await asyncio.to_thread(
+        context_text, top_scores, metadata = await asyncio.to_thread(
             rag.retrieve_context,
             consulta_busqueda
         )
+
+
+        logger.info(f"[METADATA] {metadata}")
 
         logger.info(
             "[RAG]\n"
@@ -225,6 +228,7 @@ async def process_query(
         return {
             "question": consulta_usuario,
             "response": generated_text,
+            "metadata": metadata,
             "is_domain": True,
             "decision": "rag_autocached" if was_autocached else "rag"
         }

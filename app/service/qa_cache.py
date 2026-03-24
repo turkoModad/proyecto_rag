@@ -114,7 +114,7 @@ async def try_cache(query_text, rewritten_query, current_user, db, ip_address, u
 
 
 # ----------------------------
-# AUTO-CACHE DE RESPUESTAS (SIN CAMBIOS)
+# AUTO-CACHE DE RESPUESTAS 
 # ----------------------------
 async def auto_cache(question, rewritten_query, answer, context_text, top_scores):
     try:
