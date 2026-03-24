@@ -39,8 +39,8 @@ from app.routes.faq import router as faq_router
 from app.routes.ingest_qa import router as ingest_router
 from app.routes.examen import router as examen_router
 from app.middleware.security_middleware import SecurityMiddleware
-# from app.core.middleware import AutoRefreshMiddleware
 from app.routes import security_monitor
+from app.routes.contact import router as contact_router
 from app.middleware.seo_middleware import seo_performance_middleware
 
 
@@ -131,6 +131,7 @@ app.include_router(usage_router)
 app.include_router(faq_router)
 app.include_router(ingest_router)
 app.include_router(examen_router)
+app.include_router(contact_router)
 app.include_router(security_monitor.router)
 
 

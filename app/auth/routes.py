@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import FileResponse, JSONResponse
-from datetime import datetime, timezone, timedelta
+from datetime import timedelta
 import jwt  
 
 from app.auth.schemas import UserCreate
@@ -21,14 +21,18 @@ from app.auth.service import (
     utc_now,
     get_real_ip,
     clear_auth_cookies,
-    revoke_all_user_refresh_tokens 
+    revoke_all_user_refresh_tokens,
+    validate_password_strength
     
 )
+from app.core.security import hash_email
 from app.auth.jwt_handler import create_access_token, create_refresh_token, ACCESS_EXPIRE_MINUTES, REFRESH_EXPIRE_DAYS, verify_token, JWT_SECRET, ALGORITHM
 from app.service.otp_service import check_otp_rate_limit
-from email_service.email_sender import enviar_otp
-from app.auth.security import hash_otp, verify_otp
+from email_service.email_sender import enviar_otp, enviar_reset_email
+from app.auth.security import hash_otp, verify_otp, hash_password
+
 import logging
+
 
 logger = logging.getLogger("rou")
 
@@ -45,6 +49,7 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 @router.get("/register")
 async def get_register():
     return FileResponse(os.path.join(FRONTEND_DIR, "register.html"))
+
 
 @router.post("/register")
 async def register(request: Request, user: UserCreate, db: AsyncSession = Depends(get_db)):
@@ -172,6 +177,7 @@ async def verify(data: dict, db: AsyncSession = Depends(get_db)):
 async def get_login():
     return FileResponse(os.path.join(FRONTEND_DIR, "login.html"))
 
+
 @router.post("/login")
 async def login(
     request: Request,
@@ -259,6 +265,7 @@ def _set_auth_cookies(response: Response, access: str, refresh: str):
     )
 
 
+
 @router.post("/refresh")
 async def refresh_token(
     request: Request,
@@ -325,3 +332,102 @@ async def refresh_token(
     })
     _set_auth_cookies(response, new_access, new_refresh)
     return response
+
+
+# =========================
+# FORGOT PASSWORD (solicitar recuperación)
+# =========================
+@router.get("/forgot-password")
+async def get_forgot_password():
+    return FileResponse(os.path.join(FRONTEND_DIR, "forgot-password.html"))
+
+
+@router.post("/forgot-password")
+async def forgot_password(
+    request: Request,
+    data: dict,
+    db: AsyncSession = Depends(get_db)
+):
+    ip_address = get_real_ip(request)
+    await check_otp_rate_limit(db, ip_address)
+    
+    email = data.get("email")
+    if not email:
+        raise HTTPException(400, "Email es requerido")
+    
+    user = await get_user_by_email(db, email)
+    if not user:
+        return {"message": "Si el email está registrado, recibirás un correo con las instrucciones."}
+    
+    if user.is_blocked:
+        raise HTTPException(403, "Usuario bloqueado")
+    
+    token = enviar_reset_email(email)
+    if not token:
+        raise HTTPException(500, "Error al enviar el email de recuperación")
+    
+    user.otp_token = token
+    user.otp_expires = utc_now() + timedelta(minutes=10)
+    user.otp_purpose = "reset"
+    user.otp_hash = None  
+    user.otp_attempts = 0
+    
+    await log_otp(db, hash_email(email), ip_address, purpose="reset")
+    await db.commit()
+    
+    return {"message": "Si el email está registrado, recibirás un correo con las instrucciones."}
+
+
+# =========================
+# RESET PASSWORD (cambiar contraseña)
+# =========================
+@router.get("/reset-password")
+async def get_reset_password():
+    return FileResponse(os.path.join(FRONTEND_DIR, "reset-password.html"))
+
+
+@router.post("/reset-password")
+async def reset_password(
+    request: Request,
+    data: dict,
+    db: AsyncSession = Depends(get_db)
+):
+    token = data.get("token")
+    new_password = data.get("new_password")
+    confirm_password = data.get("confirm_password")
+    
+    if not token or not new_password or not confirm_password:
+        raise HTTPException(400, "Faltan campos requeridos")
+    
+    if new_password != confirm_password:
+        raise HTTPException(400, "Las contraseñas no coinciden")
+    
+    # Validar fortaleza de la contraseña
+    is_valid, msg = validate_password_strength(new_password)
+    if not is_valid:
+        raise HTTPException(400, msg)
+    
+    # Buscar usuario por token
+    user = await get_user_by_token(db, token)
+    if not user:
+        raise HTTPException(404, "Enlace inválido o expirado. Solicita uno nuevo.")
+    
+    if user.otp_purpose != "reset":
+        raise HTTPException(400, "Este enlace no es válido para restablecer contraseña")
+    
+    if user.otp_expires < utc_now():
+        raise HTTPException(400, "El enlace ha expirado. Solicita uno nuevo.")
+    
+    user.password_hash = hash_password(new_password)
+    
+    user.otp_token = None
+    user.otp_expires = None
+    user.otp_purpose = None
+    user.otp_hash = None
+    user.otp_attempts = 0
+    
+    await revoke_all_user_refresh_tokens(db, str(user.id))
+    
+    await db.commit()
+    
+    return {"message": "Contraseña actualizada correctamente. Ya puedes iniciar sesión con tu nueva contraseña."}

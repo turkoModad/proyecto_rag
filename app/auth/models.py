@@ -98,3 +98,14 @@ class RefreshToken(Base):
     revoked = Column(Boolean, default=False)
     
     user = relationship("User", back_populates="refresh_tokens")
+
+
+class ContactMessage(Base):
+    __tablename__ = "contact_messages"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    email = Column(String(255), nullable=True)  
+    message = Column(Text, nullable=False)
+    ip_address = Column(String(255), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    is_registered = Column(Boolean, default=False)

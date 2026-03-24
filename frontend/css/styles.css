@@ -706,3 +706,236 @@ section:last-child{
     transform: translateY(-2px) !important;
     box-shadow: 0 8px 20px rgba(0,0,0,0.08) !important;
 }
+
+/* ========================= */
+/* CONTACT BOX - FULL WIDTH */
+/* ========================= */
+.contact-box {
+    width: 100%;
+    max-width: 900px; /* igual que chat / seo-content */
+    margin: 0 auto;
+    background: white;
+    border-radius: 24px;
+    padding: 32px 36px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0,0,0,0.05);
+
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* GRID PARA INPUTS */
+.contact-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+/* EMAIL */
+.contact-row input {
+    flex: 1;
+    min-width: 250px;
+}
+
+/* TEXTAREA FULL WIDTH */
+.contact-box textarea {
+    width: 100%;
+    min-height: 120px;
+}
+
+/* BOTÓN + FOOTER */
+.contact-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.contact-signature {
+    font-size: 0.85rem;
+    color: #64748b;
+    opacity: 0.8;
+}
+
+.contact-signature strong {
+    color: #0b2a4f;
+    font-weight: 700;
+    transition: opacity 0.2s;
+}
+
+.contact-signature strong:hover {
+    opacity: 0.7;
+}
+
+.contact-section {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.contact-box h2 {
+    font-size: 1.4rem;
+    color: #0b2a4f;
+    margin-bottom: 4px;
+}
+
+.contact-subtitle {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+/* INPUTS */
+.contact-box input,
+.contact-box textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    font-size: 0.95rem;
+    background: #f8fafc;
+    transition: all 0.2s;
+}
+
+.contact-box input:focus,
+.contact-box textarea:focus {
+    border-color: #0b2a4f;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(11, 42, 79, 0.1);
+    outline: none;
+}
+
+/* BOTÓN  */
+#contactBtn {
+    background: #0b2a4f;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 40px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(11, 42, 79, 0.2);
+}
+
+#contactBtn:hover {
+    background: #15457c;
+    transform: scale(1.02);
+    box-shadow: 0 6px 16px rgba(11, 42, 79, 0.3);
+}
+
+/* FEEDBACK */
+.contact-feedback {
+    font-size: 0.85rem;
+    color: #16a34a;
+    min-height: 18px;
+}
+
+/* ========================= */
+/* CONTACT INPUT INTERACTIVE */
+/* ========================= */
+.contact-box input,
+.contact-box textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    font-size: 0.95rem;
+    font-family: 'Inter', sans-serif;
+    background: #f8fafc;
+    transition: all 0.25s ease;
+    
+    /* base */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+
+/* HOVER → crece + sombra */
+.contact-box input:hover,
+.contact-box textarea:hover {
+    transform: scale(1.02);
+    background: white;
+    border-color: #cbd5e1;
+    box-shadow: 0 8px 20px rgba(11, 42, 79, 0.12);
+}
+
+/* FOCUS  */
+.contact-box input:focus,
+.contact-box textarea:focus {
+    transform: scale(1.02);
+    border-color: #0b2a4f;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(11, 42, 79, 0.15),
+                0 8px 20px rgba(11, 42, 79, 0.15);
+    outline: none;
+}
+
+/* TEXTAREA ajuste */
+.contact-box textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* PLACEHOLDER más fino */
+.contact-box input::placeholder,
+.contact-box textarea::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+/* ========================= */
+/* HEADER RESPONSIVE FIX */
+/* ========================= */
+
+@media (max-width: 600px){
+
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .header-left,
+    .header-right {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .header-right {
+        justify-content: space-between;
+    }
+
+    /* CONTADOR MÁS CHICO */
+    .query-counter {
+        font-size: 0.7rem;
+        padding: 5px 10px;
+    }
+
+    /* STATUS MÁS COMPACTO */
+    .status {
+        font-size: 0.75rem;
+        padding: 5px 10px;
+    }
+
+    /* BOTÓN LOGOUT FULL WIDTH */
+    .logout-btn {
+        width: 100%;
+        text-align: center;
+        padding: 10px;
+        font-size: 0.85rem;
+    }
+
+    .status::before {
+        display: none; 
+    }
+
+}

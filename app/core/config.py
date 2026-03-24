@@ -35,6 +35,7 @@ try:
     SMTP_USER = get_secret("SMTP_USER")
     SMTP_PASSWORD = get_secret("SMTP_PASSWORD")
     SENDER_EMAIL = get_secret("SENDER_EMAIL")
+    RECIPIENT_EMAIL = get_secret("RECIPIENT_EMAIL")
 
 
 except Exception as e:
@@ -102,10 +103,12 @@ SYSTEM_PROMPT = (
 RATE_LIMIT_REQUESTS_PER_MINUTE = 60  # Máximo 60 requests por minuto por IP
 RATE_LIMIT_WINDOW_MINUTES = 1        
 BLOCK_DURATION_MINUTES = 15          
-MAX_FAILED_ATTEMPTS = 10              
+MAX_FAILED_ATTEMPTS = 10    
+LIMITE_CARACTERES_MENSAJE = 600          
 
 # horarios de limpieza db ip
 CLEANUP_HOURS_LOCAL = [(0, 0),]
 
 # Tiempo de retención de logs (en minutos)
 LOG_RETENTION_MINUTES = 360
+

@@ -21,6 +21,8 @@ Disallow: /auth/
 Disallow: /admin/
 Disallow: /security/
 Disallow: /usage
+Disallow: /contact
+
 
 Sitemap: {BASE_URL}/sitemap.xml
 

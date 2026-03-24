@@ -26,15 +26,18 @@
 
             <div class="form-group">
                 <label>Contraseña</label>
-
                 <div class="password-wrapper">
                     <input type="password" name="password" placeholder="••••••••" required>
                     <span class="toggle-pass">👁️</span>
                 </div>
-
             </div>
 
             <button type="submit" class="auth-btn">Entrar</button>
+
+            <!-- Enlace para recuperar contraseña -->
+            <div class="forgot-password-link" style="text-align: center; margin-top: 15px;">
+                <a href="/auth/forgot-password" style="color: #1a73e8; text-decoration: none; font-size: 0.9rem;">¿Olvidaste tu contraseña?</a>
+            </div>
         </form>
 
         <div class="auth-footer">
@@ -73,7 +76,6 @@ document.getElementById('loginForm').onsubmit = async (e) => {
     const data = await response.json();
 
     if (response.ok) {
-        // Reemplazar historial para que no pueda volver a verify
         window.location.replace(data.redirect || "/frontend/index.html");
     } else {
         alert(data.detail || "Error al iniciar sesión");
@@ -81,6 +83,6 @@ document.getElementById('loginForm').onsubmit = async (e) => {
 };
 </script>
 
-<script src="/frontend/js/app.js?v=1.0"></script>
+<script src="/frontend/js/app.js?v=1.1"></script>
 </body>
 </html>

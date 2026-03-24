@@ -108,3 +108,47 @@ def enviar_otp(receiver_email: str) -> dict:
     else:
         logger.warning(f"No se pudo enviar OTP a {masked_email}")
         return None
+    
+    
+def enviar_reset_email(receiver_email: str) -> str:
+    """
+    Genera token para recuperación de contraseña y envía email con enlace.
+    Devuelve el token generado (para guardar en DB).
+    """
+    token = generar_token_verificacion()
+    email_hash = hash_email(receiver_email)
+    
+    reset_link = f"{BASE_URL}/auth/reset-password?token={token}"
+    
+    html_body = f"""
+    <html>
+        <body style="font-family: Arial, sans-serif;">
+            <h2>Recuperación de contraseña</h2>
+            <p>Hemos recibido una solicitud para restablecer tu contraseña.</p>
+            <p>Haz clic en el siguiente enlace para restablecerla:</p>
+            <a href="{reset_link}" 
+               style="display:inline-block;
+                      padding:12px 24px;
+                      background-color:#1a73e8;
+                      color:white;
+                      text-decoration:none;
+                      border-radius:5px;
+                      margin: 15px 0;">
+                Restablecer contraseña
+            </a>
+            <p>Si no solicitaste este cambio, puedes ignorar este mensaje.</p>
+            <p style="margin-top:20px;">Este enlace expirará en 10 minutos.</p>
+            <p style="color:red; font-size:12px;">Por seguridad, no compartas este enlace con nadie.</p>
+        </body>
+    </html>
+    """
+    
+    masked_email = _mask_email(receiver_email)
+    enviado = enviar_email(receiver_email, "Recuperación de contraseña - Asistente Vial", html_body)
+    
+    if enviado:
+        logger.info(f"Email de recuperación enviado a {masked_email}")
+        return token
+    else:
+        logger.warning(f"No se pudo enviar email de recuperación a {masked_email}")
+        return None
