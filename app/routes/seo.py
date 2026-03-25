@@ -126,3 +126,19 @@ def traffic_advice():
         content=json.dumps(data),
         media_type="application/trafficadvice+json"
     )
+
+
+@router.get("/.well-known/assetlinks.json", include_in_schema=False)
+def asset_links():
+    return Response(
+        content="[]",
+        media_type="application/json"
+    )
+
+
+@router.get("/.well-known/security.txt", include_in_schema=False)
+def security_txt():
+    content = """Contact: mailto:soporte@codepyhub.com
+Expires: 2026-12-31T23:59:59.000Z
+"""
+    return Response(content=content, media_type="text/plain")

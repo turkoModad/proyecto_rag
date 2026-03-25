@@ -14,7 +14,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="/static/android-chrome-512x512.png">
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
 <link rel="manifest" href="/static/site.webmanifest">
-<link rel="stylesheet" href="/frontend/css/styles.css?v=1.0.27">
+<link rel="stylesheet" href="/frontend/css/styles.css?v=1.0.28">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <meta property="og:title" content="Asistente IA de la Ley de Tránsito 24449">
 <meta property="og:description" content="Consultá normas de tránsito y la Ley 24449 usando inteligencia artificial.">
@@ -247,29 +247,31 @@ La <strong>Ley Nacional de Tránsito 24449</strong> establece reglas fundamental
 </section>
 
 <section class="contact-section">
-
     <div class="contact-box">
-
         <h2>Contacto y soporte del asistente vial</h2>
         <p class="contact-subtitle">
         Si tenés consultas sobre licencias de conducir, normativa vial en Argentina o el uso del asistente,
         podés comunicarte con nosotros. También podés sugerir mejoras, reportar errores o solicitar nuevas funcionalidades.
         </p>
-
+        
         <div class="contact-row">
             <input type="email" id="contactEmail" placeholder="Tu email" required>
         </div>
-
+        
         <textarea id="contactMessage" placeholder="Dejanos tu consulta..." required maxlength="600"></textarea>
-
-        <div class="contact-actions">
+        
+        <div class="contact-actions" style="display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;">
             <button onclick="sendContact()" id="contactBtn">Enviar mensaje</button>
+            
+            <a href='https://cafecito.app/codepyhub' rel='noopener' target='_blank'>
+                <img srcset='https://cdn.cafecito.app/imgs/buttons/button_2.png 1x, https://cdn.cafecito.app/imgs/buttons/button_2_2x.png 2x, https://cdn.cafecito.app/imgs/buttons/button_2_3.75x.png 3.75x' 
+                    src='https://cdn.cafecito.app/imgs/buttons/button_2.png' 
+                    alt='Invitame un café en cafecito.app' />
+            </a>
         </div>
-
-        <div class="contact-feedback" id="contactFeedback"></div>
-
+        
+        <div id="contactFeedback" style="display: none; margin-top: 15px; padding: 10px; border-radius: 8px;"></div>
     </div>
-
 </section>
 
 <section class="ai-disclaimer">

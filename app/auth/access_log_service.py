@@ -9,6 +9,12 @@ from typing import Optional
 logger = logging.getLogger("AccessLogService")
 
 
+def sanitize_string(value: Optional[str], max_length: int = 2000) -> Optional[str]:
+    if not value:
+        return None
+    return value[:max_length]
+
+
 async def log_access(
     db: AsyncSession,
     ip_address: str,
@@ -28,13 +34,13 @@ async def log_access(
         log_entry = AccessLog(
             ip_address=ip_address,
             user_id=user_id,
-            method=method,
-            endpoint=endpoint,
+            method=method[:10],
+            endpoint=sanitize_string(endpoint, 500),
             status_code=status_code,
-            user_agent=user_agent,
-            referer=referer,
+            user_agent=sanitize_string(user_agent, 2000),
+            referer=sanitize_string(referer, 2000),
             response_time_ms=response_time_ms,
-            cf_country=cf_country
+            cf_country=cf_country[:2] if cf_country else None
         )
         
         db.add(log_entry)
@@ -43,6 +49,7 @@ async def log_access(
         return log_entry
         
     except Exception as e:
+        await db.rollback()
         logger.error(f"Error guardando access log: {e}")
         return None
 

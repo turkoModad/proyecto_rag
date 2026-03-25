@@ -402,12 +402,10 @@ async def reset_password(
     if new_password != confirm_password:
         raise HTTPException(400, "Las contraseñas no coinciden")
     
-    # Validar fortaleza de la contraseña
     is_valid, msg = validate_password_strength(new_password)
     if not is_valid:
         raise HTTPException(400, msg)
     
-    # Buscar usuario por token
     user = await get_user_by_token(db, token)
     if not user:
         raise HTTPException(404, "Enlace inválido o expirado. Solicita uno nuevo.")

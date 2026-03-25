@@ -939,3 +939,25 @@ section:last-child{
     }
 
 }
+
+/* Efecto hover para el botón de Cafecito */
+.contact-actions a {
+    display: inline-block;
+    line-height: 0;
+    transition: transform 0.3s ease;
+}
+
+.contact-actions a:hover {
+    transform: scale(1.1);
+}
+
+/* Efecto hover para el botón de enviar */
+.contact-actions button {
+    margin: 0;
+    transition: transform 0.2s ease;
+    cursor: pointer;
+}
+
+.contact-actions button:hover {
+    transform: scale(1.05);
+}
