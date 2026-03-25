@@ -34,7 +34,6 @@
 
             <button type="submit" class="auth-btn">Entrar</button>
 
-            <!-- Enlace para recuperar contraseña -->
             <div class="forgot-password-link" style="text-align: center; margin-top: 15px;">
                 <a href="/auth/forgot-password" style="color: #1a73e8; text-decoration: none; font-size: 0.9rem;">¿Olvidaste tu contraseña?</a>
             </div>
@@ -44,11 +43,13 @@
             <p>¿No tienes cuenta?</p>
             <a href="/frontend/register.html" class="auth-btn" style="color: white">Crear cuenta</a>
         </div>
+        <div class="forgot-password-link" style="text-align: center; margin-top: 15px;">
+        <a href="/frontend/index.html" style="color: #1a73e8; text-decoration: none; font-size: 0.9rem; ">Volver al inicio</a>
+        </div>
     </div>
 </div>
 
 <script>
-// Toggle password visibility
 document.querySelectorAll('.toggle-pass').forEach(el => {
     el.addEventListener('click', () => {
         const input = el.previousElementSibling;
@@ -62,7 +63,6 @@ document.querySelectorAll('.toggle-pass').forEach(el => {
     });
 });
 
-// Login form submission
 document.getElementById('loginForm').onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
