@@ -4,6 +4,10 @@ import torch
 torch.multiprocessing.set_start_method("spawn", force=True)
 import os
 os.environ["VLLM_WORKER_MULTIPROC_METHOD"] = "spawn"
+os.environ["VLLM_CONFIGURE_LOGGING"] = "0"
+
+from app.core.logging_config import setup_logging
+setup_logging()
 
 import gc
 import asyncio
@@ -44,9 +48,6 @@ from app.routes.contact import router as contact_router
 from app.middleware.seo_middleware import seo_performance_middleware
 
 
-# LOGGING
-logging.basicConfig(level=logging.INFO)
-
 logger = logging.getLogger("Main")
 
 
@@ -55,21 +56,17 @@ logger = logging.getLogger("Main")
 async def lifespan(app: FastAPI):
 
     try:
-        logger.info("Iniciando DB...")
         await create_database_if_not_exists()
         await create_tables()
 
-        logger.info("Iniciando servicios RAG...")
         cargar_modelos()
         ensure_qa_collection()
 
         if collection_is_empty():
-            logger.info("Base de datos vacía. Iniciando ingesta de dataset...")
             load_dataset_to_qdrant()
 
         app.state.worker_task = asyncio.create_task(llm_batch_worker())
 
-        logger.info("Sistema RAG listo y Worker en ejecución.")
         app.state.cleanup_task = asyncio.create_task(scheduled_cleanup())
 
     except Exception as e:
@@ -78,8 +75,6 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    # SHUTDOWN 
-    logger.info("Cerrando servicios...")
 
     app.state.cleanup_task.cancel()
     try:
@@ -105,7 +100,6 @@ async def lifespan(app: FastAPI):
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
 
-    logger.info("Sistema cerrado correctamente.")
 
 
 # APP
@@ -120,7 +114,6 @@ app = FastAPI(
 )
 
 app.add_middleware(SecurityMiddleware)
-# app.add_middleware(AutoRefreshMiddleware)
 app.middleware("http")(seo_performance_middleware)
 
 
@@ -190,7 +183,6 @@ else:
 
 
 if __name__ == "__main__":
-    logger.info("Ejecutando servidor...")
     warnings.filterwarnings("ignore")
 
     try:
@@ -200,6 +192,7 @@ if __name__ == "__main__":
             port=8000,
             reload=False,
             log_level="info",
+            access_log=False,
             proxy_headers=True,
             forwarded_allow_ips="*",
             server_header=False,

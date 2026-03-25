@@ -28,7 +28,8 @@ async def log_access(
     cf_country: Optional[str] = None
 ) -> Optional[AccessLog]:
     """
-    Registra un acceso a cualquier endpoint
+    Registra un acceso a cualquier endpoint.
+    NO hace commit ni rollback.
     """
     try:
         log_entry = AccessLog(
@@ -44,13 +45,11 @@ async def log_access(
         )
         
         db.add(log_entry)
-        await db.commit()
-        
+
         return log_entry
         
     except Exception as e:
-        await db.rollback()
-        logger.error(f"Error guardando access log: {e}")
+        logger.error(f"Error creando access log (sin commit): {e}")
         return None
 
 

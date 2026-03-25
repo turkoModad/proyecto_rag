@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Request, Depends, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import get_current_user, get_db
+from app.auth.database import get_db
+from app.auth.dependencies import get_current_user
 from app.service import qa_cache
 from app.routes.ask import get_real_ip
 
@@ -17,7 +18,6 @@ async def get_usage(
 ):
     ip_address = get_real_ip(request)
 
-    # USUARIO AUTENTICADO
     if current_user:
         limit_info = await qa_cache.check_user_limit(db, current_user)
 
@@ -33,7 +33,6 @@ async def get_usage(
         }
     
 
-    # USUARIO ANÓNIMO
     limit_info = await qa_cache.check_anonymous_limit(db, ip_address)
 
     return {

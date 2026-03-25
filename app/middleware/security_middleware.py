@@ -28,7 +28,6 @@ class InMemoryRateLimiter:
         self.requests: Dict[str, list] = defaultdict(list)
         self.blocked_ips: Dict[str, Tuple[datetime, str]] = {}
         self.failed_attempts: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))
-        # Última limpieza general
         self.last_cleanup = datetime.now(timezone.utc)
 
 
@@ -78,7 +77,6 @@ class InMemoryRateLimiter:
             if datetime.now(timezone.utc) < blocked_until:
                 return True, reason
             else:
-                # Expiró el bloqueo
                 del self.blocked_ips[ip]
         return False, None
     
@@ -109,7 +107,6 @@ class InMemoryRateLimiter:
         """Limpia intentos fallidos tras éxito"""
         if ip in self.failed_attempts:
             self.failed_attempts[ip].pop(endpoint, None)
-            # Si ya no quedan endpoints, eliminar la entrada de la IP
             if not self.failed_attempts[ip]:
                 del self.failed_attempts[ip]
 
@@ -120,7 +117,6 @@ class InMemoryRateLimiter:
         self.blocked_ips[ip] = (blocked_until, reason)
         logger.warning(f"IP bloqueada: {ip} hasta {blocked_until} - {reason}")
         
-        # Limpiar datos de esta IP
         self.requests.pop(ip, None)
         self.failed_attempts.pop(ip, None)
 
@@ -144,8 +140,10 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         ip_address = self._get_real_ip(request)
         endpoint = request.url.path
         method = request.method
+
+        logger.info(f"REQUEST | IP: {ip_address} | {method} {endpoint}")
         
-        # PASO 1: Verificar si IP está bloqueada (SIEMPRE)
+        # PASO 1: Verificar si IP está bloqueada
         blocked, reason = rate_limiter.is_blocked(ip_address)
         if blocked:
             logger.warning(f"Petición bloqueada de {ip_address} a {endpoint}: {reason}")
@@ -163,14 +161,11 @@ class SecurityMiddleware(BaseHTTPMiddleware):
             ip_address, 
             RATE_LIMIT_WINDOW_MINUTES
         )
-        
-        # Log para debug (puedes eliminarlo en producción)
-        logger.debug(f"RATE LIMIT - IP: {ip_address}, Endpoint: {endpoint}, Count: {request_count}, Limit: {RATE_LIMIT_REQUESTS_PER_MINUTE}")
-        
+                
         if request_count >= RATE_LIMIT_REQUESTS_PER_MINUTE:
             logger.warning(f"RATE LIMIT EXCEDIDO: {ip_address} - {request_count} requests en {RATE_LIMIT_WINDOW_MINUTES} minuto(s)")
             
-            # Bloquear IP si excede mucho el límite (opcional)
+            # Bloquear IP si excede mucho el límite
             if request_count >= RATE_LIMIT_REQUESTS_PER_MINUTE * 3:
                 rate_limiter.block_ip(
                     ip_address, 
@@ -193,7 +188,7 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         rate_limiter.add_request(ip_address)
         
         # PASO 4: Procesar la petición
-        status_code = 200  # Valor por defecto
+        status_code = 200  
         try:
             response = await call_next(request)
             status_code = response.status_code
@@ -208,20 +203,18 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         except Exception as e:
             status_code = 500
             logger.error(f"Error en request: {e}")
-            raise e  # Relanzar para que FastAPI lo maneje
+            raise e  
         finally:
             response_time_ms = int((time.time() - start_time) * 1000)
             
-            # Obtener usuario (si está autenticado) para el log
             user_id = None
             try:
                 user = await get_current_user_from_request(request)
                 if user:
                     user_id = user.get("sub")
             except Exception:
-                pass  # No interrumpir el flujo si falla
+                pass  
             
-            # Log asíncrono a base de datos
             asyncio.create_task(
                 self._log_to_database(
                     ip_address=ip_address,
@@ -241,7 +234,6 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         
-        # Opcional: agregar headers de rate limit en respuestas exitosas
         remaining = max(0, RATE_LIMIT_REQUESTS_PER_MINUTE - request_count - 1)
         response.headers["X-RateLimit-Limit"] = str(RATE_LIMIT_REQUESTS_PER_MINUTE)
         response.headers["X-RateLimit-Remaining"] = str(remaining)
@@ -264,5 +256,6 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         try:
             async with AsyncSessionLocal() as db:
                 await log_access(db=db, **kwargs)
+                await db.commit() 
         except Exception as e:
             logger.error(f"Error guardando access log: {e}")

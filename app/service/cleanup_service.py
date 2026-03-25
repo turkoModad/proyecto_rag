@@ -49,7 +49,6 @@ class CleanupService:
                     logger.debug(f"No hay logs anteriores a {cutoff_local} (hora local) para eliminar")
                     return
                 
-                logger.info(f"Eliminando {count} logs anteriores a {cutoff_local} (hora local)")
                 
                 result = await db.execute(
                     delete(AccessLog).where(AccessLog.timestamp < cutoff)
@@ -64,21 +63,12 @@ class CleanupService:
                     )
                     remaining_count = remaining.scalar()
                     
-                    if remaining_count > 0:
-                        logger.warning(
-                            f"Eliminación parcial: {result.rowcount} de {count} logs. "
-                            f"Quedan {remaining_count} sin eliminar"
-                        )
-                    else:
-                        logger.info(f"Todos los logs eliminados (rowcount: {result.rowcount}")
                         
         except SQLAlchemyError as e:
             logger.error(f"Error de base de datos en limpieza: {e}")
-            logger.debug(traceback.format_exc())
 
         except Exception as e:
             logger.error(f"Error inesperado en limpieza: {e}")
-            logger.debug(traceback.format_exc())
 
     
     async def wait_until_next_run(self):
@@ -119,25 +109,15 @@ class CleanupService:
         
         wait_seconds = (next_run_utc - now_utc).total_seconds()
         
-        hours = int(wait_seconds // 3600)
-        minutes = int((wait_seconds % 3600) // 60)
-        seconds = int(wait_seconds % 60)
-        
-        logger.info(f"Próxima limpieza: {next_run_local.strftime('%Y-%m-%d %H:%M:%S')} (hora Argentina) "
-                   f"/ {next_run_utc.strftime('%Y-%m-%d %H:%M:%S UTC')} "
-                   f"(en {hours}h {minutes}m {seconds}s)")
-        
         return wait_seconds
     
     
     async def run(self):
         """Ejecuta el servicio de limpieza continuamente"""
         self.running = True
-        logger.info("Servicio de limpieza de logs iniciado (usando hora local Argentina)")
         
         await asyncio.sleep(10)
         
-        logger.info("Ejecutando limpieza inicial...")
         await self.cleanup_old_logs()
         
         while self.running:
@@ -155,7 +135,6 @@ class CleanupService:
                     break
                 
                 # Ejecutar limpieza programada
-                logger.info("Ejecutando limpieza programada...")
                 await self.cleanup_old_logs()
                 
             except asyncio.CancelledError:
@@ -169,7 +148,6 @@ class CleanupService:
     
     async def stop(self):
         """Detiene el servicio de limpieza"""
-        logger.info("Deteniendo servicio de limpieza...")
         self.running = False
         if self.task and not self.task.done():
             self.task.cancel()
@@ -177,7 +155,6 @@ class CleanupService:
                 await self.task
             except asyncio.CancelledError:
                 pass
-        logger.info("Servicio de limpieza detenido")
 
 
 _cleanup_service = None

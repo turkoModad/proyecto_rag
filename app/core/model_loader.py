@@ -36,7 +36,6 @@ def cargar_modelos():
     """
     # 1. CARGA DEL CLASIFICADOR
     try:
-        logger.info("Cargando modelo: [CLASIFICADOR]")
         state.clf_tokenizer = AutoTokenizer.from_pretrained(CLASIFICADOR, trust_remote_code=True)
         state.clf_model = AutoModelForSequenceClassification.from_pretrained(
             CLASIFICADOR,
@@ -51,7 +50,6 @@ def cargar_modelos():
 
     # 2. CARGA DE EMBEDDINGS
     try:
-        logger.info("Cargando modelo: [EMBEDDINGS]")
         state.emb_tokenizer = AutoTokenizer.from_pretrained(
             EMBEDDING,
             local_files_only=True
@@ -69,7 +67,6 @@ def cargar_modelos():
 
     # 3. CARGA DEL RERANKER 
     try:
-        logger.info("Cargando modelo: [RERANKER]")
         state.rerank_tokenizer = AutoTokenizer.from_pretrained(RERANKER)
         state.rerank_model = AutoModelForSequenceClassification.from_pretrained(
             RERANKER,
@@ -86,7 +83,6 @@ def cargar_modelos():
 
     # 4. CARGA DEL GENERADOR (vLLM)
     try:
-        logger.info("Cargando modelo: [GENERADOR LLM]")
         state.llm = LLM(
                 model=MODELO_GENERADOR,
                 gpu_memory_utilization=UTILIZACION_GPU,

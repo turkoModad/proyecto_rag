@@ -29,16 +29,6 @@ PREGUNTA DEL USUARIO:
 {question_text}
 
 RESPUESTA:"""
-
-        # Logs
-        logger.info("=" * 80)
-        logger.info("📝 PROMPT ENVIADO AL MODELO:")
-        logger.info("=" * 80)
-        logger.info(prompt)
-        logger.info("=" * 80)
-        logger.info(f"📊 Estadísticas: {len(prompt)} caracteres")
-        logger.info("=" * 80)
-
         future = asyncio.get_running_loop().create_future()
 
         await state.llm_queue.put({

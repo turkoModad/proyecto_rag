@@ -9,6 +9,7 @@ load_dotenv()
 logger = logging.getLogger("Security")
 logger.setLevel(logging.INFO)
 
+
 if not logger.handlers:
     handler = logging.StreamHandler()
     formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s")
@@ -70,7 +71,7 @@ def generate_var_id(value: str) -> str:
 
 
 # ----------------------------
-# NUEVO: HASH DETERMINÍSTICO PARA EMAILS
+# HASH DETERMINÍSTICO PARA EMAILS
 # ----------------------------
 def hash_email(email: str) -> str:
     """

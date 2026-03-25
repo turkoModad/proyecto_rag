@@ -46,7 +46,6 @@ def enviar_email(receiver_email: str, subject: str, body_html: str) -> bool:
         server.sendmail(SENDER_EMAIL, receiver_email, mensaje.as_string())
         server.quit()
 
-        logger.info(f"Email enviado correctamente a {masked_email}")
         return True
 
     except smtplib.SMTPAuthenticationError:
@@ -103,7 +102,6 @@ def enviar_otp(receiver_email: str) -> dict:
     masked_email = _mask_email(receiver_email)
     enviado = enviar_email(receiver_email, "Código OTP de Verificación", html_body)
     if enviado:
-        logger.info(f"OTP y token enviados exitosamente a {masked_email}")
         return {"otp": otp, "token": token, "email_hash": email_hash}
     else:
         logger.warning(f"No se pudo enviar OTP a {masked_email}")
@@ -147,7 +145,6 @@ def enviar_reset_email(receiver_email: str) -> str:
     enviado = enviar_email(receiver_email, "Recuperación de contraseña - Asistente Vial", html_body)
     
     if enviado:
-        logger.info(f"Email de recuperación enviado a {masked_email}")
         return token
     else:
         logger.warning(f"No se pudo enviar email de recuperación a {masked_email}")

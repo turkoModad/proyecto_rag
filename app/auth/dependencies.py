@@ -2,20 +2,13 @@ from fastapi import Depends, HTTPException, status, Request
 from app.auth.database import AsyncSessionLocal
 from app.auth.jwt_handler import verify_token
 import logging
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from app.auth.models import User
+from app.auth.database import get_db
+
 
 logger = logging.getLogger("AuthDeps")
-
-
-async def get_db():
-    async with AsyncSessionLocal() as session:
-        try:
-            yield session
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
 
 
 async def get_current_user(request: Request):
@@ -41,6 +34,8 @@ async def get_current_user(request: Request):
         return payload
     except Exception as e:
         raise HTTPException(status_code=401, detail="Invalid token")
+
+
 
 
 async def get_current_user_required(current_user: dict = Depends(get_current_user)):
@@ -93,3 +88,50 @@ async def get_current_user_with_check(request: Request):
     Por consistencia, la dejamos igual a get_current_user.
     """
     return await get_current_user(request)
+
+
+
+async def get_current_user_db(
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    if current_user is None:
+        return None
+
+    user_id = current_user.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Token inválido (sin subject)"
+        )
+
+    result = await db.execute(
+        select(User).where(User.id == user_id)
+    )
+    db_user = result.scalar_one_or_none()
+
+    if not db_user:
+        raise HTTPException(
+            status_code=401,
+            detail="Usuario no existe"
+        )
+
+    if db_user.is_blocked:
+        raise HTTPException(
+            status_code=403,
+            detail="Usuario bloqueado"
+        )
+
+    return db_user
+
+
+async def get_current_user_required_db(
+    user = Depends(get_current_user_db)
+):
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Se requiere autenticación"
+        )
+    return user

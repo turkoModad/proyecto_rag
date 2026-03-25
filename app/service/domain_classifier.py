@@ -25,19 +25,9 @@ async def is_in_domain(text, current_user, db, ip_address, user_agent, start_tim
 
         in_domain_prob = float(probs[IN_DOMAIN_LABEL])
         out_domain_prob = float(probs[1 - IN_DOMAIN_LABEL])
-
-        # -----------------------------
-        # DEBUG CLASIFICADOR
-        # -----------------------------
-        logger.info("========== DOMAIN CLASSIFIER DEBUG ==========")
-        logger.info(f"PREGUNTA: {text}")
-        logger.info(f"IN_DOMAIN_PROB: {in_domain_prob:.4f}")
-        logger.info(f"OUT_DOMAIN_PROB: {out_domain_prob:.4f}")
-        logger.info(f"PREDICTED_CLASS: {predicted_class}")
-        logger.info("==============================================")        
+       
 
         return predicted_class == IN_DOMAIN_LABEL  
-        # return True
 
 
     except Exception as e:

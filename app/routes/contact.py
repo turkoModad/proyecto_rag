@@ -6,7 +6,8 @@ import re
 
 from email_service.email_sender import enviar_email
 from app.core.config import RECIPIENT_EMAIL, LIMITE_CARACTERES_MENSAJE
-from app.auth.dependencies import get_db, get_current_user
+from app.auth.dependencies import get_current_user
+from app.auth.database import get_db
 from app.auth.models import ContactMessage
 from app.auth.service import get_user_by_email
 from app.core.security import hash_email
@@ -41,14 +42,12 @@ async def send_contact(
         ip_address = request.headers.get("CF-Connecting-IP") or request.client.host
         is_authenticated = current_user is not None and current_user.get('email')
         
-        logger.info(f"Contacto - Autenticado: {is_authenticated}, IP: {ip_address}")
-        
+       
         # ============================================
         # CASO 1: USUARIO REGISTRADO Y AUTENTICADO
         # ============================================
         if is_authenticated:
             user_email = current_user['email']
-            logger.info(f"Usuario autenticado: {user_email}")
             
             # Enviar email al ADMIN
             subject_admin = "📩 Nuevo mensaje - Usuario autenticado"
@@ -133,13 +132,12 @@ async def send_contact(
                 except Exception as e:
                     logger.error(f"Error enviando email a {user_email}: {e}")
             
-            # Construir respuesta genérica (no revelar si está registrado)
+            # Construir respuesta genérica
             response_message = "Mensaje recibido. Gracias por tu consulta."
             if user_email and not is_registered and email_sent:
                 response_message = "Mensaje recibido. Te enviamos una confirmación a tu email."
             elif user_email and not is_registered and not email_sent:
                 response_message = "Mensaje recibido. No pudimos enviarte confirmación, pero tu mensaje está guardado."
-            # Si el email está registrado, no mencionamos nada especial
             
             return {
                 "message": response_message,

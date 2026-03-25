@@ -14,10 +14,6 @@ async def llm_batch_worker():
     Seguro para producción.
     """
 
-    logger.info(
-        f"Worker iniciado | Batch Size: {LLM_BATCH_SIZE} | Max Wait: {LLM_BATCH_TIMEOUT}s"
-    )
-
     while True:
         batch = []
         start_time = time.perf_counter()

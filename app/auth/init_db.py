@@ -17,21 +17,16 @@ async def create_database_if_not_exists():
         exists = result.scalar()
 
         if not exists:
-            logger.info("Estado DB: [NO ENCONTRADA] -> Creando base de datos...")
             await conn.execute(text("COMMIT"))
             await conn.execute(text(f'CREATE DATABASE "{DB_NAME}"'))
-            logger.info("Estado DB: [CREADA EXITOSAMENTE]")
-        else:
-            logger.info("Estado DB: [VERIFICADA/EXISTENTE]")
+
 
 
 async def create_tables():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-        logger.info("Estado Tablas: [SINCRONIZADAS]")
 
 
 async def close_db_connections():
     await engine.dispose()
     await admin_engine.dispose()
-    logger.info("Conexiones DB: [CERRADAS]")

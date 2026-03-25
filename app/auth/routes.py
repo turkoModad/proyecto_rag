@@ -7,7 +7,7 @@ from datetime import timedelta
 import jwt  
 
 from app.auth.schemas import UserCreate
-from app.auth.dependencies import get_db
+from app.auth.database import get_db
 from app.auth.service import (
     create_user,
     authenticate_user,

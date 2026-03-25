@@ -46,13 +46,11 @@ def retrieve_context(question_text: str):
         results = search_ley(query_embedding, TOP_K)
 
         if not results:
-            logger.info("Sin resultados en búsqueda vectorial.")
             return "", []
 
 
         # 4- RERANK CONDICIONAL
         if len(results) > 1 and results[0].score < SECURITY:
-            logger.info("Aplicando rerank por score bajo.")
             results = rerank(question_text, results)
 
         # Limitar resultados finales
@@ -96,7 +94,6 @@ def retrieve_context(question_text: str):
 
         # si no hay contenido
         if not context_parts:
-            logger.info("Resultados encontrados pero sin contenido útil.")
             return "", [], None
 
 
@@ -111,10 +108,6 @@ def retrieve_context(question_text: str):
 
         context_text = "\n\n---\n\n".join(context_parts)
 
-        logger.info(
-            f"Retrieval OK | chunks={len(context_parts)} | "
-            f"max_score={max(top_scores):.4f}"
-        )
 
         return context_text, top_scores, top_metadata
 

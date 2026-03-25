@@ -43,11 +43,6 @@ async def get_last_user_query(
     result = await db.execute(query)
     last_query = result.scalar_one_or_none()
     
-    if last_query:
-        logger.info(f"Última consulta encontrada: {last_query.question[:50]}...")
-    else:
-        logger.debug("No se encontró consulta previa")
-    
     return last_query
 
 

@@ -1,13 +1,11 @@
 import logging
 import time
-from sklearn.metrics.pairwise import cosine_similarity
 from app.service.embedding import get_embedding
 from app.db.vector_operations import search_qa_cache
 from app.auth.service import count_user_queries, count_anonymous_queries, log_query
 from app.core.config import SIM_CTX, TEMPERATURE, LIMITE_CON_AUTH, LIMITE_SIN_AUTH
 from app.engine.auto_cache import append_qa_cache, should_autocache
-import asyncio
-from fastapi import HTTPException
+
 
 logger = logging.getLogger("QACacheService")
 
@@ -21,7 +19,6 @@ async def check_anonymous_limit(db, ip_address: str):
     Retorna dict con información del límite en lugar de lanzar excepción
     """
     count = await count_anonymous_queries(db, ip_address, "/ask")
-    logger.info(f"Anon query #{count+1} from {ip_address}")
     
     is_limited = count >= LIMITE_SIN_AUTH
     
@@ -42,13 +39,12 @@ async def check_user_limit(db, current_user: dict):
     if current_user["role"] != "free":
         return {
             "count": 0,
-            "limit": None,  # Sin límite
+            "limit": None,  
             "is_limited": False,
-            "remaining": None  # Ilimitado
+            "remaining": None  
         }
     
     count = await count_user_queries(db, current_user["sub"])
-    logger.info(f"User {current_user['sub']} queries: {count}")
     
     is_limited = count >= LIMITE_CON_AUTH
     
@@ -69,12 +65,6 @@ async def try_cache(query_text, rewritten_query, current_user, db, ip_address, u
         qa_hit, qa_score = search_qa_cache(q_emb)
 
         if qa_hit:
-            # logger.info("========== QA CACHE VALIDATION ==========")
-            # logger.info(f"[QA DEBUG] QA_SCORE={qa_score:.4f}")
-            # logger.info(f"[QA DEBUG] SIM_THRESHOLD={SIM_CTX:.4f}")
-            # logger.info(f"[QA DEBUG] Pregunta: {query_text}")
-            # logger.info(f"[QA DEBUG] Respuesta cache: {qa_hit.get('respuesta')}")
-            # logger.info("==========================================")
 
             if qa_score >= SIM_CTX:
                 end_time = time.time()

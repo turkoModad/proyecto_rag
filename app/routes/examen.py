@@ -85,7 +85,6 @@ async def examen_page():
 
 @router.get("/examen/data")
 async def generar_examen(cantidad: int = 20):
-    # CORREGIDO: Permitir hasta 100 preguntas
     cantidad = max(20, min(cantidad, MAX_PREGUNTAS))  
     cantidad = min(cantidad, len(PREGUNTAS_DB))      
 
@@ -97,7 +96,6 @@ async def generar_examen(cantidad: int = 20):
         opciones = p["respuestas"].copy()
         random.shuffle(opciones)
 
-        # Guardar el índice de la correcta
         correcta_texto = p["correcta"]
         correcta_index = opciones.index(correcta_texto)
 
@@ -127,7 +125,7 @@ async def evaluar(data: EvaluacionRequest):
 
     ahora = datetime.now(timezone.utc)
 
-    if ahora - start_time > timedelta(seconds=DURACION_EXAMEN + 60):  # Tolerancia
+    if ahora - start_time > timedelta(seconds=DURACION_EXAMEN + 60):  
         return {
             "error": "Tiempo excedido",
             "resultado": 0,

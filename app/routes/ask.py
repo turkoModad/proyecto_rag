@@ -2,7 +2,8 @@ from fastapi import APIRouter, Request, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, model_validator
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.auth.dependencies import get_current_user, get_db
+from app.auth.database import get_db
+from app.auth.dependencies import get_current_user
 from app.service import qa_cache, domain_classifier, rag, llm
 from app.auth.contexto import get_last_user_query, build_conversation_context
 
@@ -99,11 +100,6 @@ async def process_query(
             conversation_context
         )
 
-        logger.info(
-            "[REWRITER]\n"
-            f"  original   : {consulta_usuario}\n"
-            f"  rewritten  : {consulta_busqueda}"
-        )
 
         # =========================================================
         # 4. CACHE (con rewritten)
@@ -119,7 +115,6 @@ async def process_query(
         )
 
         if cached:
-            logger.info("[CACHE] HIT")
             return cached
 
         # =========================================================
@@ -151,11 +146,9 @@ async def process_query(
 
             return {
                 "question": consulta_usuario,
-                "response": "Solo respondo sobre la Ley de Tránsito (24.449).",
+                "response": "No estoy seguro de si entendí bien tu consulta. Por ahora, mi especialidad es brindar información sobre la Ley de Tránsito (24.449). Si tu pregunta está relacionada con normas de conducción, seguridad vial o reglamentaciones de tránsito, ¿podrías reformularla o darme más detalles? Así podré buscar la respuesta exacta para ti dentro de la ley.",
                 "is_domain": False
             }
-
-        logger.info("[DOMAIN] OK")
 
         # =========================================================
         # 6. RAG
@@ -165,16 +158,6 @@ async def process_query(
             consulta_busqueda
         )
 
-
-        logger.info(f"[METADATA] {metadata}")
-
-        logger.info(
-            "[RAG]\n"
-            f"  original   : {consulta_usuario}\n"
-            f"  rewritten  : {consulta_busqueda}\n"
-            f"  scores     : {[round(s,4) for s in top_scores]}\n"
-            f"  ctx_len    : {len(context_text)}"
-        )
 
         # =========================================================
         # 7. CONTEXTO FINAL LLM (CORREGIDO)
