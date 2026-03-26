@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.database import get_db
 from app.auth.access_log_service import get_suspicious_ips, get_endpoint_hits
-from app.administracion.admin_security import require_admin
+from app.administracion.security.admin_security import require_admin
 from app.middleware.security_middleware import rate_limiter
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import select, func

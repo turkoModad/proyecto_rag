@@ -66,8 +66,8 @@ body {
 .app{
     width:100%;
     max-width:900px;
-    height:70vh;
-    min-height:680px;
+    height:85vh;
+    min-height:800px;
     background:#2530d6;
     border-radius:32px;
     box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);
@@ -154,7 +154,7 @@ body {
 
 /* CHAT WINDOW */
 .chat-window {
-    flex: 1;
+    flex: 1.5;
     overflow-y: auto;
     padding: 24px;
     background: #f9fafc;

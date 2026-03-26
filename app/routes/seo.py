@@ -14,14 +14,15 @@ def robots():
     content = f"""User-agent: *
 Allow: /
 
-Disallow: /ask
-Disallow: /docs
+Disallow: /ask/
+Disallow: /docs/
 Disallow: /openapi.json
 Disallow: /auth/
 Disallow: /admin/
 Disallow: /security/
-Disallow: /usage
-Disallow: /contact
+Disallow: /vector/
+Disallow: /usage/
+Disallow: /contact/
 
 
 Sitemap: {BASE_URL}/sitemap.xml

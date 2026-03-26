@@ -134,6 +134,8 @@ class SecurityMiddleware(BaseHTTPMiddleware):
     """
     
     async def dispatch(self, request: Request, call_next):
+        if request.url.path.startswith(("/static", "/frontend", "/favicon.ico")):
+            return await call_next(request)
         start_time = time.time()
         
         # Obtener IP real (Cloudflare)

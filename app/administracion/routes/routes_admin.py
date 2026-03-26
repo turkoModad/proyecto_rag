@@ -1,71 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
-import uuid
-import time
 
-from qdrant_client.models import PointStruct
-from app.service.embedding import get_embedding
-from app.db.vector_client import client
-from app.core.config import COLLECTION_QA
-from app.administracion.admin_security import require_admin
+from app.administracion.security.admin_security import require_admin
 from app.auth.database import get_db
 from app.auth.models import User, AccessLog
+from app.core.config import VALID_ROLES
 
 
 router = APIRouter(
     prefix="/admin",
     dependencies=[Depends(require_admin)]
 )
-
-VALID_ROLES = ["free", "admin"]
-
-
-# =========================
-# INGEST QA
-# =========================
-@router.post("/ingest_qa")
-async def ingest(data: dict):
-    pregunta = data.get("pregunta")
-    respuesta = data.get("respuesta")
-
-    if not pregunta or not respuesta:
-        raise HTTPException(status_code=400, detail="Pregunta o respuesta faltante")
-
-    if len(pregunta) > 1000 or len(respuesta) > 3000:
-        raise HTTPException(status_code=400, detail="Texto demasiado largo")
-
-    vector = get_embedding(pregunta, prefix="passage")
-
-    if vector is None:
-        raise HTTPException(status_code=500, detail="Error generando embedding")
-
-    if hasattr(vector, "tolist"):
-        vector = vector.tolist()
-
-    payload = {
-        "pregunta": pregunta,
-        "respuesta": respuesta,
-        "contexto": f"{pregunta}\n{respuesta}",
-        "tipo": "qa_manual",
-        "timestamp": int(time.time())
-    }
-
-    point = PointStruct(
-        id=str(uuid.uuid4()),
-        vector=vector,
-        payload=payload
-    )
-
-    try:
-        client.upsert(
-            collection_name=COLLECTION_QA,
-            points=[point]
-        )
-    except Exception:
-        raise HTTPException(status_code=500, detail="Error guardando en vector DB")
-
-    return {"status": "ok"}
 
 
 # =========================

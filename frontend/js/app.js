@@ -446,7 +446,6 @@ document.addEventListener("DOMContentLoaded", () => {
     async function sendContact() {
         if (!contactEmail || !contactMessage || !contactBtn || !contactFeedback) return;
         
-        // Si el usuario está autenticado, forzamos una petición de verificación para refrescar token
         if (isLogged) {
             try {
                 console.log("Verificando sesión antes de enviar mensaje...");
@@ -454,7 +453,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (!usageRes.ok) {
                     throw new Error("Error al renovar sesión");
                 }
-                // Pequeña pausa para asegurar que la cookie se haya actualizado (opcional)
                 await new Promise(resolve => setTimeout(resolve, 100));
             } catch (e) {
                 contactFeedback.className = "contact-feedback error";

@@ -40,7 +40,8 @@ from app.db.vector_operations import (
 from app.routes import seo
 from app.routes.usage import router as usage_router
 from app.routes.faq import router as faq_router
-from app.administracion.routes_admin import router as router_admin
+from app.administracion.routes.routes_admin import router as router_admin
+from app.administracion.routes.db_admin import router as router_vector_admin
 from app.routes.examen import router as examen_router
 from app.middleware.security_middleware import SecurityMiddleware
 from app.routes import security_monitor
@@ -107,7 +108,7 @@ app = FastAPI(
     title="Seguridad Vial API",
     version="1.0.0",
     lifespan=lifespan,
-    redirect_slashes=False,
+    redirect_slashes=True,
     docs_url=None,
     redoc_url=None,
     openapi_url=None,
@@ -125,6 +126,7 @@ app.include_router(faq_router)
 app.include_router(router_admin)
 app.include_router(examen_router)
 app.include_router(contact_router)
+app.include_router(router_vector_admin)
 app.include_router(security_monitor.router)
 
 
