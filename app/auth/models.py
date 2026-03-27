@@ -109,3 +109,27 @@ class ContactMessage(Base):
     ip_address = Column(String(255), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     is_registered = Column(Boolean, default=False)
+
+
+class Review(Base):
+    __tablename__ = "reviews"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)  
+    ip_address = Column(String(45), nullable=True)  
+    rating = Column(Integer, nullable=False)  
+    comment = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User")  
+
+
+class Visit(Base):
+    __tablename__ = "visits"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    ip_address = Column(String(45), unique=True, nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    first_visit = Column(DateTime(timezone=True), server_default=func.now())
+    last_visit = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    visit_count = Column(Integer, default=1)

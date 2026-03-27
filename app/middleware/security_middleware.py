@@ -10,6 +10,8 @@ import logging
 from app.auth.database import AsyncSessionLocal
 from app.auth.access_log_service import log_access
 from app.auth.dependencies import get_current_user_from_request
+from app.analytics.contador_de_visitas import register_visit
+
 from app.core.config import (
     RATE_LIMIT_REQUESTS_PER_MINUTE,
     RATE_LIMIT_WINDOW_MINUTES,
@@ -143,8 +145,20 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         endpoint = request.url.path
         method = request.method
 
-        logger.info(f"REQUEST | IP: {ip_address} | {method} {endpoint}")
+        user_id = None
+        try:
+            user = await get_current_user_from_request(request)
+            if user:
+                user_id = user.get("sub")
+
+        except Exception:
+            pass
         
+        asyncio.create_task(register_visit(ip_address=ip_address, user_id=user_id))
+
+        logger.info(f"REQUEST | IP: {ip_address} | {method} {endpoint}")
+
+
         # PASO 1: Verificar si IP está bloqueada
         blocked, reason = rate_limiter.is_blocked(ip_address)
         if blocked:

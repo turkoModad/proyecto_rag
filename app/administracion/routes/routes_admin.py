@@ -4,7 +4,7 @@ from sqlalchemy import select, func
 
 from app.administracion.security.admin_security import require_admin
 from app.auth.database import get_db
-from app.auth.models import User, AccessLog
+from app.auth.models import User, AccessLog, Visit
 from app.core.config import VALID_ROLES
 
 
@@ -125,9 +125,7 @@ async def get_ips_users(db: AsyncSession = Depends(get_db)):
     ]
 
 
-# =========================
-# ENDPOINTS
-# =========================
+
 @router.get("/top-endpoints")
 async def top_endpoints(db: AsyncSession = Depends(get_db)):
     result = await db.execute(
@@ -141,3 +139,19 @@ async def top_endpoints(db: AsyncSession = Depends(get_db)):
     )
 
     return [{"endpoint": r[0], "hits": r[1]} for r in result.all()]
+
+
+
+@router.get("/visits")
+async def get_visits(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Visit))
+    visits = result.scalars().all()
+    return [
+        {
+            "ip": v.ip_address,
+            "first_visit": v.first_visit,
+            "last_visit": v.last_visit,
+            "visit_count": v.visit_count
+        }
+        for v in visits
+    ]

@@ -14,7 +14,10 @@
 <link rel="icon" type="image/png" sizes="512x512" href="/static/android-chrome-512x512.png">
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
 <link rel="manifest" href="/static/site.webmanifest">
-<link rel="stylesheet" href="/frontend/css/styles.css?v=1.0.29">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="/frontend/css/styles.css?v=1.0.38">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <meta property="og:title" content="Asistente IA de la Ley de Tránsito 24449">
 <meta property="og:description" content="Consultá normas de tránsito y la Ley 24449 usando inteligencia artificial.">
@@ -27,6 +30,7 @@
 <meta name="twitter:description" content="Preguntá a una inteligencia artificial sobre normas de tránsito en Argentina">
 <meta property="og:image" content="https://seguridadvial.codepyhub.com/static/screenshot-desktop.png">
 <meta name="twitter:image" content="https://seguridadvial.codepyhub.com/static/screenshot-desktop.png">
+
 <script type="application/ld+json">
 {
 "@context":"https://schema.org",
@@ -264,7 +268,7 @@ La <strong>Ley Nacional de Tránsito 24449</strong> establece reglas fundamental
             <input type="email" id="contactEmail" placeholder="Tu email" required>
         </div>
         
-        <textarea id="contactMessage" placeholder="Dejanos tu consulta..." required maxlength="600"></textarea>
+        <textarea id="contactMessage" placeholder="Dejanos tu consulta..." rows="1" maxlength="600" required ></textarea>
         
         <div class="contact-actions" style="display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;">
             <button onclick="sendContact()" id="contactBtn">Enviar mensaje</button>
@@ -317,6 +321,22 @@ directa de la legislación vigente ni el asesoramiento de organismos oficiales o
 </section>
 
 </div>
-<script src="/frontend/js/app.js?v=1.5"></script>
+<script src="/frontend/js/app.js?v=1.61"></script>
+<script>
+  const textarea = document.querySelector('.input-area textarea');
+
+  textarea.addEventListener('input', e => {
+      e.target.style.height = 'auto';        
+      e.target.style.height = e.target.scrollHeight + 'px'; 
+  });
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('PWA: Asistente Vial listo'))
+            .catch(err => console.error('PWA: Error', err));
+    });
+  }
+</script>
 </body>
 </html>

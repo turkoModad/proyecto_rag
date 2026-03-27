@@ -11,12 +11,12 @@ body {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding: 16px 16px;
+    padding: 6px 6px;
 }
 
 .page{
     width:100%;
-    max-width:1100px;
+    max-width:1000px;
     margin:0 auto;
     display:flex;
     flex-direction:column;
@@ -307,6 +307,27 @@ body {
     transform: scale(0.98);
 }
 
+.input-area textarea {
+    flex: 1;
+    min-width: 0;
+    padding: 14px 18px;
+    border: 1px solid #e2e8f0;
+    border-radius: 40px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.2s;
+    background: #f8fafc;
+    resize: none; /* evita que el usuario arrastre el tamaño manualmente */
+    overflow: hidden; /* para que no aparezca scroll */
+    line-height: 1.4;
+}
+
+.input-area textarea:focus {
+    border-color: #0b2a4f;
+    box-shadow: 0 0 0 3px rgba(11, 42, 79, 0.1);
+    background: white;
+}
+
 /* SCROLLBAR */
 .chat-window::-webkit-scrollbar {
     width: 6px;
@@ -590,19 +611,19 @@ body {
 /* MOBILE */
 @media (max-width:900px){
     .welcome-title{
-        padding:28px 22px;
+        padding:6px 16px;
     }
     .welcome-title h1{
         font-size:1.5rem;
     }
     .seo-content{
-        padding:32px 24px;
+        padding:2px 16px;
     }
     .cta-login{
-        padding:30px 24px;
+        padding:2px 16px;
     }
     .ai-disclaimer{
-        padding:26px 22px;
+        padding:2px 16px;
     }
     .app{
         height:75vh;
@@ -895,10 +916,22 @@ section:last-child{
 
 @media (max-width: 600px){
 
+     body {
+        padding: 4px 4px; 
+    }
+
+    .page {
+        padding-left: 4px;
+        padding-right: 4px;
+        gap: 20px; 
+    }
+
+
     .header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 12px;
+        gap: 8px;
+        padding: 8px 12px;
     }
 
     .header-left,
@@ -907,7 +940,7 @@ section:last-child{
         display: flex;
         justify-content: space-between;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 6px;
     }
 
     .header-right {
@@ -936,6 +969,22 @@ section:last-child{
 
     .status::before {
         display: none; 
+    }
+
+    .cta-buttons {
+        margin-bottom: 15px;
+    }
+
+    .input-area {
+        flex-direction: column; /* apila input y botón */
+        align-items: stretch;   /* que ocupen todo el ancho */
+        gap: 10px;              /* espacio entre input y botón */
+        padding: 12px 16px;     /* opcional: menos padding en móviles */
+    }
+
+    .input-area button {
+        width: 100%;           /* ocupa todo el ancho del contenedor */
+        padding: 14px 0;       /* ajusta padding horizontal si quieres */
     }
 
 }

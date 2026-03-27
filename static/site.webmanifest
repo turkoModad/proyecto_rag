@@ -52,5 +52,12 @@
   "start_url": "/",
   "scope": "/",
   "lang": "es-AR",
-  "orientation": "any"
+  "orientation": "any",
+    "protocol_handlers": [
+    {
+      "protocol": "web+asistentevial",
+      "url": "/?query=%s"
+    }
+  ]
+
 }
