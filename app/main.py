@@ -46,6 +46,7 @@ from app.routes.examen import router as examen_router
 from app.middleware.security_middleware import SecurityMiddleware
 from app.routes import security_monitor
 from app.routes.contact import router as contact_router
+from app.analytics.rate_app import router as analytics_router
 from app.middleware.seo_middleware import seo_performance_middleware
 
 
@@ -127,6 +128,7 @@ app.include_router(router_admin)
 app.include_router(examen_router)
 app.include_router(contact_router)
 app.include_router(router_vector_admin)
+app.include_router(analytics_router)
 app.include_router(security_monitor.router)
 
 

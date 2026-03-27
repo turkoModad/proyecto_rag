@@ -17,7 +17,7 @@
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="stylesheet" href="/frontend/css/styles.css?v=1.0.38">
+<link rel="stylesheet" href="/frontend/css/styles.css?v=1.0.45">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <meta property="og:title" content="Asistente IA de la Ley de Tránsito 24449">
 <meta property="og:description" content="Consultá normas de tránsito y la Ley 24449 usando inteligencia artificial.">
@@ -284,6 +284,31 @@ La <strong>Ley Nacional de Tránsito 24449</strong> establece reglas fundamental
     </div>
 </section>
 
+<section class="review-section">
+  <h2>Calificá el asistente</h2>
+
+  <div class="review-header">
+    <div class="rating-display">
+      <span id="avgRating">--</span> ⭐
+      <span id="totalReviews">(0 valoraciones)</span>
+    </div>
+
+    <div class="stars" id="stars">
+      <span class="star" data-value="1">⭐</span>
+      <span class="star" data-value="2">⭐</span>
+      <span class="star" data-value="3">⭐</span>
+      <span class="star" data-value="4">⭐</span>
+      <span class="star" data-value="5">⭐</span>
+    </div>
+
+  </div>
+
+  <textarea id="reviewComment" placeholder="Opcional: contanos tu experiencia..." maxlength="600"></textarea>
+
+<button id="reviewSubmit">Enviar valoración</button>
+  <div id="reviewFeedback"></div>
+</section>
+
 <section class="ai-disclaimer">
 <h2>Precisión y uso del asistente de inteligencia artificial</h2>
 <p>
@@ -321,7 +346,7 @@ directa de la legislación vigente ni el asesoramiento de organismos oficiales o
 </section>
 
 </div>
-<script src="/frontend/js/app.js?v=1.61"></script>
+<script src="/frontend/js/app.js?v=1.68"></script>
 <script>
   const textarea = document.querySelector('.input-area textarea');
 

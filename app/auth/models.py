@@ -111,17 +111,28 @@ class ContactMessage(Base):
     is_registered = Column(Boolean, default=False)
 
 
+from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey, Index
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
+import uuid
+
 class Review(Base):
     __tablename__ = "reviews"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)  
-    ip_address = Column(String(45), nullable=True)  
-    rating = Column(Integer, nullable=False)  
+    
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    ip_address = Column(String(45), nullable=True, index=True)
+    rating = Column(Integer, nullable=False)
     comment = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    user = relationship("User")
 
-    user = relationship("User")  
+    __table_args__ = (
+        Index("unique_user_review", "user_id", unique=True, postgresql_where=(user_id.isnot(None))),        
+        Index("unique_ip_review_anonymous", "ip_address", unique=True, postgresql_where=(user_id.is_(None))),
+    )
 
 
 class Visit(Base):

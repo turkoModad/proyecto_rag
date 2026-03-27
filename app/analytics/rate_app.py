@@ -1,43 +1,115 @@
-from fastapi import FastAPI, HTTPException, Depends
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from datetime import datetime
+from sqlalchemy.exc import IntegrityError
+from app.auth.database import get_db
+from app.auth.models import Review, User
+from app.auth.dependencies import get_current_user_db
+from app.utils.network import get_real_ip
+from app.auth.service import has_review_today  
+from sqlalchemy import func, select
 
 
-from app.auth.database import get_db 
-
-app = FastAPI()
+router = APIRouter(prefix="/reviews", tags=["reviews"])
 
 
-class ReviewCreate(BaseModel):
-    username: str
-    comment: str
-    rating: int
+@router.post("/create")
+async def create_review(
+    request: Request,
+    payload: dict,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_db)
+):
+    rating = payload.get("rating")
+    comment = payload.get("comment")
 
+    try:
+        rating = int(rating)
+    except:
+        raise HTTPException(status_code=400, detail="Rating inválido")
 
-class ReviewOut(BaseModel):
-    id: int
-    username: str
-    comment: str
-    rating: int
-    created_at: datetime
+    if rating < 1 or rating > 5:
+        raise HTTPException(status_code=400, detail="Rating inválido")
 
+    ip = get_real_ip(request)
 
-@app.post("/api/reviews", response_model=ReviewOut)
-async def create_review(review: ReviewCreate, db: AsyncSession = Depends(get_db)):
-    if review.rating < 1 or review.rating > 5:
-        raise HTTPException(status_code=400, detail="Rating must be 1-5")
-    result = await db.execute(
-        "INSERT INTO reviews (username, comment, rating) VALUES (:username, :comment, :rating) RETURNING id, username, comment, rating, created_at",
-        {"username": review.username, "comment": review.comment, "rating": review.rating}
+    already_reviewed = await has_review_today(
+        db,
+        current_user.id if current_user else None,
+        ip
     )
-    row = result.fetchone()
-    await db.commit()
-    return dict(row)
+
+    if already_reviewed:
+        raise HTTPException(
+            status_code=400,
+            detail="Ya enviaste una valoración hoy"
+        )
+
+    review = Review(
+        user_id=current_user.id if current_user else None,
+        ip_address=ip,
+        rating=rating,
+        comment=comment
+    )
+
+    try:
+        db.add(review)
+        await db.commit()
+
+    except IntegrityError as e:
+        await db.rollback()
+
+        if "unique_user_review" in str(e):
+            detail = "Ya valoraste con esta cuenta"
+        elif "unique_ip_review_anonymous" in str(e):
+            detail = "Ya enviaste una valoración desde esta conexión"
+        else:
+            detail = "Error al guardar valoración"
+
+        raise HTTPException(status_code=400, detail=detail)
+
+    return {"message": "Review guardada correctamente"}
 
 
-@app.get("/api/reviews", response_model=list[ReviewOut])
-async def get_reviews(db: AsyncSession = Depends(get_db)):
-    result = await db.execute("SELECT id, username, comment, rating, created_at FROM reviews ORDER BY created_at DESC")
-    return [dict(r) for r in result.fetchall()]
+
+@router.get("/me")
+async def get_my_review(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_db)
+):
+    ip = get_real_ip(request)
+
+    has_review = await has_review_today(
+        db,
+        current_user.id if current_user else None,
+        ip
+    )
+
+    return {
+        "has_review": has_review
+    }
+
+
+@router.get("/stats")
+async def get_review_stats(
+    db: AsyncSession = Depends(get_db)
+):
+    """Obtiene estadísticas de valoraciones: promedio y total"""
+    
+    # Contar todas las valoraciones
+    total_count_query = select(func.count(Review.id))
+    total_count_result = await db.execute(total_count_query)
+    total_reviews = total_count_result.scalar() or 0
+    
+    # Calcular promedio
+    if total_reviews > 0:
+        avg_query = select(func.avg(Review.rating))
+        avg_result = await db.execute(avg_query)
+        avg_rating = round(avg_result.scalar() or 0, 1)
+    else:
+        avg_rating = 0
+    
+    return {
+        "avg_rating": avg_rating,
+        "total_reviews": total_reviews
+    }

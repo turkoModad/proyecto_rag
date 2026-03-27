@@ -8,10 +8,10 @@ from starlette.middleware.base import BaseHTTPMiddleware
 import logging
 
 from app.auth.database import AsyncSessionLocal
+from app.utils.network import get_real_ip
 from app.auth.access_log_service import log_access
 from app.auth.dependencies import get_current_user_from_request
 from app.analytics.contador_de_visitas import register_visit
-
 from app.core.config import (
     RATE_LIMIT_REQUESTS_PER_MINUTE,
     RATE_LIMIT_WINDOW_MINUTES,
@@ -140,8 +140,7 @@ class SecurityMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
         start_time = time.time()
         
-        # Obtener IP real (Cloudflare)
-        ip_address = self._get_real_ip(request)
+        ip_address = get_real_ip(request)
         endpoint = request.url.path
         method = request.method
 
@@ -258,15 +257,7 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         
         return response
     
-    
-    def _get_real_ip(self, request: Request) -> str:
-        """Obtiene IP real considerando Cloudflare"""
-        forwarded = request.headers.get("x-forwarded-for")
-        if forwarded:
-            return forwarded.split(",")[0].strip()
-        return request.headers.get("CF-Connecting-IP") or request.client.host or "unknown"
-    
-    
+       
     async def _log_to_database(self, **kwargs):
         """Log asíncrono a DB"""
         try:

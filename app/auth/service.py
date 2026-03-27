@@ -2,11 +2,12 @@ import logging
 import re
 from sqlalchemy import select, func, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.auth.models import User, QueryLog, OTPLog, RefreshToken
+from app.auth.models import User, QueryLog, OTPLog, RefreshToken, Review
 from app.auth.security import hash_password, verify_password
 from app.core.security import encrypt_value, hash_email
 from datetime import datetime, timezone, timedelta
 from fastapi import Request, Response
+from typing import Optional
 
 
 logger = logging.getLogger("AuthService")
@@ -149,6 +150,45 @@ async def count_anonymous_queries(db: AsyncSession, ip_address: str, endpoint: s
     )
     return result.scalar() or 0
 
+
+# =========================
+# REVIEWS
+# =========================
+# app/auth/service.py (versión más eficiente)
+
+async def has_review_today(
+    db: AsyncSession,
+    user_id: Optional[int] = None,
+    ip_address: Optional[str] = None
+) -> bool:
+    """
+    Verifica si un usuario ya ha realizado una valoración hoy.
+    Retorna True si existe al menos una valoración, False en caso contrario.
+    """
+    from datetime import date
+    from sqlalchemy import exists, select, and_
+    
+    today = date.today()
+    
+    conditions = [
+        Review.created_at >= today,
+        Review.created_at < today + timedelta(days=1)
+    ]
+    
+    # Construir condiciones de filtro
+    if user_id is not None:
+        conditions.append(Review.user_id == user_id)
+    if ip_address is not None:
+        conditions.append(Review.ip_address == ip_address)
+    
+    # Si no hay user_id ni ip_address, no se puede verificar
+    if user_id is None and ip_address is None:
+        return False
+    
+    # Usar exists() para mayor eficiencia
+    stmt = select(exists().where(and_(*conditions)))
+    result = await db.execute(stmt)
+    return result.scalar()
 
 # ----------------------------
 # LOGS DE OTP

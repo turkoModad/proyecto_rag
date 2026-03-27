@@ -567,6 +567,168 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // =========================
+    // REVIEWS (VALORACIÓN)
+    // =========================
+    async function loadReviewStats() {
+        try {
+            const res = await fetch("/reviews/stats", {
+                method: "GET",
+                credentials: "include"
+            });
+            
+            if (res.ok) {
+                const data = await res.json();
+                const avgRatingEl = document.getElementById("avgRating");
+                const totalReviewsEl = document.getElementById("totalReviews");
+                
+                if (avgRatingEl) {
+                    avgRatingEl.textContent = data.avg_rating.toFixed(1);
+                }
+                if (totalReviewsEl) {
+                    totalReviewsEl.textContent = `(${data.total_reviews} valoraciones)`;
+                }
+            } else {
+                console.error("Error loading review stats");
+            }
+        } catch (e) {
+            console.error("Error loading review stats:", e);
+        }
+    }
+
+    async function checkIfReviewed() {
+        try {
+            const res = await fetch("/reviews/me", {
+                credentials: "include"
+            });
+
+            const data = await res.json();
+
+            if (data.has_review) {
+                disableReviewUI();
+            }
+
+        } catch (e) {
+            console.error("Error checking review:", e);
+        }
+    }
+
+    async function sendReview(rating, comment = "") {
+
+        try {
+            const res = await fetchWithAuth("/reviews/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    rating: rating,
+                    comment: comment
+                })
+            });
+
+            let data = {};
+            try {
+                data = await res.json();
+            } catch {}
+
+            if (res.ok) {
+                alert("✅ Gracias por tu valoración");
+                disableReviewUI();
+            } else {
+                alert("❌ " + (data.detail || "Error al enviar valoración"));
+            }
+
+        } catch (err) {
+            console.error("Error enviando review:", err);
+            alert("❌ Error de conexión");
+        }
+    }
+
+
+    // Desactiva botones después de votar
+    function disableReviewUI() {
+        const stars = document.querySelectorAll(".star");
+        stars.forEach(star => {
+            star.style.pointerEvents = "none";
+            star.style.opacity = "0.5";
+        });
+
+        const textarea = document.getElementById("reviewComment");
+        const btn = document.getElementById("reviewSubmit");
+
+        if (textarea) textarea.disabled = true;
+        if (btn) btn.disabled = true;
+    }
+
+    
+    function initReviewSystem() {
+        const stars = document.querySelectorAll(".star");
+        const submitBtn = document.getElementById("reviewSubmit");
+        const textarea = document.getElementById("reviewComment");
+
+        let selectedRating = 0;
+
+        // =========================
+        // CLICK (selección)
+        // =========================
+        stars.forEach(star => {
+            star.addEventListener("click", () => {
+                selectedRating = Number(star.dataset.value);
+
+                stars.forEach(s => s.classList.remove("active"));
+
+                for (let i = 0; i < selectedRating; i++) {
+                    stars[i].classList.add("active");
+                }
+            });
+        });
+
+        // =========================
+        // HOVER (preview)
+        // =========================
+        stars.forEach((star, index) => {
+            star.addEventListener("mouseover", () => {
+                stars.forEach((s, i) => {
+                    s.classList.toggle("active", i <= index);
+                });
+            });
+
+            star.addEventListener("mouseleave", () => {
+                stars.forEach((s, i) => {
+                    s.classList.toggle("active", i < selectedRating);
+                });
+            });
+        });
+
+        // =========================
+        // SUBMIT (ENVÍO)
+        // =========================
+        submitBtn.addEventListener("click", async () => {
+            if (selectedRating === 0) {
+                alert("Seleccioná una valoración primero");
+                return;
+            }
+
+            const comment = textarea.value.trim();
+
+            // 🔒 Evita doble envío
+            submitBtn.disabled = true;
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = "Enviando...";
+
+            try {
+                await sendReview(selectedRating, comment);
+
+                // (opcional) limpiar UI si querés
+                textarea.value = "";
+            } catch (err) {
+                console.error("Error en submit review:", err);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+    }
+
+    // =========================
     // EVENTOS
     // =========================
     button.addEventListener("click", sendQuestion);
@@ -589,6 +751,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // =========================
     async function initApp() {
         await loadUsage();
+        initReviewSystem();
+        await checkIfReviewed();
+        await loadReviewStats();
     }
 
     initApp();
