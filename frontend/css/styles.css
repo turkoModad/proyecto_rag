@@ -1178,3 +1178,31 @@ section:last-child{
 .star.active {
     filter: grayscale(0%);
 }
+
+/* Estilos para mensajes de valoración */
+.review-feedback {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
+    transition: opacity 0.5s ease;
+}
+
+.review-feedback.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.review-feedback.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.review-feedback.warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}

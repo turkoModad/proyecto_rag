@@ -1,3 +1,4 @@
+# app/analytics/rate_app.py
 from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
@@ -5,9 +6,11 @@ from app.auth.database import get_db
 from app.auth.models import Review, User
 from app.auth.dependencies import get_current_user_db
 from app.utils.network import get_real_ip
-from app.auth.service import has_review_today  
+from app.auth.service import has_review_recently  
 from sqlalchemy import func, select
 
+# Constante para período de valoración semanal
+REVIEW_COOLDOWN_DAYS = 7
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])
 
@@ -32,16 +35,18 @@ async def create_review(
 
     ip = get_real_ip(request)
 
-    already_reviewed = await has_review_today(
+    # Verificar si ya valoró en los últimos 7 días (semanal)
+    already_reviewed = await has_review_recently(
         db,
         current_user.id if current_user else None,
-        ip
+        ip,
+        days=REVIEW_COOLDOWN_DAYS
     )
 
     if already_reviewed:
         raise HTTPException(
             status_code=400,
-            detail="Ya enviaste una valoración hoy"
+            detail=f"Solo puedes valorar una vez cada {REVIEW_COOLDOWN_DAYS} días (una vez por semana). Vuelve a intentarlo en unos días."
         )
 
     review = Review(
@@ -70,7 +75,6 @@ async def create_review(
     return {"message": "Review guardada correctamente"}
 
 
-
 @router.get("/me")
 async def get_my_review(
     request: Request,
@@ -79,10 +83,11 @@ async def get_my_review(
 ):
     ip = get_real_ip(request)
 
-    has_review = await has_review_today(
+    has_review = await has_review_recently(
         db,
         current_user.id if current_user else None,
-        ip
+        ip,
+        days=REVIEW_COOLDOWN_DAYS
     )
 
     return {
@@ -96,12 +101,10 @@ async def get_review_stats(
 ):
     """Obtiene estadísticas de valoraciones: promedio y total"""
     
-    # Contar todas las valoraciones
     total_count_query = select(func.count(Review.id))
     total_count_result = await db.execute(total_count_query)
     total_reviews = total_count_result.scalar() or 0
     
-    # Calcular promedio
     if total_reviews > 0:
         avg_query = select(func.avg(Review.rating))
         avg_result = await db.execute(avg_query)

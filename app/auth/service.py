@@ -1,6 +1,6 @@
 import logging
 import re
-from sqlalchemy import select, func, update
+from sqlalchemy import select, func, update, exists, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.models import User, QueryLog, OTPLog, RefreshToken, Review
 from app.auth.security import hash_password, verify_password
@@ -8,6 +8,7 @@ from app.core.security import encrypt_value, hash_email
 from datetime import datetime, timezone, timedelta
 from fastapi import Request, Response
 from typing import Optional
+from app.utils.datatime import days_ago
 
 
 logger = logging.getLogger("AuthService")
@@ -154,57 +155,41 @@ async def count_anonymous_queries(db: AsyncSession, ip_address: str, endpoint: s
 # =========================
 # REVIEWS
 # =========================
-# app/auth/service.py (versión más eficiente)
-
-async def has_review_today(
+async def has_review_recently(
     db: AsyncSession,
-    user_id: Optional[int] = None,
-    ip_address: Optional[str] = None
+    user_id: Optional[str] = None,  # Cambiado de Optional[int] a Optional[str] (UUID)
+    ip_address: Optional[str] = None,
+    days: int = 7
 ) -> bool:
     """
-    Verifica si un usuario ya ha realizado una valoración hoy.
-    Retorna True si existe al menos una valoración, False en caso contrario.
+    Verifica si un usuario ya ha realizado una valoración en los últimos X días.
     """
-    from datetime import date
-    from sqlalchemy import exists, select, and_
+    cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
     
-    today = date.today()
+    conditions = [Review.created_at >= cutoff_date]
     
-    conditions = [
-        Review.created_at >= today,
-        Review.created_at < today + timedelta(days=1)
-    ]
-    
-    # Construir condiciones de filtro
     if user_id is not None:
         conditions.append(Review.user_id == user_id)
     if ip_address is not None:
         conditions.append(Review.ip_address == ip_address)
     
-    # Si no hay user_id ni ip_address, no se puede verificar
     if user_id is None and ip_address is None:
         return False
     
-    # Usar exists() para mayor eficiencia
     stmt = select(exists().where(and_(*conditions)))
     result = await db.execute(stmt)
     return result.scalar()
 
-# ----------------------------
-# LOGS DE OTP
-# ----------------------------
-async def count_otp_ip_today(db: AsyncSession, ip_address: str):
-    """Cuenta OTPs enviados desde una IP hoy (hora Argentina)"""
-    start_utc, end_utc = get_argentina_day_bounds_utc()
 
-    result = await db.execute(
-        select(func.count()).select_from(OTPLog).where(
-            (OTPLog.ip_address == ip_address) &
-            (OTPLog.created_at >= start_utc) &
-            (OTPLog.created_at < end_utc)
-        )
-    )
-    return result.scalar() or 0
+async def has_weekly_review(
+    db: AsyncSession,
+    user_id: Optional[int] = None,
+    ip_address: Optional[str] = None
+) -> bool:
+    """
+    Verifica si un usuario ya ha realizado una valoración en los últimos 7 días.
+    """
+    return await has_review_recently(db, user_id, ip_address, days=7)
 
 
 async def log_otp(db: AsyncSession, email: str, ip_address: str, purpose: str = None):

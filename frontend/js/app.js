@@ -569,6 +569,28 @@ document.addEventListener("DOMContentLoaded", () => {
     // =========================
     // REVIEWS (VALORACIÓN)
     // =========================
+    function showReviewMessage(message, isError = false) {
+        const reviewFeedback = document.getElementById("reviewFeedback");
+        if (!reviewFeedback) return;
+        
+        reviewFeedback.textContent = message;
+        reviewFeedback.className = isError ? "review-feedback error" : "review-feedback success";
+        reviewFeedback.style.display = "block";
+        
+        // Ocultar después de 5 segundos
+        setTimeout(() => {
+            if (reviewFeedback) {
+                reviewFeedback.style.opacity = "0";
+                setTimeout(() => {
+                    if (reviewFeedback) {
+                        reviewFeedback.style.display = "none";
+                        reviewFeedback.style.opacity = "1";
+                    }
+                }, 500);
+            }
+        }, 5000);
+    }
+
     async function loadReviewStats() {
         try {
             const res = await fetch("/reviews/stats", {
@@ -605,6 +627,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (data.has_review) {
                 disableReviewUI();
+                showReviewMessage("✅ Ya has valorado el asistente hoy. ¡Gracias por tu contribución!", false);
             }
 
         } catch (e) {
@@ -613,7 +636,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function sendReview(rating, comment = "") {
-
         try {
             const res = await fetchWithAuth("/reviews/create", {
                 method: "POST",
@@ -630,20 +652,42 @@ document.addEventListener("DOMContentLoaded", () => {
             } catch {}
 
             if (res.ok) {
-                alert("✅ Gracias por tu valoración");
+                showReviewMessage("✅ ¡Gracias por tu valoración! Tu opinión nos ayuda a mejorar. Podrás volver a valorar en 7 días.", false);
                 disableReviewUI();
+                await loadReviewStats();
             } else {
-                alert("❌ " + (data.detail || "Error al enviar valoración"));
+                const errorMsg = data.detail || "Error al enviar valoración";
+                if (errorMsg.includes("cada 7 días")) {
+                    showReviewMessage("⏰ " + errorMsg, true);
+                } else {
+                    showReviewMessage("❌ " + errorMsg, true);
+                }
             }
 
         } catch (err) {
             console.error("Error enviando review:", err);
-            alert("❌ Error de conexión");
+            showReviewMessage("❌ Error de conexión. Por favor, intentá nuevamente.", true);
         }
     }
 
+    async function checkIfReviewed() {
+        try {
+            const res = await fetch("/reviews/me", {
+                credentials: "include"
+            });
 
-    // Desactiva botones después de votar
+            const data = await res.json();
+
+            if (data.has_review) {
+                disableReviewUI();
+                showReviewMessage("✅ Ya has valorado el asistente en los últimos 7 días. Podrás volver a valorar después de este período. ¡Gracias por tu contribución!", false);
+            }
+
+        } catch (e) {
+            console.error("Error checking review:", e);
+        }
+    }
+
     function disableReviewUI() {
         const stars = document.querySelectorAll(".star");
         stars.forEach(star => {
@@ -654,11 +698,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const textarea = document.getElementById("reviewComment");
         const btn = document.getElementById("reviewSubmit");
 
-        if (textarea) textarea.disabled = true;
+        if (textarea) {
+            textarea.disabled = true;
+            textarea.placeholder = "Ya valoraste el asistente hoy";
+        }
         if (btn) btn.disabled = true;
     }
 
-    
     function initReviewSystem() {
         const stars = document.querySelectorAll(".star");
         const submitBtn = document.getElementById("reviewSubmit");
@@ -701,33 +747,36 @@ document.addEventListener("DOMContentLoaded", () => {
         // =========================
         // SUBMIT (ENVÍO)
         // =========================
-        submitBtn.addEventListener("click", async () => {
-            if (selectedRating === 0) {
-                alert("Seleccioná una valoración primero");
-                return;
-            }
+        if (submitBtn) {
+            submitBtn.addEventListener("click", async () => {
+                if (selectedRating === 0) {
+                    showReviewMessage("⚠️ Por favor, seleccioná una valoración antes de enviar", true);
+                    return;
+                }
 
-            const comment = textarea.value.trim();
+                const comment = textarea ? textarea.value.trim() : "";
 
-            // 🔒 Evita doble envío
-            submitBtn.disabled = true;
-            const originalText = submitBtn.textContent;
-            submitBtn.textContent = "Enviando...";
+                // Evita doble envío
+                submitBtn.disabled = true;
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = "Enviando...";
 
-            try {
-                await sendReview(selectedRating, comment);
+                try {
+                    await sendReview(selectedRating, comment);
 
-                // (opcional) limpiar UI si querés
-                textarea.value = "";
-            } catch (err) {
-                console.error("Error en submit review:", err);
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
-            }
-        });
+                    // Limpiar UI si todo salió bien
+                    if (textarea) textarea.value = "";
+                    selectedRating = 0;
+                    stars.forEach(s => s.classList.remove("active"));
+                } catch (err) {
+                    console.error("Error en submit review:", err);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+            });
+        }
     }
-
     // =========================
     // EVENTOS
     // =========================
