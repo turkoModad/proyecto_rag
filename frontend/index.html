@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -17,7 +17,7 @@
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="stylesheet" href="/frontend/css/styles.css?v=1.0.46">
+<link rel="stylesheet" href="/frontend/css/styles.css?v=1.0.47">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <meta property="og:title" content="Asistente IA de la Ley de Tránsito 24449">
 <meta property="og:description" content="Consultá normas de tránsito y la Ley 24449 usando inteligencia artificial.">
@@ -346,7 +346,7 @@ directa de la legislación vigente ni el asesoramiento de organismos oficiales o
 </section>
 
 </div>
-<script src="/frontend/js/app.js?v=1.71"></script>
+<script src="/frontend/js/app.js?v=1.72"></script>
 <script>
   const textarea = document.querySelector('.input-area textarea');
 
@@ -354,6 +354,395 @@ directa de la legislación vigente ni el asesoramiento de organismos oficiales o
       e.target.style.height = 'auto';        
       e.target.style.height = e.target.scrollHeight + 'px'; 
   });
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('PWA: Asistente Vial listo'))
+            .catch(err => console.error('PWA: Error', err));
+    });
+  }
+</script>
+</body>
+</html> -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asistente IA Ley de Tránsito 24449 | Consultar normas viales</title>
+<meta name="description" content="Consultá gratis a una inteligencia artificial sobre la Ley Nacional de Tránsito 24449 en Argentina. Preguntá sobre multas, licencias de conducir, señales viales, prioridades de paso y normas de circulación.">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+<link rel="canonical" href="https://seguridadvial.codepyhub.com/">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/static/android-chrome-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/static/android-chrome-512x512.png">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+<link rel="manifest" href="/static/site.webmanifest">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="/frontend/css/styles.css?v=1.0.47">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:title" content="Asistente IA de la Ley de Tránsito 24449">
+<meta property="og:description" content="Consultá normas de tránsito y la Ley 24449 usando inteligencia artificial.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://seguridadvial.codepyhub.com/">
+<meta property="og:locale" content="es_AR">
+<meta property="og:site_name" content="Asistente Vial IA">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Asistente IA Ley de Tránsito 24449">
+<meta name="twitter:description" content="Preguntá a una inteligencia artificial sobre normas de tránsito en Argentina">
+<meta property="og:image" content="https://seguridadvial.codepyhub.com/static/screenshot-desktop.png">
+<meta name="twitter:image" content="https://seguridadvial.codepyhub.com/static/screenshot-desktop.png">
+
+<script type="application/ld+json">
+{
+"@context":"https://schema.org",
+"@type":"WebSite",
+"name":"Asistente de Seguridad Vial IA",
+"url":"https://seguridadvial.codepyhub.com/",
+"inLanguage":"es-AR",
+"potentialAction":{
+"@type":"SearchAction",
+"target":"https://seguridadvial.codepyhub.com/?q={search_term_string}",
+"query-input":"required name=search_term_string"
+}
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Asistente de Seguridad Vial IA",
+  "applicationCategory": "LegalAssistant",
+  "operatingSystem": "Web",
+  "url": "https://seguridadvial.codepyhub.com/",
+  "description": "Asistente basado en inteligencia artificial para consultar la Ley Nacional de Tránsito 24449 en Argentina.",
+  "inLanguage": "es-AR",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "ARS"
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.9",
+    "reviewCount": "12"
+  }
+}
+</script>
+
+<script type="application/ld+json">
+{
+"@context":"https://schema.org",
+"@type":"WebApplication",
+"name":"Asistente IA Ley de Tránsito 24449",
+"url":"https://seguridadvial.codepyhub.com/",
+"applicationCategory":"LegalAssistant",
+"browserRequirements":"Requires JavaScript",
+"description":"Herramienta de inteligencia artificial para consultar la Ley Nacional de Tránsito 24449 en Argentina.",
+"inLanguage":"es-AR"
+}
+</script>
+
+<script type="application/ld+json">
+{
+"@context":"https://schema.org",
+"@type":"FAQPage",
+"mainEntity":[
+{
+"@type":"Question",
+"name":"¿Quién tiene prioridad en una rotonda?",
+"acceptedAnswer":{
+"@type":"Answer",
+"text":"Tiene prioridad el vehículo que ya circula dentro de la rotonda."
+}
+},
+{
+"@type":"Question",
+"name":"¿Cuál es la velocidad máxima en avenidas?",
+"acceptedAnswer":{
+"@type":"Answer",
+"text":"La velocidad máxima general en avenidas es de 60 km/h salvo señalización diferente."
+}
+},
+{
+"@type":"Question",
+"name":"¿Qué documentos debo llevar para conducir?",
+"acceptedAnswer":{
+"@type":"Answer",
+"text":"Debes portar licencia de conducir vigente, DNI, cédula del vehículo y comprobante de seguro obligatorio."
+}
+}
+]
+}
+</script>
+
+<script src="https://analytics.ahrefs.com/analytics.js" data-key="5gba/mo6naqTxAq/7fGZrQ" async></script>
+
+</head>
+<body>
+<div class="page">
+<section class="welcome-title">
+<div class="logo-icon">
+  <img src="/static/apple-touch-icon.png" alt="Asistente Vial IA" />
+</div><h1>Asistente IA para consultar la Ley Nacional de Tránsito 24449</h1>
+<p>
+Este asistente utiliza <strong>inteligencia artificial</strong> entrenada con la legislación vial argentina para responder preguntas sobre normas de circulación, multas, licencias de conducir y señales de tránsito.
+</p>
+<p>
+Puedes hacer preguntas en lenguaje natural sobre la <strong>Ley Nacional de Tránsito 24449</strong> y obtener respuestas basadas en la normativa vigente.
+</p>
+</section>
+
+<div class="app">
+<header class="header">
+<div class="header-left">
+<div class="logo">🛡️ Asistente Vial</div>
+<span class="badge">Beta</span>
+</div>
+
+<div class="header-right">
+<div class="query-counter" id="queryCounter">
+<span id="queryLabel">Consultas</span>
+<strong id="queryCount">0</strong>
+<span id="queryLimit">de 20</span>
+</div>
+
+<div class="status online">
+Conectado
+</div>
+<button id="logoutBtn" class="logout-btn" style="display:none;">
+Cerrar sesión
+</button>
+</div>
+
+</header>
+<main id="chat" class="chat-window" role="application" aria-label="Asistente IA de tránsito">
+<section class="welcome">
+<h2>Preguntas que puedes hacerle al asistente</h2>
+<ul class="faq-list">
+<li>¿Cuál es la prioridad de paso en una rotonda?</li>
+<li>¿Qué documentación es obligatoria para conducir?</li>
+<li>¿Cuál es la velocidad máxima en avenidas?</li>
+</ul>
+</section>
+
+</main>
+<footer class="input-area">
+<textarea
+id="question"
+placeholder="Ej: ¿Cuál es la prioridad de paso en una rotonda? (Shift+Enter para nueva línea)"
+autocomplete="off"
+aria-label="Escribe tu pregunta sobre tránsito"
+rows="1"
+style="min-height: 48px; max-height: 150px; resize: none; overflow-y: auto;"
+></textarea>
+
+<button id="send">
+✈ Enviar
+</button>
+
+</footer>
+</div>
+<section class="cta-login" id="ctaLogin" style="display:none;">
+<h3>Consultas gratuitas sobre tránsito</h3>
+<p>
+Creá una cuenta gratuita para seguir consultando al asistente inteligente sobre normas viales en Argentina.
+</p>
+<div class="cta-buttons" id="authButtons">
+<a href="/frontend/login.html" class="auth-btn login-btn">
+Iniciar sesión
+</a>
+<a href="/frontend/register.html" class="auth-btn register-btn">
+Crear cuenta
+</a>
+</div>
+</section>
+
+<section class="seo-content">
+<h2>Cómo funciona el asistente de tránsito con inteligencia artificial</h2>
+<p>
+El asistente de seguridad vial utiliza modelos de inteligencia artificial entrenados con la legislación argentina para responder consultas sobre la <strong>Ley Nacional de Tránsito 24449</strong> y sus modificatorias.
+</p>
+<p>
+A diferencia de una guía tradicional de preguntas frecuentes, puedes hacer preguntas en lenguaje natural y recibir una respuesta basada en la normativa vigente.
+</p>
+<h2>Qué consultas puedes realizar al asistente</h2>
+<ul class="faq-list">
+<li>Prioridad de paso en intersecciones</li>
+<li>Normas para circular en rotondas</li>
+<li>Límites de velocidad en calles y avenidas</li>
+<li>Documentación obligatoria para conducir</li>
+<li>Multas de transito y consultas de infracciones</li>
+<li>Licencias de conducir y renovación</li>
+<li>Señales de tránsito y su significado</li>
+</ul>
+<h2>Normas básicas de tránsito en Argentina</h2>
+<p>
+La <strong>Ley Nacional de Tránsito 24449</strong> establece reglas fundamentales para garantizar la seguridad vial en todo el país.
+</p>
+
+<ul class="faq-list">
+<li>La prioridad de paso corresponde al vehículo que circula por la derecha.</li>
+<li>En rotondas tiene prioridad el vehículo que ya circula dentro de ella.</li>
+<li>El uso del cinturón de seguridad es obligatorio para todos los ocupantes.</li>
+<li>Uso de luces bajas en rutas y reglas de transito nocturno.</li>
+<li>Los límites de velocidad dependen del tipo de vía.</li>
+</ul>
+
+<h2>Límites de velocidad en Argentina</h2>
+
+<ul class="faq-list">
+<li>Calles urbanas: 40 km/h</li>
+<li>Avenidas: 60 km/h</li>
+<li>Rutas: entre 80 y 110 km/h</li>
+<li>Autopistas: hasta 130 km/h</li>
+</ul>
+
+</section>
+ 
+<section class="faq-topics" id="seccion-enlaces" style="max-width: 900px; margin-left: auto; margin-right: auto;">
+  <h2>Explora más temas</h2>
+  <div class="faq-links">
+    <a href="/examen/" title="Simulador de examen de transito">Simulador de Examen</a>
+    <a href="/faq/licencias/" title="Tramite de licencias de conducir">Trámite de Licencias</a>
+    <a href="/faq/multas/" title="Consulta de multas de transito">Consulta de Multas</a>
+    <a href="/faq/normas/" title="Normativa y reglas de transito">Reglas de Tránsito</a>
+    <a href="/faq/documentacion/" title="Papeles y documentacion para circular">Requisitos y Documentos</a>
+    <a href="/faq/examen/" title="Preguntas examen de transito">Banco de Preguntas</a>
+  </div>
+  <p style="font-size: 0.8em; color: #777; text-align: center; margin-top: 15px;">
+    Guía de <strong>seguridad vial</strong> y <strong>reglamento de transito</strong> actualizado para conductores.
+  </p>
+  <p style="display:none;">
+    Encontrá respuestas sobre leyes de transito, señales y seguridad vial en Argentina. 
+    Guía completa de transito para conductores y examen nacional.
+  </p>
+</section>
+
+<section class="contact-section">
+    <div class="contact-box">
+        <h2>Contacto y soporte del asistente vial</h2>
+        <p class="contact-subtitle">
+        Si tenés consultas sobre licencias de conducir, normativa vial en Argentina o el uso del asistente,
+        podés comunicarte con nosotros. También podés sugerir mejoras, reportar errores o solicitar nuevas funcionalidades.
+        </p>
+        
+        <div class="contact-row">
+            <input type="email" id="contactEmail" placeholder="Tu email" required>
+        </div>
+        
+        <textarea id="contactMessage" placeholder="Dejanos tu consulta..." rows="1" maxlength="600" required ></textarea>
+        
+        <div class="contact-actions" style="display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;">
+            <button onclick="sendContact()" id="contactBtn">Enviar mensaje</button>
+            
+            <a href='https://cafecito.app/codepyhub' rel='noopener' target='_blank'>
+                <img srcset='https://cdn.cafecito.app/imgs/buttons/button_2.png 1x, https://cdn.cafecito.app/imgs/buttons/button_2_2x.png 2x, https://cdn.cafecito.app/imgs/buttons/button_2_3.75x.png 3.75x' 
+                    src='https://cdn.cafecito.app/imgs/buttons/button_2.png' 
+                    alt='Invitame un café en cafecito.app' />
+            </a>
+        </div>
+        
+        <div id="contactFeedback" style="display: none; margin-top: 15px; padding: 10px; border-radius: 8px;"></div>
+    </div>
+</section>
+
+<section class="review-section">
+  <h2>Calificá el asistente</h2>
+
+  <div class="review-header">
+    <div class="rating-display">
+      <span id="avgRating">--</span> ⭐
+      <span id="totalReviews">(cargando...)</span>
+    </div>
+
+    <div class="stars" id="stars">
+      <span class="star" data-value="1">⭐</span>
+      <span class="star" data-value="2">⭐</span>
+      <span class="star" data-value="3">⭐</span>
+      <span class="star" data-value="4">⭐</span>
+      <span class="star" data-value="5">⭐</span>
+    </div>
+
+  </div>
+
+  <textarea id="reviewComment" placeholder="Opcional: contanos tu experiencia..." maxlength="600"></textarea>
+
+<button id="reviewSubmit">Enviar valoración</button>
+  <div id="reviewFeedback" style="display: none;"></div>
+</section>
+
+<section class="ai-disclaimer">
+<h2>Precisión y uso del asistente de inteligencia artificial</h2>
+<p>
+Este asistente utiliza modelos de <strong>inteligencia artificial</strong> entrenados con información relacionada con la 
+<strong>Ley Nacional de Tránsito 24449</strong>, normativa vial argentina y material educativo sobre seguridad vial.
+El sistema está diseñado para responder consultas en lenguaje natural y facilitar el acceso a información normativa.
+</p><br>
+
+<p>
+Si bien el modelo ha sido evaluado mediante pruebas internas con preguntas reales y escenarios basados en la legislación vigente,
+las respuestas generadas por sistemas de inteligencia artificial pueden contener imprecisiones o interpretaciones incompletas
+de la normativa.
+</p><br>
+
+<p>
+De acuerdo con evaluaciones realizadas sobre un conjunto representativo de consultas, el asistente presenta actualmente una
+<strong>precisión aproximada del 93% en la calidad de las respuestas</strong>. Nuestro equipo trabaja de manera continua en el
+entrenamiento del modelo, la incorporación de nuevas fuentes de información y la optimización del sistema para mejorar
+progresivamente su exactitud.
+</p><br>
+
+<p>
+La información proporcionada por este asistente debe considerarse de carácter orientativo y educativo. No reemplaza la consulta
+directa de la legislación vigente ni el asesoramiento de organismos oficiales o autoridades competentes en materia de tránsito.
+</p>
+<div class="final" style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 20px;">
+  <p class="ai-update" style="margin: 0;">
+  Última actualización del modelo de inteligencia artificial: Marzo 2026.
+  </p>
+
+  <small class="contact-signature">
+      Powered by <strong>CodePyHub</strong>
+  </small>
+</div>
+</section>
+
+</div>
+<script src="/frontend/js/app.js?v=1.73"></script>
+<script>
+  // Auto-resize para el textarea de preguntas
+  const questionTextarea = document.getElementById('question');
+  if (questionTextarea) {
+    function autoResize() {
+      questionTextarea.style.height = 'auto';
+      const newHeight = Math.min(questionTextarea.scrollHeight, 150);
+      questionTextarea.style.height = newHeight + 'px';
+    }
+    
+    questionTextarea.addEventListener('input', autoResize);
+    // Ajustar inicialmente
+    setTimeout(autoResize, 100);
+  }
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

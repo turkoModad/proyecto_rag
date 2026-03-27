@@ -32,6 +32,22 @@ document.addEventListener("DOMContentLoaded", () => {
     button.disabled = true;
 
     // =========================
+    // AUTO-RESIZE TEXTAREA (COLOCAR AQUÍ, DESPUÉS DE LAS DECLARACIONES)
+    // =========================
+    function autoResizeTextarea(textarea) {
+        textarea.style.height = 'auto';
+        const newHeight = Math.min(textarea.scrollHeight, 150);
+        textarea.style.height = newHeight + 'px';
+    }
+
+    // Configurar el textarea para auto-ajuste
+    if (input && input.tagName === 'TEXTAREA') {
+        input.addEventListener('input', function() {
+            autoResizeTextarea(this);
+        });
+    }
+
+    // =========================
     // VARIABLES PARA CONTROL DE REFRESH
     // =========================
     let isRefreshing = false;
@@ -297,6 +313,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         addMessage(question, "user");
         input.value = "";
+        // Resetear altura del textarea
+        input.style.height = 'auto';
+        input.style.height = Math.min(input.scrollHeight, 150) + 'px';
         addMessage("", "bot", true);
 
         try {
@@ -348,7 +367,6 @@ document.addEventListener("DOMContentLoaded", () => {
             button.textContent = originalButtonText;
         }
     }
-
     // =========================
     // LOGOUT
     // =========================
