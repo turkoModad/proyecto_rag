@@ -32,12 +32,11 @@ document.addEventListener("DOMContentLoaded", () => {
     button.disabled = true;
 
     // =========================
-    // AUTO-RESIZE TEXTAREA (COLOCAR AQUÍ, DESPUÉS DE LAS DECLARACIONES)
+    // AUTO-RESIZE TEXTAREA 
     // =========================
-    function autoResizeTextarea(textarea) {
-        textarea.style.height = 'auto';
-        const newHeight = Math.min(textarea.scrollHeight, 150);
-        textarea.style.height = newHeight + 'px';
+    function autoResizeTextarea(el) {
+        el.style.height = "auto";
+        el.style.height = el.scrollHeight + "px";
     }
 
     // Configurar el textarea para auto-ajuste
@@ -645,7 +644,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (data.has_review) {
                 disableReviewUI();
-                showReviewMessage("✅ Ya has valorado el asistente hoy. ¡Gracias por tu contribución!", false);
+                showReviewMessage("✅ Ya has valorado el asistente. ¡Gracias por tu contribución!", false);
             }
 
         } catch (e) {
@@ -718,7 +717,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (textarea) {
             textarea.disabled = true;
-            textarea.placeholder = "Ya valoraste el asistente hoy";
+            textarea.placeholder = "Gracias por valorar el asistente";
         }
         if (btn) btn.disabled = true;
     }
@@ -799,8 +798,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // EVENTOS
     // =========================
     button.addEventListener("click", sendQuestion);
-    input.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") sendQuestion();
+    input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendQuestion();
+        }
     });
 
     if (logoutBtn) {
