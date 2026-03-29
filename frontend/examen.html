@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  
+
   <title>Simulador de Examen de Conducir Argentina | Preguntas Ley 24449</title>
-  
+
   <meta name="description" content="Simulador gratuito para el examen de conducir en Argentina 2026. Practicá con preguntas reales de la Ley 24449 y aprobá el examen teórico oficial de seguridad vial.">
-  
   <meta name="keywords" content="simulador examen de conducir, preguntas examen conducir, ley 24449, examen teórico conducir argentina, practicar examen conducir">
   
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
@@ -18,41 +17,38 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
   <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
   <link rel="manifest" href="/static/site.webmanifest">
-  
+
   <link rel="stylesheet" href="/frontend/css/styles.css">
-  <link rel="stylesheet" href="/frontend/css/faq.css?v=1.0.52"/>
-  
+  <link rel="stylesheet" href="/frontend/css/faq.css?v=1.0.57"/>
+  <link rel="stylesheet" href="/frontend/css/examen.css?v=1.0.15">
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  
+
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://seguridadvial.codepyhub.com/examen/">
   <meta property="og:title" content="Simulador de Examen de Conducir | Preguntas Ley 24449">
   <meta property="og:description" content="Practicá con el simulador oficial de preguntas para el examen de conducir en Argentina. Basado en la Ley Nacional de Tránsito. ¡Gratuito!">
-  <meta property="og:image" content="https://seguridadvial.codepyhub.com/static/og-image-examen.jpg"> <!-- Reemplazar cuando tenga imagen -->
+  <meta property="og:image" content="https://seguridadvial.codepyhub.com/static/og-image-examen.jpg"> 
   <meta property="og:locale" content="es_AR">
   <meta property="og:site_name" content="Asistente Vial IA">
   
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Simulador de Examen de Conducir | Preguntas Ley 24449">
   <meta name="twitter:description" content="Practicá con el simulador oficial de preguntas para el examen de conducir en Argentina.">
-  <meta name="twitter:image" content="https://seguridadvial.codepyhub.com/static/twitter-image-examen.jpg"> <!-- Reemplazar cuando tenga imagen -->
-  
-  <style>
-    .seo-content-simulador { background: #f8f9fa; padding: 25px; border-radius: 12px; margin: 40px 0; border-left: 4px solid #1a3e6f; }
-    .seo-content-simulador h2 { color: #1a3e6f; margin-top: 0; font-size: 1.8rem; }
-    .seo-content-simulador ul, .faq-simulador ul { padding-left: 20px; }
-    .seo-content-simulador li { margin-bottom: 8px; }
-    .faq-simulador { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin: 30px 0; }
-    .faq-simulador details { margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-    .faq-simulador summary { font-weight: 600; cursor: pointer; color: #1a3e6f; font-size: 1.1rem; }
-    .faq-simulador p { margin: 10px 0 5px 20px; color: #333; }
-    .badge-ley { background: #1a3e6f; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.9rem; display: inline-block; margin-bottom: 15px; }
-  </style>
+  <meta name="twitter:image" content="https://seguridadvial.codepyhub.com/static/twitter-image-examen.jpg"> 
 
 </head>
+
 <body>
+
+  <div id="timer-flotante" class="timer-flotante hidden-timer">
+    <i class="fas fa-hourglass-half"></i>
+    <span id="timer">00:00</span>
+  </div>
+
 <main>
-<header>                        
+
+  <header>                        
     <h1>Simulador de Examen de Conducir Argentina Ley 24449</h1>
 
     <p>La herramienta es <strong>interactiva y gratuita</strong>, diseñada para que aprendas de manera práctica y rápida con preguntas reales de la normativa vigente.</p>
@@ -61,133 +57,145 @@
 
     <a href="/" class="back-btn" title="Asistente virtual de seguridad vial y transito">
       Consultar al asistente de tránsito con IA
-    </a>    
-</header>
+    </a>   
+  </header>
 
+  <section class="seo-content-simulador">
+    <span class="badge-ley">Basado en la Ley Nacional de Tránsito 24449</span>
+    <h2>Practicá para el examen teórico de conducir en Argentina</h2>
+    <p>Nuestro simulador está diseñado para reflejar las condiciones reales del examen teórico que toman en la mayoría de las provincias argentinas. Las preguntas se actualizan periódicamente para alinearse con la <strong>Ley Nacional de Tránsito 24449</strong> y sus modificatorias.</p>
+    <p>¿No estás seguro sobre alguna norma? Podés consultar primero a nuestro <a href="/" style="color: #1a3e6f; text-decoration: underline; font-weight: 500;">Asistente IA de la Ley de Tránsito</a> y luego venir a practicar aquí.</p>
+    
+    <h3>Tipos de preguntas que vas a encontrar:</h3>
+    <ul>
+        <li><strong>Señales de tránsito:</strong> Reconocimiento y significado de señales reglamentarias, preventivas e informativas.</li>
+        <li><strong>Prioridades de paso:</strong> Rotondas, intersecciones sin señalizar, cruces de peatones.</li>
+        <li><strong>Límites de velocidad:</strong> Máximas y mínimas permitidas en calles, avenidas, rutas y autopistas.</li>
+        <li><strong>Documentación obligatoria:</strong> Qué papeles llevar al conducir y sanciones por no hacerlo.</li>
+        <li><strong>Normas de circulación:</strong> Adelantamiento, uso de luces, distancia de seguridad, etc.</li>
+        <li><strong>Alcohol y conducción:</strong> Límites de alcoholemia permitidos y consecuencias.</li>
+    </ul>
+    <p>Cada pregunta incluye una explicación de la respuesta correcta basada en el articulado de la Ley 24449, para que no solo memorices, sino que <strong>entiendas por qué es correcta</strong>.</p>
+  </section>
 
-    <section class="seo-content-simulador">
-        <span class="badge-ley">Basado en la Ley Nacional de Tránsito 24449</span>
-        <h2>Practicá para el examen teórico de conducir en Argentina</h2>
-        <p>Nuestro simulador está diseñado para reflejar las condiciones reales del examen teórico que toman en la mayoría de las provincias argentinas. Las preguntas se actualizan periódicamente para alinearse con la <strong>Ley Nacional de Tránsito 24449</strong> y sus modificatorias.</p>
-        <p>¿No estás seguro sobre alguna norma? Podés consultar primero a nuestro <a href="/" style="color: #1a3e6f; text-decoration: underline; font-weight: 500;">Asistente IA de la Ley de Tránsito</a> y luego venir a practicar aquí.</p>
-        
-        <h3>Tipos de preguntas que vas a encontrar:</h3>
-        <ul>
-            <li><strong>Señales de tránsito:</strong> Reconocimiento y significado de señales reglamentarias, preventivas e informativas.</li>
-            <li><strong>Prioridades de paso:</strong> Rotondas, intersecciones sin señalizar, cruces de peatones.</li>
-            <li><strong>Límites de velocidad:</strong> Máximas y mínimas permitidas en calles, avenidas, rutas y autopistas.</li>
-            <li><strong>Documentación obligatoria:</strong> Qué papeles llevar al conducir y sanciones por no hacerlo.</li>
-            <li><strong>Normas de circulación:</strong> Adelantamiento, uso de luces, distancia de seguridad, etc.</li>
-            <li><strong>Alcohol y conducción:</strong> Límites de alcoholemia permitidos y consecuencias.</li>
-        </ul>
-        <p>Cada pregunta incluye una explicación de la respuesta correcta basada en el articulado de la Ley 24449, para que no solo memorices, sino que <strong>entiendas por qué es correcta</strong>.</p>
-    </section>
+  <section class="config-section">
+    <h2><i class="fas fa-gamepad"></i> Elegí tu nivel</h2>
 
-    <section class="faq-topics" aria-label="Configuración del simulador de examen">
-        <h2>Configurá tu simulador</h2>
-        <p>Elegí cuántas preguntas querés responder y comenzá a practicar con preguntas reales.</p>
+    <div class="niveles">
+      <button class="nivel-btn active" data-nivel="aprendiz">
+        🌱 Aprendiz <span class="preg-count">20 preguntas</span>
+      </button>
+      <button class="nivel-btn" data-nivel="veterano">
+        ⚔️ Veterano <span class="preg-count">40 preguntas</span>
+      </button>
+      <button class="nivel-btn" data-nivel="leyenda">
+        👑 Leyenda <span class="preg-count">60 preguntas</span>
+      </button>
+    </div>
+    <div class="start-container">
+      <button id="btn-iniciar" class="btn-primary btn-large">
+        ▶ Iniciar examen
+      </button>
+    </div>
+  </section>
 
-        <div class="config">
-            <label for="cantidad">Cantidad de preguntas</label>
-                <select id="cantidad">
-                    <option value="30">30 preguntas</option>
-                    <option value="40">40 preguntas</option>
-                    <option value="50">50 preguntas</option>
-                    <option value="60">60 preguntas</option>
-                </select> 
-                <span class="config-instruccion">Selecciona la cantidad y hace click en "Iniciar examen".</span>
-        </div><br>
-        <p><strong>Durante el examen, responde todas las preguntas para poder obtener tu resultado.</strong></p>
+  <section id="examen-container" class="examen-container hidden"></section>
 
-        <div class="timer-box" aria-label="Reloj del simulador">
-            ⏱ Tiempo: <span id="timer">00:00</span>            
-        </div>
-        <button id="btn-iniciar" title="Iniciá el simulador de examen de conducir con preguntas oficiales">Iniciar examen</button>
-    </section>
+  <div class="action-buttons" id="botones-examen">
+    <button id="btn-calificar" class="btn-secondary" disabled>
+      ✔ Calificar
+    </button>
+    <button id="btn-reintentar" class="btn-outline" disabled>
+      ↻ Reintentar
+    </button>
+  </div>
 
-    <section id="resultado" class="resultado hidden" aria-live="polite">
-      <h3 style="display:none;">Resultado de tu examen de transito argentina</h3>
-    </section>
+  <section id="resultado" class="resultado hidden" aria-live="polite"></section>
 
-    <section class="faq-topics" id="botones-examen">
-        <div>
-            <button id="btn-calificar" disabled title="Calificar mi examen de transito">
-                Calificar examen
-            </button>
-            <button id="btn-reintentar" disabled title="Reiniciar simulador de examen de transito">
-                Reintentar examen
-            </button>
-        </div> 
-        <p style="font-size: 0.8em; color: #666; margin-top: 10px; text-align: center;">
-            Completá el <strong>simulador de examen de transito</strong> para evaluar tus conocimientos en <strong>seguridad vial</strong>.
-        </p>
-    </section>
-   
-    <section class="faq-simulador" aria-label="Preguntas frecuentes sobre el simulador de examen">
-        <h2>Preguntas frecuentes sobre el simulador</h2>
-        
-        <details>
-            <summary>¿Las preguntas son las mismas que en el examen real de mi provincia?</summary>
-            <p>Nuestro banco de preguntas está elaborado en base a exámenes oficiales de varias provincias argentinas y la normativa de la Ley 24449. Si bien puede haber variaciones locales, cubrimos los temas esenciales que se toman en todo el país.</p>
-        </details>
-        
-        <details>
-            <summary>¿El simulador tiene un costo?</summary>
-            <p>No, es completamente gratuito. Podés usarlo todas las veces que quieras sin registrarte ni pagar.</p>
-        </details>
-        
-        <details>
-            <summary>¿Necesito crear una cuenta para usarlo?</summary>
-            <p>No es necesario. El simulador está disponible de forma anónima. Si querés guardar tu progreso o acceder a funciones adicionales en el futuro, te avisaremos.</p>
-        </details>
-        
-        <details>
-            <summary>¿Las preguntas se actualizan cuando cambia la ley?</summary>
-            <p>Sí, nuestro equipo revisa periódicamente las modificaciones a la Ley 24449 y normativas complementarias para mantener el banco de preguntas actualizado.</p>
-        </details>
-        
-        <details>
-            <summary>¿Puedo usar el simulador en mi celular?</summary>
-            <p>¡Por supuesto! Está diseñado para que puedas practicar desde cualquier dispositivo: computadora, tablet o celular.</p>
-        </details>
-    </section>
+  <section class="ranking-section">
+    <h2>🏆 Rankings por nivel</h2>
 
-    <section style="margin-top:50px">
-        <h2>¿Tenés otra duda?</h2>
-        <p>
-        Podés consultar cualquier normativa de tránsito, multas o requisitos de licencia directamente
-        con nuestro asistente especializado.
-        </p>
-        <a href="/" class="back-btn" title="Asistente virtual de seguridad vial y transito">
-          Consultar al asistente de tránsito
-        </a>
-    </section>    
+    <div class="ranking-grid">
 
-    <section class="faq-topics" aria-label="Enlaces útiles para prepararte y trámites de tránsito"> 
-        <h2>Explora más temas</h2>
-        <div class="faq-links">  
-            <a href="/faq/examen/" class="btn-link" title="Banco de preguntas de transito para el examen de conducir">Preguntas Examen</a>
-            <a href="/faq/" class="btn-link" title="Preguntas frecuentes de transito argentina y seguridad vial">Preguntas Frecuentes</a>
-            <a href="/faq/licencias/" class="btn-link" title="Tramite de licencias de conducir y renovación">Licencias</a>
-            <a href="/faq/multas/" class="btn-link" title="Consulta de multas de transito e infracciones">Multas</a>
-            <a href="/faq/normas/" class="btn-link" title="Reglas y normas de transito ley 24449">Normas de Tránsito</a>
-            <a href="/faq/documentacion/" class="btn-link" title="Papeles y documentacion para circular en transito">Documentación</a>             
-        </div>
-        
-        <p style="font-size: 0.8em; color: #777; text-align: center; margin-top: 15px;">
-          Guía de <strong>seguridad vial</strong> y <strong>reglamento de transito</strong> actualizado para conductores.
-        </p>
+      <div class="ranking-card">
+        <h3>🌱 Aprendiz</h3>
+        <div id="ranking-aprendiz">Cargando...</div>
+      </div>
 
-        <p style="display:none;">
-          Respondemos tus <strong>dudas de transito</strong> en Argentina: desde prioridades de paso hasta <strong>multas de transito</strong>. El <strong>asistente de seguridad vial</strong> más completo sobre el <strong>reglamento de transito</strong>.
+      <div class="ranking-card">
+        <h3>⚔️ Veterano</h3>
+        <div id="ranking-veterano">Cargando...</div>
+      </div>
+
+      <div class="ranking-card">
+        <h3>👑 Leyenda</h3>
+        <div id="ranking-leyenda">Cargando...</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="faq-simulador" aria-label="Preguntas frecuentes sobre el simulador de examen">
+    <h2>Preguntas frecuentes sobre el simulador</h2>
+    
+    <details>
+        <summary>¿Las preguntas son las mismas que en el examen real de mi provincia?</summary>
+        <p>Nuestro banco de preguntas está elaborado en base a exámenes oficiales de varias provincias argentinas y la normativa de la Ley 24449. Si bien puede haber variaciones locales, cubrimos los temas esenciales que se toman en todo el país.</p>
+    </details>
+    
+    <details>
+        <summary>¿El simulador tiene un costo?</summary>
+        <p>No, es completamente gratuito. Podés usarlo todas las veces que quieras sin registrarte ni pagar.</p>
+    </details>
+    
+    <details>
+        <summary>¿Necesito crear una cuenta para usarlo?</summary>
+        <p>No es necesario. El simulador está disponible de forma anónima. Si querés guardar tu progreso o acceder a funciones adicionales en el futuro, te avisaremos.</p>
+    </details>
+    
+    <details>
+        <summary>¿Las preguntas se actualizan cuando cambia la ley?</summary>
+        <p>Sí, nuestro equipo revisa periódicamente las modificaciones a la Ley 24449 y normativas complementarias para mantener el banco de preguntas actualizado.</p>
+    </details>
+    
+    <details>
+        <summary>¿Puedo usar el simulador en mi celular?</summary>
+        <p>¡Por supuesto! Está diseñado para que puedas practicar desde cualquier dispositivo: computadora, tablet o celular.</p>
+    </details>
+  </section>
+
+  <section class="faq-topics" aria-label="Enlaces útiles para prepararte y trámites de tránsito"> 
+    <div style="margin-bottom:50px">
+      <h2>¿Tenés otra duda?</h2>
+      <p>
+      Podés consultar cualquier normativa de tránsito, multas o requisitos de licencia directamente
+      con nuestro asistente especializado.
       </p>
-    </section>
+      <a href="/" class="back-btn" title="Asistente virtual de seguridad vial y transito">
+        Practicar con el asistente
+      </a>
+    </div>
+    <h2>Explora más temas</h2>
+    <div class="faq-links">  
+        <a href="/faq/examen/" class="btn-link" title="Banco de preguntas de transito para el examen de conducir">Preguntas Examen</a>
+        <a href="/faq/" class="btn-link" title="Preguntas frecuentes de transito argentina y seguridad vial">Preguntas Frecuentes</a>
+        <a href="/faq/licencias/" class="btn-link" title="Tramite de licencias de conducir y renovación">Licencias</a>
+        <a href="/faq/multas/" class="btn-link" title="Consulta de multas de transito e infracciones">Multas</a>
+        <a href="/faq/normas/" class="btn-link" title="Reglas y normas de transito ley 24449">Normas de Tránsito</a>
+        <a href="/faq/documentacion/" class="btn-link" title="Papeles y documentacion para circular en transito">Documentación</a>             
+    </div>
+    
+    <p style="font-size: 0.8em; color: #777; text-align: center; margin-top: 15px;">
+      Guía de <strong>seguridad vial</strong> y <strong>reglamento de transito</strong> actualizado para conductores.
+    </p>
 
+  </section>
 
 </main>
-  <script src="/frontend/js/examen.js?v=1.0.49"></script>
-  
-  <script type="application/ld+json">
+
+<script src="/frontend/js/examen.js?v=1.0.62"></script>
+
+<script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -234,9 +242,9 @@
       }
     ]
   }
-  </script>
+</script>
   
-  <script type="application/ld+json">
+<script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebApplication",
@@ -252,9 +260,9 @@
     },
     "inLanguage": "es-AR"
   }
-  </script>
+</script>
   
-  <script type="application/ld+json">
+<script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -273,9 +281,9 @@
       }
     ]
   }
-  </script>
+</script>
   
-  <script type="application/ld+json">
+<script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebPage",
@@ -289,7 +297,7 @@
       "url": "https://seguridadvial.codepyhub.com/"
     }
   }
-  </script>
+</script>
 
 </body>
 </html>

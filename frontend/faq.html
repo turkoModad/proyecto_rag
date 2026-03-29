@@ -102,37 +102,29 @@
 <p>Indica que está prohibido estacionar, aunque puede permitirse una detención breve para ascenso o descenso de pasajeros.</p>
 </article>
 
-
 <article class="faq-item">
-<h3>¿Qué documentos debo llevar para conducir en Argentina?</h3>
-<p>Debes portar licencia de conducir vigente, DNI, cédula del vehículo y comprobante de seguro obligatorio.</p>
+  <h3>¿Qué documentos debo llevar para conducir en Argentina?</h3>
+  <p>Debes portar licencia de conducir vigente, DNI, cédula del vehículo y comprobante de seguro obligatorio.</p>
 </article>
 
 
 <article class="faq-item">
-<h3>¿Cuántos puntos tiene el sistema de scoring?</h3>
-<p>El sistema nacional de scoring otorga 20 puntos iniciales a cada conductor.</p>
+  <h3>¿Cuántos puntos tiene el sistema de scoring?</h3>
+  <p>El sistema nacional de scoring otorga 20 puntos iniciales a cada conductor.</p>
 </article>
 
 </section>
-
 
 <section style="margin-top:50px">
-
-<h2>¿Tenés otra duda?</h2>
-
-<p>
-Podés consultar cualquier <strong>normativa de transito</strong>, multas o requisitos de licencia directamente
-con nuestro asistente especializado.
-</p>
-
-<a href="/" class="back-btn" title="Pregunta al asistente de transito">
-Preguntar al asistente de tránsito
-</a>
-
+  <h2>¿Tenés otra duda?</h2>
+  <p>
+  Podés consultar cualquier <strong>normativa de transito</strong>, multas o requisitos de licencia directamente
+  con nuestro asistente especializado.
+  </p>
+  <a href="/" class="back-btn" title="Pregunta al asistente de transito">
+  Practicar con el asistente
+  </a>
 </section>
-
-
 
 <section class="faq-topics" id="seccion-enlaces" style="max-width: 900px; margin-left: auto; margin-right: auto;">
   <h2>Consultas a mas temas</h2>
@@ -154,6 +146,77 @@ Preguntar al asistente de tránsito
 </section>
 
 </main>
+
+<script>
+  (function() {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', iniciar);
+    } else {
+      iniciar();
+    }
+
+    function iniciar() {
+      const simuladorLink = document.querySelector('a[href="/examen/"], a[href$="/examen/"]');
+      
+      if (simuladorLink) {
+        const originalClick = simuladorLink.onclick;
+        
+        simuladorLink.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const mensaje = document.createElement('div');
+          mensaje.textContent = '¡Nuevo simulador! Estará disponible el próximo lunes 30, con más funcionalidades y mayor seguridad.';
+          mensaje.style.position = 'fixed';
+          mensaje.style.bottom = '20px';
+          mensaje.style.left = '50%';
+          mensaje.style.transform = 'translateX(-50%)';
+          mensaje.style.backgroundColor = '#1a3e6f';
+          mensaje.style.color = 'white';
+          mensaje.style.padding = '12px 24px';
+          mensaje.style.borderRadius = '40px';
+          mensaje.style.fontSize = '0.9rem';
+          mensaje.style.fontWeight = '500';
+          mensaje.style.zIndex = '9999';
+          mensaje.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+          mensaje.style.animation = 'fadeInUp 0.3s ease';
+          document.body.appendChild(mensaje);
+          
+          setTimeout(() => {
+            mensaje.style.opacity = '0';
+            mensaje.style.transition = 'opacity 0.3s';
+            setTimeout(() => mensaje.remove(), 300);
+          }, 5000);
+          
+          return false;
+        });
+        
+        simuladorLink.style.opacity = '0.6';
+        simuladorLink.style.cursor = 'not-allowed';
+        simuladorLink.style.textDecoration = 'none';
+        
+        console.log('Enlace del simulador deshabilitado correctamente');
+      } else {
+        console.warn('No se encontró el enlace al simulador');
+        const todosLosEnlaces = document.querySelectorAll('a');
+        console.log('Enlaces encontrados:', Array.from(todosLosEnlaces).map(a => a.href));
+      }
+    }
+  })();
+</script>
+
+<style>
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+</style>
 
 
 <script type="application/ld+json">

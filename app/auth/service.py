@@ -52,8 +52,8 @@ async def create_user(db: AsyncSession, email: str, password: str):
     """
     Crea un usuario, devuelve objeto y hash determinístico de email usado para búsquedas/OTP
     """
-    encrypted_email = encrypt_value(email)   # email cifrado para recuperación
-    email_hashed = hash_email(email)         # hash determinístico para búsquedas
+    encrypted_email = encrypt_value(email)   
+    email_hashed = hash_email(email)         
     hashed_password = hash_password(password)
     
     new_user = User(
@@ -157,7 +157,7 @@ async def count_anonymous_queries(db: AsyncSession, ip_address: str, endpoint: s
 # =========================
 async def has_review_recently(
     db: AsyncSession,
-    user_id: Optional[str] = None,  # Cambiado de Optional[int] a Optional[str] (UUID)
+    user_id: Optional[str] = None,  
     ip_address: Optional[str] = None,
     days: int = 7
 ) -> bool:

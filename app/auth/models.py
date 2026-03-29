@@ -115,7 +115,7 @@ class Review(Base):
     __tablename__ = "reviews"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  # Cambiado de Integer a UUID
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  
     ip_address = Column(String(45), nullable=True)
     rating = Column(Integer, nullable=False)
     comment = Column(String(500), nullable=True)
@@ -137,3 +137,63 @@ class Visit(Base):
     first_visit = Column(DateTime(timezone=True), server_default=func.now())
     last_visit = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     visit_count = Column(Integer, default=1)
+
+
+class ExamAttempt(Base):
+    __tablename__ = "exam_attempts"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    anon_id = Column(String(64), nullable=True, index=True)
+    display_name = Column(String(50), nullable=True)
+    ip_address = Column(String(45), nullable=False)
+    score = Column(Integer, nullable=False)
+    total = Column(Integer, nullable=False)
+    duration_seconds = Column(Integer, nullable=False)
+    start_time = Column(DateTime(timezone=True), nullable=False)
+    completed = Column(Boolean, default=True)
+    is_valid = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    session_id = Column(UUID(as_uuid=True), ForeignKey("exam_sessions.id", ondelete="SET NULL"), nullable=True)
+
+    session = relationship("ExamSession", back_populates="attempts")
+
+    __table_args__ = (
+        Index('idx_exam_ranking', 'score', 'duration_seconds'),
+    )
+
+
+class ExamSession(Base):
+    __tablename__ = "exam_sessions"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    token = Column(String(64), unique=True, nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    anon_id = Column(String(64), nullable=True, index=True)
+    nivel = Column(String(20), nullable=False)
+    total_questions = Column(Integer, nullable=False)
+    questions_data = Column(Text, nullable=False)          
+    correct_answers = Column(Text, nullable=False)        
+    start_time = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    expires_at = Column(DateTime(timezone=True), nullable=False)  
+    evaluated = Column(Boolean, default=False)
+    ip_address = Column(String(45), nullable=False)
+    user_agent = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    attempts = relationship("ExamAttempt", back_populates="session", cascade="all, delete-orphan")
+
+
+class ExamLog(Base):
+    __tablename__ = "exam_logs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    session_id = Column(UUID(as_uuid=True), ForeignKey("exam_sessions.id", ondelete="SET NULL"), nullable=True)
+    ip_address = Column(String(45), nullable=False)
+    user_agent = Column(Text, nullable=True)
+    action = Column(String(50), nullable=False)   
+    details = Column(Text, nullable=True)         
+    timestamp = Column(DateTime(timezone=True), server_default=func.now())
+
+    session = relationship("ExamSession", foreign_keys=[session_id])

@@ -186,6 +186,11 @@ else:
     logger.warning("Directorio frontend no encontrado.")
 
 
+@app.get("/examen/")
+async def serve_examen():
+    return FileResponse(os.path.join(FRONTEND_DIR, "examen.html"))
+
+
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")
 

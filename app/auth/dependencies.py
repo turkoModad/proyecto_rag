@@ -1,9 +1,12 @@
-from fastapi import Depends, HTTPException, status, Request
-from app.auth.database import AsyncSessionLocal
-from app.auth.jwt_handler import verify_token
+from fastapi import Depends, HTTPException, status, Request, Response
+import secrets
 import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+
+
+from app.auth.database import AsyncSessionLocal
+from app.auth.jwt_handler import verify_token
 from app.auth.models import User
 from app.auth.database import get_db
 
@@ -135,3 +138,32 @@ async def get_current_user_required_db(
             detail="Se requiere autenticación"
         )
     return user
+
+
+async def get_or_create_anon_id(
+    request: Request,
+    response: Response
+) -> str:
+    """
+    Genera o recupera un identificador anónimo seguro.
+    Se guarda en cookie httpOnly (no accesible desde JS).
+    """
+
+    anon_id = request.cookies.get("anon_id")
+
+    if not anon_id:
+        anon_id = secrets.token_urlsafe(32)
+
+        hostname = request.url.hostname or ""
+        secure_cookie = False if "localhost" in hostname or "127.0.0.1" in hostname else True
+
+        response.set_cookie(
+            key="anon_id",
+            value=anon_id,
+            httponly=True,
+            secure=secure_cookie,
+            samesite="Lax",
+            max_age=60 * 60 * 24 * 365  
+        )
+
+    return anon_id
