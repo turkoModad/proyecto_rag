@@ -348,7 +348,7 @@ directa de la legislación vigente ni el asesoramiento de organismos oficiales o
 
 </div>
 
-<script src="/frontend/js/app.js?v=1.84"></script>
+<script src="/frontend/js/app.js?v=1.85"></script>
 <script>
   const textarea = document.getElementById('question');
   const MAX_HEIGHT = 150;
@@ -380,52 +380,6 @@ directa de la legislación vigente ni el asesoramiento de organismos oficiales o
         .catch(err => console.error('PWA: Error', err));
     });
   }
-
-  document.addEventListener('DOMContentLoaded', function() {
-    const simuladorLink = document.querySelector('a[href="/examen/"]');
-    if (simuladorLink) {
-      simuladorLink.addEventListener('click', function(e) {
-        e.preventDefault();
-
-        const mensaje = document.createElement('div');
-        mensaje.textContent = '¡Nuevo simulador! Estará disponible el próximo lunes 30, con más funcionalidades y mayor seguridad.';
-        mensaje.style.position = 'fixed';
-        mensaje.style.bottom = '20px';
-        mensaje.style.left = '50%';
-        mensaje.style.transform = 'translateX(-50%)';
-        mensaje.style.backgroundColor = '#1a3e6f';
-        mensaje.style.color = 'white';
-        mensaje.style.padding = '12px 24px';
-        mensaje.style.borderRadius = '40px';
-        mensaje.style.fontSize = '0.9rem';
-        mensaje.style.fontWeight = '500';
-        mensaje.style.zIndex = '9999';
-        mensaje.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-        mensaje.style.animation = 'fadeInUp 0.3s ease';
-        document.body.appendChild(mensaje);
-
-        setTimeout(() => {
-          mensaje.style.opacity = '0';
-          mensaje.style.transition = 'opacity 0.3s';
-          setTimeout(() => mensaje.remove(), 300);
-        }, 5000);
-      });
-    }
-  });
 </script>
-
-<style>
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translate(-50%, 20px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
-}
-</style>
-
 </body>
 </html>
