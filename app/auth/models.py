@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Text, Integer, Float, Index
+from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Text, Integer, Float, Index, text, JSON
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -139,61 +139,105 @@ class Visit(Base):
     visit_count = Column(Integer, default=1)
 
 
-class ExamAttempt(Base):
-    __tablename__ = "exam_attempts"
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
-    anon_id = Column(String(64), nullable=True, index=True)
-    display_name = Column(String(50), nullable=True)
-    ip_address = Column(String(45), nullable=False)
-    score = Column(Integer, nullable=False)
-    total = Column(Integer, nullable=False)
-    duration_seconds = Column(Integer, nullable=False)
-    start_time = Column(DateTime(timezone=True), nullable=False)
-    completed = Column(Boolean, default=True)
-    is_valid = Column(Boolean, default=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
-    session_id = Column(UUID(as_uuid=True), ForeignKey("exam_sessions.id", ondelete="SET NULL"), nullable=True)
-
-    session = relationship("ExamSession", back_populates="attempts")
-
-    __table_args__ = (
-        Index('idx_exam_ranking', 'score', 'duration_seconds'),
-    )
-
-
 class ExamSession(Base):
     __tablename__ = "exam_sessions"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     token = Column(String(64), unique=True, nullable=False, index=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
-    anon_id = Column(String(64), nullable=True, index=True)
+    anon_id = Column(String(128), nullable=True, index=True)
     nivel = Column(String(20), nullable=False)
     total_questions = Column(Integer, nullable=False)
-    questions_data = Column(Text, nullable=False)          
-    correct_answers = Column(Text, nullable=False)        
-    start_time = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
-    expires_at = Column(DateTime(timezone=True), nullable=False)  
-    evaluated = Column(Boolean, default=False)
+    questions_data = Column(Text, nullable=False)  
+    answers_data = Column(Text, nullable=False, default="[]")
+    current_index = Column(Integer, nullable=False, default=0)
+    shuffled_data = Column(JSON, nullable=True)
+    fingerprint = Column(Text, nullable=True)
     ip_address = Column(String(45), nullable=False)
     user_agent = Column(Text, nullable=True)
+    start_time = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    evaluated = Column(Boolean, default=False, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     attempts = relationship("ExamAttempt", back_populates="session", cascade="all, delete-orphan")
+
+    __table_args__ = (
+        Index(
+            "uq_active_session_per_anon",
+            "anon_id",
+            unique=True,
+            postgresql_where=text("evaluated = false")
+        ),
+        Index("idx_exam_session_lookup", "anon_id", "evaluated"),
+        Index("idx_exam_session_ip_time", "ip_address", "start_time"),
+    )
+
+
+class ExamAttempt(Base):
+    __tablename__ = "exam_attempts"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    anon_id = Column(String(64), nullable=True, index=True)
+
+    display_name = Column(String(50), nullable=True)
+
+    ip_address = Column(String(45), nullable=False)
+
+    score = Column(Integer, nullable=False)
+    total = Column(Integer, nullable=False)
+
+    duration_seconds = Column(Integer, nullable=False)
+
+    # 🔥 NUEVO (antifraude)
+    avg_time = Column(Float, nullable=True)
+    variance_time = Column(Float, nullable=True)
+    fraud_score = Column(Integer, nullable=True)
+
+    completed = Column(Boolean, default=True)
+    is_valid = Column(Boolean, default=True, index=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    session_id = Column(UUID(as_uuid=True), ForeignKey("exam_sessions.id", ondelete="SET NULL"), nullable=True)
+    session = relationship("ExamSession", back_populates="attempts")
+
+    __table_args__ = (
+        # 🏆 ranking
+        Index("idx_exam_ranking", "score", "duration_seconds"),
+
+        # 🔥 antifraude
+        Index("idx_exam_ip_time", "ip_address", "created_at"),
+
+        # 🔥 analítica
+        Index("idx_exam_valid", "is_valid", "score"),
+    )
 
 
 class ExamLog(Base):
     __tablename__ = "exam_logs"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
     session_id = Column(UUID(as_uuid=True), ForeignKey("exam_sessions.id", ondelete="SET NULL"), nullable=True)
+
     ip_address = Column(String(45), nullable=False)
     user_agent = Column(Text, nullable=True)
-    action = Column(String(50), nullable=False)   
-    details = Column(Text, nullable=True)         
+
+    action = Column(String(50), nullable=False)
+
+    details = Column(Text, nullable=True)
+
+    # 🔥 NUEVO (útil para análisis real)
+    fingerprint = Column(String(128), nullable=True)
+
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
 
     session = relationship("ExamSession", foreign_keys=[session_id])
+
+    __table_args__ = (
+        Index("idx_exam_log_session", "session_id"),
+        Index("idx_exam_log_time", "timestamp"),
+    )

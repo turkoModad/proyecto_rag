@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+
   const btnIniciar = document.getElementById("btn-iniciar");
   const btnCalificar = document.getElementById("btn-calificar");
   const btnReintentar = document.getElementById("btn-reintentar");
@@ -8,107 +9,96 @@ document.addEventListener("DOMContentLoaded", () => {
   const examenContainer = document.getElementById("examen-container");
   const timerDiv = document.getElementById("timer-flotante");
 
-  let examenData = [];
-  let respuestasUsuario = {};
-  let startTimeBackend = null;
+  let token = null;
+  let current = null;
+  let startTime = null;
   let examenActivo = false;
   let timerInterval = null;
-  let duracionMaxima = 600;
-  let tiempoAgotado = false;
-  let token = null;
-  let nivelSeleccionado = "aprendiz";
-  let loading = false;
+  let tiempoRestante = 600;
+  let nivel = "aprendiz";
 
-  function setLoading(show) {
-    loading = show;
-    if (show) {
-      btnIniciar.disabled = true;
-      btnCalificar.disabled = true;
+  function mostrarMensaje(mensaje, tipo = "error") {
+    const mensajeExistente = document.querySelector(".mensaje-flotante");
+    if (mensajeExistente) {
+      mensajeExistente.remove();
     }
+
+    const mensajeDiv = document.createElement("div");
+    mensajeDiv.className = `mensaje-flotante mensaje-${tipo}`;
+    mensajeDiv.innerHTML = `
+      <div class="mensaje-contenido">
+        <i class="fas ${tipo === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i>
+        <span>${mensaje}</span>
+      </div>
+    `;
+
+    document.body.appendChild(mensajeDiv);
+
+    setTimeout(() => {
+      mensajeDiv.classList.add("mostrar");
+    }, 10);
+
+    setTimeout(() => {
+      mensajeDiv.classList.remove("mostrar");
+      setTimeout(() => {
+        mensajeDiv.remove();
+      }, 300);
+    }, 2000);
   }
 
-  function resetEstado() {
+  function reiniciarPagina() {
+    mostrarMensaje("¡Gracias por participar! Reiniciando simulador...", "exito");
+    setTimeout(() => {
+      location.reload();
+    }, 2000);
+  }
+
+  function fingerprint() {
+    return btoa(JSON.stringify({
+      ua: navigator.userAgent,
+      lang: navigator.language,
+      tz: Intl.DateTimeFormat().resolvedOptions().timeZone
+    }));
+  }
+
+  function resetUI() {
     detenerTimer();
-    timerSpan.textContent = "00:00";
-    tiempoAgotado = false;
-    examenActivo = false;
-    respuestasUsuario = {};
-    examenData = [];
+    examenContainer.innerHTML = "";
     resultadoDiv.innerHTML = "";
     resultadoDiv.classList.add("hidden");
-    examenContainer.innerHTML = "";
-    examenContainer.classList.add("hidden");
-    btnIniciar.disabled = false;
+
     btnCalificar.disabled = true;
     btnReintentar.disabled = true;
-    nivelButtons.forEach(btn => btn.disabled = false);
+    btnIniciar.disabled = false;
+
+    nivelButtons.forEach(b => b.disabled = false);
+
+    timerSpan.textContent = "00:00";
     timerDiv.classList.add("hidden-timer");
+
+    examenActivo = false;
+    token = null;
+    current = null;
   }
 
-  function renderExamen(data) {
-    examenContainer.innerHTML = "";
-    data.forEach((p, index) => {
-      const div = document.createElement("div");
-      div.className = "pregunta";
-      const titulo = document.createElement("h3");
-      titulo.textContent = `${index + 1}. ${p.pregunta}`;
-      const opcionesDiv = document.createElement("div");
-      opcionesDiv.className = "opciones";
+  function iniciarTimer() {
+    tiempoRestante = 600;
 
-      p.opciones.forEach((opcion, i) => {
-        const op = document.createElement("div");
-        op.className = "opcion";
-        op.textContent = opcion;
-        op.addEventListener("click", () => {
-          if (!examenActivo || tiempoAgotado) return;
-          opcionesDiv.querySelectorAll(".opcion").forEach(el => el.classList.remove("selected"));
-          op.classList.add("selected");
-          respuestasUsuario[p.id] = i;
-          if (Object.keys(respuestasUsuario).length === data.length) {
-            btnCalificar.disabled = false;
-          }
-        });
-        opcionesDiv.appendChild(op);
-      });
-      div.appendChild(titulo);
-      div.appendChild(opcionesDiv);
-      examenContainer.appendChild(div);
-    });
-    examenContainer.classList.remove("hidden");
-  }
+    timerDiv.classList.remove("hidden-timer");
 
-  function iniciarTimer(backendTime, duracion) {
-    detenerTimer();
-    duracionMaxima = duracion || 600;
-    const startTime = new Date(backendTime);
-    const endTime = new Date(startTime.getTime() + duracionMaxima * 1000);
     timerInterval = setInterval(() => {
-      const now = new Date();
-      const diff = Math.floor((endTime - now) / 1000);
-      if (diff <= 0 && !tiempoAgotado) {
-        detenerTimer();
-        tiempoAgotado = true;
-        examenActivo = false;
-        btnCalificar.disabled = true;
-        btnIniciar.disabled = false;
-        nivelButtons.forEach(btn => btn.disabled = false);
-        timerDiv.classList.add("hidden-timer");
+      tiempoRestante--;
 
-        const mensajeDiv = document.createElement("div");
-        mensajeDiv.className = "resultado-card desaprobado";
-        mensajeDiv.innerHTML = `<h2><i class="fas fa-hourglass-end"></i> Tiempo agotado</h2><p>Se acabó el tiempo. Evaluando respuestas...</p>`;
-        resultadoDiv.innerHTML = "";
-        resultadoDiv.appendChild(mensajeDiv);
-        resultadoDiv.classList.remove("hidden");
+      const min = String(Math.floor(tiempoRestante / 60)).padStart(2, "0");
+      const sec = String(tiempoRestante % 60).padStart(2, "0");
 
-        document.querySelectorAll(".opcion").forEach(op => op.style.pointerEvents = "none");
-
-        setTimeout(() => calificarExamen(true), 2000);
-        return;
-      }
-      const min = String(Math.floor(diff / 60)).padStart(2, "0");
-      const sec = String(diff % 60).padStart(2, "0");
       timerSpan.textContent = `${min}:${sec}`;
+
+      if (tiempoRestante <= 0) {
+        detenerTimer();
+        finalizarExamen();
+      }
+
     }, 1000);
   }
 
@@ -119,229 +109,333 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function getMedalla(porcentaje) {
-    if (porcentaje >= 90) return "🥇 Oro";
-    if (porcentaje >= 75) return "🥈 Plata";
-    if (porcentaje >= 60) return "🥉 Bronce";
-    return "❌ Sin medalla";
+  async function iniciarExamen() {
+      if (btnIniciar.disabled) return;
+      
+      resetUI();
+
+      btnIniciar.disabled = true;
+      btnIniciar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando...';
+      nivelButtons.forEach(b => b.disabled = true);
+
+      try {
+          const res = await fetch("/examen/start", {
+              method: "POST",
+              headers: {"Content-Type": "application/json"},
+              body: JSON.stringify({
+                  nivel,
+                  fingerprint: fingerprint()
+              })
+          });
+
+          if (!res.ok) {
+              const errorData = await res.json().catch(() => ({}));
+              throw new Error(errorData.detail || "Error al iniciar el examen");
+          }
+
+          current = await res.json();
+          token = current.token;
+
+          examenActivo = true;
+          startTime = Date.now();
+
+          iniciarTimer();
+          renderPregunta();
+          
+          btnIniciar.innerHTML = '▶ Iniciar examen';
+
+      } catch (error) {
+          mostrarMensaje(error.message || "Error iniciando examen. Por favor, intentá de nuevo.");
+          btnIniciar.disabled = false;
+          btnIniciar.innerHTML = '▶ Iniciar examen';
+          nivelButtons.forEach(b => b.disabled = false);
+          resetUI();
+      }
   }
 
-  function mostrarMensajeTemporal(mensaje, tipo = "ok", duracion = 2500) {
-    const msg = document.createElement("div");
-    msg.className = `mensaje-temp ${tipo}`;
-    msg.textContent = mensaje;
 
-    document.body.appendChild(msg);
+  function renderPregunta() {
 
-    setTimeout(() => {
-      msg.classList.add("fade-out");
-      setTimeout(() => msg.remove(), 500);
-    }, duracion);
+    if (current.finished) {
+      finalizarExamen();
+      return;
+    }
+
+    examenContainer.innerHTML = `
+      <div class="pregunta">
+        <h3>${current.index + 1}. ${current.pregunta}</h3>
+        <div class="opciones">
+          ${current.opciones.map((o, i) => `
+            <div class="opcion" data-i="${i}">
+              ${o}
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+
+    examenContainer.classList.remove("hidden");
+
+    document.querySelectorAll(".opcion").forEach(el => {
+      el.onclick = () => seleccionarRespuesta(el);
+    });
+  }
+
+  async function seleccionarRespuesta(el) {
+    if (!examenActivo) return;
+
+    const idx = parseInt(el.dataset.i);
+
+    document.querySelectorAll(".opcion").forEach(o => o.classList.remove("selected"));
+    el.classList.add("selected");
+
+    bloquearOpciones();
+
+    const tiempo = (Date.now() - startTime) / 1000;
+
+    if (current.finished) {
+      finalizarExamen();
+      return;
+    }
+
+    try {
+      const res = await fetch("/examen/answer", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          token,
+          question_id: current.question_id,
+          seleccion: idx,
+          firma: current.firma,
+          ts: current.ts,
+          tiempo
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(()=>({detail:"Error"}));
+        throw new Error(err.detail || "Error enviando respuesta");
+      }
+
+      const data = await res.json();
+      current = data;
+
+      startTime = Date.now();
+
+      if (current.finished) {
+        finalizarExamen();
+      } else {
+        renderPregunta();
+      }
+
+    } catch (e) {
+      mostrarMensaje(e.message || "Error enviando respuesta. Por favor, intentá de nuevo.");
+      bloquearOpciones();
+    }
+  }
+
+  function bloquearOpciones() {
+    document.querySelectorAll(".opcion").forEach(o => {
+      o.style.pointerEvents = "none";
+    });
+  }
+
+
+  async function finalizarExamen() {
+    examenActivo = false;
+    detenerTimer();
+
+    try {
+      const res = await fetch("/examen/finish", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ token })
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.detail || "Error al finalizar el examen");
+      }
+
+      const data = await res.json();
+      mostrarResultado(data);
+
+    } catch (error) {
+      mostrarMensaje(error.message || "Error finalizando examen. Por favor, recargá la página.");
+    }
   }
 
   function mostrarResultado(data) {
+
     const porcentaje = Math.round((data.resultado / data.total) * 100);
     const aprobado = porcentaje >= 70;
-    const medalla = getMedalla(porcentaje);
 
     resultadoDiv.innerHTML = `
       <div class="resultado-card ${aprobado ? 'aprobado' : 'desaprobado'}">
-        <h2>${aprobado ? '<i class="fas fa-check-circle"></i> ¡Aprobaste!' : '<i class="fas fa-times-circle"></i> Desaprobaste'}</h2>
+        <h2>${aprobado ? "✅ Aprobaste" : "❌ Desaprobaste"}</h2>
         <p><strong>${data.resultado}</strong> / ${data.total}</p>
         <p><strong>${porcentaje}%</strong></p>
-        <p>${medalla}</p>
-        <p><strong>Tiempo: ${timerSpan.textContent}</strong></p>
+        <p>${data.medalla}</p>
+        <p><strong>${data.duracion}s</strong></p>
+        <p>${data.valido ? "✔ Resultado válido" : "⚠ Actividad sospechosa"}</p>
+
         <hr>
 
-        <div class="ranking-optin">
-          <p>¿Querés aparecer con un nombre o apodo en el ranking?</p>
-          <button id="btn-ranking-si" class="btn-primary">Sí, participar</button>
-          <button id="btn-ranking-no" class="btn-outline">No, gracias</button>
-        </div>
+        <input type="text" id="nombre-ranking" placeholder="Tu nombre (opcional)" maxlength="10"/>
+        <button id="guardar-ranking" class="btn-guardar-ranking">Guardar en ranking</button>
 
-        <div id="ranking-form" class="ranking-input-box hidden">
-          <p>Ingresá tu nombre:</p>
-          <input type="text" id="nombre-ranking" placeholder="Ej: Juan" maxlength="20"/>
-          <button id="guardar-ranking"><i class="fas fa-save"></i> Guardar</button>
-        </div>
+        <div id="auto-reinicio-barra" class="barra-reinicio"></div>
       </div>
     `;
 
     resultadoDiv.classList.remove("hidden");
 
-    const btnSi = document.getElementById("btn-ranking-si");
-    const btnNo = document.getElementById("btn-ranking-no");
+    token = data.attempt_id;
+
+    const inputNombre = document.getElementById("nombre-ranking");
     const btnGuardar = document.getElementById("guardar-ranking");
 
-    if (btnSi) {
-      btnSi.onclick = () => {
-        document.getElementById("ranking-form").classList.remove("hidden");
-        document.querySelector(".ranking-optin").style.display = "none";
-      };
+    btnGuardar.onclick = guardarRanking;
+
+    const barra = document.getElementById("auto-reinicio-barra");
+    const duracion = 10000; 
+    let tiempoTranscurrido = 0;
+    let intervalId = null;
+    let barraActiva = true;
+
+    function actualizarBarra() {
+      tiempoTranscurrido += 100;
+      barra.style.width = `${(tiempoTranscurrido / duracion) * 100}%`;
+
+      if (tiempoTranscurrido >= duracion) {
+        clearInterval(intervalId);
+        reiniciarPagina();
+      }
     }
 
-    if (btnNo) {
-      btnNo.onclick = () => {
-        mostrarMensajeTemporal("No participaste en el ranking 👍");
-
-        const form = document.getElementById("ranking-form");
-        if (form) form.style.display = "none";
-
-        setTimeout(() => {
-          resetEstado();
-        }, 2000);
-      };
+    function iniciarBarra() {
+      if (!intervalId) {
+        intervalId = setInterval(actualizarBarra, 100);
+      }
     }
 
-    if (btnGuardar) {
-      btnGuardar.onclick = async () => {
-        const input = document.getElementById("nombre-ranking");
-        const nombre = input ? input.value.trim() : "";
-
-        if (!nombre) {
-          alert("Ingresá un nombre");
-          return;
-        }
-
-        btnGuardar.disabled = true;
-        btnGuardar.innerHTML = "Guardando...";
-
-        try {
-          const res = await fetch("/examen/set-nombre", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ token, nombre })
-          });
-
-          if (!res.ok) throw new Error((await res.json()).detail || "Error");
-
-          btnGuardar.innerHTML = "✔ Guardado";
-          btnGuardar.disabled = true;
-
-          mostrarMensajeTemporal("Tu resultado fue guardado en el ranking 🏆");
-
-          setTimeout(() => {
-            resetEstado();
-          }, 2000);
-
-        } catch (err) {
-          alert(err.message);
-
-          btnGuardar.disabled = false;
-          btnGuardar.innerHTML = '<i class="fas fa-save"></i> Guardar';
-        }
-      };
+    function detenerBarra() {
+      clearInterval(intervalId);
+      intervalId = null;
     }
+
+    iniciarBarra();
+
+    inputNombre.addEventListener("input", () => {
+      if (inputNombre.value.trim() !== "") {
+        detenerBarra();
+      } else {
+        iniciarBarra();
+      }
+    });
+    
+    btnReintentar.disabled = false;
   }
 
-  async function iniciarExamen() {
-    resetEstado();
-    setLoading(true);
-    btnIniciar.disabled = true;
-    nivelButtons.forEach(btn => btn.disabled = true);
-    try {
-      const res = await fetch("/examen/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nivel: nivelSeleccionado })
-      });
-      if (!res.ok) throw new Error("Error al iniciar");
-      const data = await res.json();
-      token = data.token;
-      examenData = data.preguntas;
-      startTimeBackend = data.start_time;
-      examenActivo = true;
-      renderExamen(examenData);
-      iniciarTimer(startTimeBackend, data.duracion_max);
-      timerDiv.classList.remove("hidden-timer");
-    } catch (err) {
-      alert("Error iniciando examen: " + err.message);
-      resetEstado();
-    } finally {
-      setLoading(false);
+
+  async function guardarRanking() {
+    const nombre = document.getElementById("nombre-ranking").value.trim();
+    
+    if (!nombre) {
+      mostrarMensaje("Por favor, ingresá un nombre para guardar en el ranking", "error");
+      return;
     }
-  }
 
-  async function calificarExamen(porTiempo = false) {
-    if (!porTiempo && tiempoAgotado) return;
-    examenActivo = false;
-    detenerTimer();
-    setLoading(true);
-
-    const respuestasParaEnviar = examenData.map(p => ({
-      id: p.id,
-      seleccion: respuestasUsuario[p.id] !== undefined ? respuestasUsuario[p.id] : -1
-    }));
-
-    const payload = { token, respuestas: respuestasParaEnviar };
-    btnCalificar.disabled = true;
+    const btnGuardar = document.getElementById("guardar-ranking");
+    btnGuardar.disabled = true;
+    btnGuardar.textContent = "Guardando...";
 
     try {
-      const res = await fetch("/examen/submit", {
+      const res = await fetch("/examen/save_name", {  
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          token,
+          nombre
+        })
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Error");
-      mostrarResultado(data);
-      btnReintentar.disabled = false;
 
-      const rankingRes = await fetch(`/examen/ranking/${data.attempt_id}`);
-      const rankingData = await rankingRes.json();
-      const rankingDiv = document.createElement("div");
-      rankingDiv.className = "ranking";
-      rankingDiv.innerHTML = `
-        <h3><i class="fas fa-chart-line"></i> Tu posición en nivel ${rankingData.usuario.nivel}: ${rankingData.usuario.posicion || "no clasificado"}</h3>
-        <h3>🏆 Top 10 del nivel ${rankingData.usuario.nivel}:</h3>
-        <ol>
-          ${rankingData.top10.map(r => `<li>${r.nombre}: ${r.score}/${r.total} (${r.medalla}) - ${r.duracion}s</li>`).join("")}
-        </ol>
-      `;
-      resultadoDiv.appendChild(rankingDiv);
-    } catch (err) {
-      alert("Error al calificar: " + err.message);
-      btnCalificar.disabled = false;
-    } finally {
-      setLoading(false);
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.detail || "Error al guardar");
+      }
+
+      mostrarMensaje(`¡Gracias ${nombre}! Tu puntaje ha sido guardado en el ranking 🏆`, "exito");
+      
+      setTimeout(() => {
+        reiniciarPagina();
+      }, 2000);
+
+    } catch (error) {
+      mostrarMensaje(error.message || "Error guardando nombre. Podés reintentar.", "error");
+      btnGuardar.disabled = false;
+      btnGuardar.textContent = "Guardar en ranking";
     }
   }
 
-  async function cargarRankingPorNivel(nivel) {
+
+  async function cargarRanking(nivel) {
     const container = document.getElementById(`ranking-${nivel}`);
-    if (!container) return;
+
     try {
       const res = await fetch(`/examen/top10/${nivel}`);
-      if (!res.ok) throw new Error("Error cargando ranking");
+      
+      if (!res.ok) {
+        throw new Error("Error al cargar ranking");
+      }
+      
       const data = await res.json();
+
       if (!data.length) {
-        container.innerHTML = "<p>No hay resultados aún.</p>";
+        container.innerHTML = "<p class='ranking-vacio'>📊 Aún no hay resultados</p>";
         return;
       }
-      container.innerHTML = data.map((r, i) => `
-        <div class="ranking-item">
-          <span>#${i + 1} ${r.nombre}</span>
-          <span>${Math.round((r.score / r.total) * 100)}%</span>
-        </div>
-      `).join("");
-    } catch (err) {
-      container.innerHTML = "<p>Error cargando ranking</p>";
+
+      container.innerHTML = data.map((r, i) => {
+        const min = Math.floor(r.duracion / 60);
+        const sec = r.duracion % 60;
+        const duracionFormateada = `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+
+        return `
+          <div class="ranking-item">
+            <span class="ranking-pos">#${i+1}</span>
+            <span class="ranking-nombre">${escapeHtml(r.nombre)}</span>
+            <span class="ranking-score">${Math.round((r.score/r.total)*100)}%</span>
+            <span class="ranking-tiempo">⏱ ${duracionFormateada}</span>
+          </div>
+        `;
+      }).join("");
+
+    } catch {
+      container.innerHTML = "<p class='ranking-error'>⚠ Error cargando ranking</p>";
     }
   }
 
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+
   nivelButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      nivelSeleccionado = btn.dataset.nivel;
+    btn.onclick = () => {
+      nivel = btn.dataset.nivel;
       nivelButtons.forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
-    });
+    };
   });
 
-  btnIniciar.addEventListener("click", iniciarExamen);
-  btnCalificar.addEventListener("click", () => calificarExamen(false));
-  btnReintentar.addEventListener("click", () => location.reload());
+  btnIniciar.onclick = iniciarExamen;
+  btnReintentar.onclick = () => location.reload();
 
-  cargarRankingPorNivel("aprendiz");
-  cargarRankingPorNivel("veterano");
-  cargarRankingPorNivel("leyenda");
+  cargarRanking("aprendiz");
+  cargarRanking("veterano");
+  cargarRanking("leyenda");
+
 });

@@ -374,8 +374,6 @@
   background: #eff6ff;
 }
 
-/* ACTIVO */
-
 .nivel-btn.active {
   border-color: #2563eb;
   background: linear-gradient(135deg, #dbeafe, #eff6ff);
@@ -383,8 +381,6 @@
   font-weight: 600;
   box-shadow: 0 6px 18px rgba(37, 99, 235, 0.2);
 }
-
-/* TEXTO CANTIDAD */
 
 .preg-count {
   font-size: 0.8rem;
@@ -481,9 +477,6 @@
 #btn-ranking-no:hover {
   background: #f3f4f6;
 }
-/* =========================
-   RESPONSIVE
-========================= */
 
 @media (max-width: 768px) {
   .examen-container {
@@ -552,6 +545,284 @@
   opacity: 0;
   transform: translate(-50%, 20px);
   transition: all 0.5s ease;
+}
+
+.mensaje-flotante {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease-in-out;
+}
+
+.mensaje-flotante.mostrar {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.mensaje-contenido {
+    background: white;
+    border-radius: 12px;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    min-width: 300px;
+    border-left: 4px solid;
+}
+
+.mensaje-error .mensaje-contenido {
+    border-left-color: #dc3545;
+    background: #fff5f5;
+}
+
+.mensaje-error i {
+    color: #dc3545;
+    font-size: 20px;
+}
+
+.mensaje-exito .mensaje-contenido {
+    border-left-color: #28a745;
+    background: #f0fff4;
+}
+
+.mensaje-exito i {
+    color: #28a745;
+    font-size: 20px;
+}
+
+.mensaje-contenido span {
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn-guardar-ranking {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: transform 0.2s, opacity 0.2s;
+}
+
+.btn-guardar-ranking:hover:not(:disabled) {
+    transform: translateY(-2px);
+}
+
+.btn-guardar-ranking:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.ranking-vacio {
+    text-align: center;
+    padding: 20px;
+    color: #999;
+    font-style: italic;
+}
+
+.ranking-error {
+    text-align: center;
+    padding: 20px;
+    color: #dc3545;
+    font-size: 14px;
+}
+
+.ranking-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.ranking-pos {
+    font-weight: bold;
+    color: #666;
+    width: 40px;
+}
+
+.ranking-nombre {
+    flex: 1;
+    margin: 0 10px;
+    color: #333;
+}
+
+.ranking-score {
+    font-weight: bold;
+    color: #1a3e6f;
+}
+
+/* ========================
+   ESTILOS PARA EL CAMPO DE NOMBRE EN RESULTADOS
+   ======================== */
+
+.resultado-card {
+    padding: 20px;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.resultado-card hr {
+    margin: 20px 0;
+    border: none;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* Contenedor del campo de nombre */
+.nombre-ranking-container {
+    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Etiqueta del campo */
+.nombre-ranking-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #4a5568;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nombre-ranking-label i {
+    color: #667eea;
+    font-size: 16px;
+}
+
+/* Input de texto */
+#nombre-ranking {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+    background: #fafbfc;
+}
+
+#nombre-ranking:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: white;
+}
+
+#nombre-ranking::placeholder {
+    color: #a0aec0;
+    font-size: 14px;
+}
+
+/* Botón de guardar ranking */
+.btn-guardar-ranking {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.btn-guardar-ranking:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-guardar-ranking:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-guardar-ranking:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-guardar-ranking i {
+    font-size: 16px;
+}
+
+/* Versión responsive */
+@media (max-width: 768px) {
+    #nombre-ranking {
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+    
+    .btn-guardar-ranking {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+}
+
+/* Estilos para el mensaje de éxito/error en el ranking */
+.ranking-mensaje {
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.ranking-mensaje.exito {
+    background: #f0fff4;
+    color: #2c7a3e;
+    border-left: 3px solid #48bb78;
+}
+
+.ranking-mensaje.error {
+    background: #fff5f5;
+    color: #c53030;
+    border-left: 3px solid #fc8181;
+}
+
+.barra-reinicio {
+  height: 6px;
+  background-color: #4caf50;
+  width: 0%;
+  margin-top: 10px;
+  border-radius: 3px;
+  transition: width 0.1s linear;
+}
+
+.ranking-tiempo {
+    font-size: 0.85rem;        
+    color: #6b7280;            
+    margin-left: 12px;        
+    min-width: 60px;           
+    text-align: right;         
+    white-space: nowrap;       
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @keyframes fadeInUp {

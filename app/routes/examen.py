@@ -1,30 +1,23 @@
 from fastapi import APIRouter, HTTPException, Depends, Request
-import logging
-import json
-import random
-import secrets
-from uuid import UUID
+import json, random, secrets, hmac, hashlib
 from datetime import datetime, timezone, timedelta
+from typing import List, Optional
 from pydantic import BaseModel, Field
-from typing import Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc, asc
 
 from app.auth.database import get_db
-from app.auth.models import User, ExamAttempt, ExamSession, ExamLog
+from app.auth.models import ExamSession, ExamAttempt, ExamLog
 from app.auth.dependencies import get_current_user_db, get_or_create_anon_id
 
-logger = logging.getLogger("Examen")
+
 router = APIRouter(tags=["examen"])
 
-# ------------------------------------------------------------
-# CONFIG
-# ------------------------------------------------------------
-DURACION_EXAMEN = 600
-MIN_RESPUESTAS_VALIDAS = 5
-MIN_ANSWER_TIME = 2
 
-DATA_PATH = "data/preguntas_examen.jsonl"
+# CONFIG
+SECRET = "CAMBIAR_POR_SECRETO_REAL_LARGO"
+DURACION_EXAMEN = 600
+MAX_ATTEMPTS_PER_MINUTE = 5
 
 NIVELES = {
     "aprendiz": 20,
@@ -32,247 +25,355 @@ NIVELES = {
     "leyenda": 60
 }
 
-# ------------------------------------------------------------
-# MODELOS
-# ------------------------------------------------------------
-class Respuesta(BaseModel):
-    id: int
-    seleccion: int
 
-class EvaluacionRequest(BaseModel):
-    token: str
-    respuestas: List[Respuesta]
-    nombre: Optional[str] = Field(None, max_length=50)
-
-class NombreRequest(BaseModel):
-    token: str
-    nombre: str = Field(..., max_length=50)
-
-class IniciarRequest(BaseModel):
-    nivel: str = "veterano"
-
-# ------------------------------------------------------------
-# UTILIDADES
-# ------------------------------------------------------------
+# DATA
 def cargar_preguntas():
-    preguntas = []
-    with open(DATA_PATH, "r", encoding="utf-8") as f:
-        for line in f:
-            preguntas.append(json.loads(line))
-    return preguntas
+    with open("data/preguntas_examen.jsonl", encoding="utf-8") as f:
+        return [json.loads(x) for x in f]
+
 
 PREGUNTAS_DB = cargar_preguntas()
 
+
+class StartRequest(BaseModel):
+    nivel: str
+    fingerprint: str
+
+
+class AnswerRequest(BaseModel):
+    token: str
+    question_id: int
+    seleccion: int
+    firma: str
+    tiempo: float
+    ts: int
+
+
+class FinishRequest(BaseModel):
+    token: str
+    nombre: Optional[str] = Field(None, max_length=10)
+
+
+class SaveNameRequest(BaseModel):
+    token: str
+    nombre: str = Field(..., max_length=10)
+
+
+# UTILS
+def firmar(qid, ts):
+    msg = f"{qid}:{ts}"
+    return hmac.new(SECRET.encode(), msg.encode(), hashlib.sha256).hexdigest()
+
+
+def verificar_firma(firma, qid, ts):
+    return hmac.compare_digest(firma, firmar(qid, ts))
+
+
 def get_medalla(score, total):
-    ratio = score / total
-    if ratio >= 0.9:
-        return "🥇"
-    elif ratio >= 0.75:
-        return "🥈"
-    elif ratio >= 0.6:
-        return "🥉"
+    r = score / total
+    if r >= 0.9: return "🥇"
+    if r >= 0.75: return "🥈"
+    if r >= 0.6: return "🥉"
     return ""
 
-def is_bot(user_agent: str) -> bool:
-    if not user_agent:
-        return True
-    ua = user_agent.lower()
-    suspicious = ["headless", "puppeteer", "selenium", "curl", "wget", "bot"]
-    return any(word in ua for word in suspicious)
 
-async def log_exam_action(db, session_id, ip, ua, action, details=None):
-    log = ExamLog(
-        session_id=session_id,
-        ip_address=ip,
-        user_agent=ua,
-        action=action,
-        details=json.dumps(details) if details else None
+async def log(db, session_id, ip, ua, action, extra=None):
+    try:
+        db.add(ExamLog(
+            session_id=session_id,
+            ip_address=ip,
+            user_agent=ua,
+            action=action,
+            details=json.dumps(extra, ensure_ascii=False) if extra else None  
+        ))
+        await db.commit()
+    except:
+        pass
+
+
+async def rate_limit(db, ip):
+    limite = datetime.now(timezone.utc) - timedelta(minutes=1)
+    result = await db.execute(
+        select(ExamSession).where(
+            ExamSession.ip_address == ip,
+            ExamSession.start_time >= limite
+        )
     )
-    db.add(log)
-    await db.commit()
+    if len(result.scalars().all()) >= MAX_ATTEMPTS_PER_MINUTE:
+        raise HTTPException(429, "Demasiados intentos")
 
-# ------------------------------------------------------------
-# START
-# ------------------------------------------------------------
+
+def build_question(session, index):
+    question_ids = json.loads(session.questions_data)
+    if index >= len(question_ids):
+        return {"finished": True}
+
+    qid = question_ids[index]
+    p = next((x for x in PREGUNTAS_DB if x["id"] == qid), None)
+    if not p:
+        return {"finished": True}
+
+    shuffled_map = json.loads(session.shuffled_data) if session.shuffled_data else {}
+    shuffle_info = shuffled_map.get(str(qid))  # Asegúrate de convertir a str si es necesario
+    if not shuffle_info:
+        opciones = p["respuestas"]
+    else:
+        opciones = shuffle_info["shuffled"]
+
+    ts = int(datetime.now().timestamp())
+    firma = firmar(p["id"], ts)
+
+    return {
+        "token": session.token,
+        "question_id": p["id"],
+        "pregunta": p["pregunta"],
+        "opciones": opciones,
+        "index": index,
+        "ts": ts,
+        "firma": firma
+    }
+
+
+
 @router.post("/examen/start")
-async def iniciar_examen(
+async def start(
+    req: StartRequest,
     request: Request,
-    data: IniciarRequest,
     anon_id: str = Depends(get_or_create_anon_id),
-    user: User = Depends(get_current_user_db),
+    user = Depends(get_current_user_db),
     db: AsyncSession = Depends(get_db)
 ):
     ip = request.client.host
-    ua = request.headers.get("user-agent", "")
+    ua = request.headers.get("user-agent","")
+    await rate_limit(db, ip)
 
-    if is_bot(ua):
-        raise HTTPException(403, "Acceso bloqueado")
-
-    if data.nivel not in NIVELES:
+    if req.nivel not in NIVELES:
         raise HTTPException(400, "Nivel inválido")
 
-    cantidad = min(NIVELES[data.nivel], len(PREGUNTAS_DB))
-    seleccion = random.sample(PREGUNTAS_DB, cantidad)
+    # Buscar sesiones activas existentes
+    query = select(ExamSession).where(
+        ExamSession.anon_id == anon_id,
+        ExamSession.evaluated == False,
+        ExamSession.expires_at > datetime.now(timezone.utc)
+    )
+    
+    if user and user.id:
+        query = query.where(ExamSession.user_id == user.id)
+    
+    existing_session = await db.execute(query)
+    session_activa = existing_session.scalar_one_or_none()
+    
+    if session_activa:
+        print(f"[DEBUG] Finalizando sesión anterior: {session_activa.token}")
+        session_activa.evaluated = True
+        await db.commit()
+        await log(db, session_activa.id, ip, ua, "session_terminated", {"reason": "new_exam_started"})
 
-    preguntas_cliente = []
-    correctas_map = {}
+    cantidad = min(NIVELES[req.nivel], len(PREGUNTAS_DB))
+    preguntas = random.sample(PREGUNTAS_DB, cantidad)
 
-    for p in seleccion:
-        opciones = p["respuestas"].copy()
-        random.shuffle(opciones)
-        correcta_index = opciones.index(p["correcta"])
+    shuffled_map = {}
+    for p in preguntas:
+        shuffled_answers = p["respuestas"].copy()
+        random.shuffle(shuffled_answers)
+        correct_index = shuffled_answers.index(p["correcta"])
+        shuffled_map[p["id"]] = {
+            "shuffled": shuffled_answers,
+            "correct_index": correct_index
+        }
 
-        preguntas_cliente.append({
-            "id": p["id"],
-            "pregunta": p["pregunta"],
-            "opciones": opciones,
-            "imagen": p.get("imagen")
-        })
-
-        correctas_map[p["id"]] = correcta_index
-
+    question_ids = [p["id"] for p in preguntas]
     token = secrets.token_urlsafe(32)
     now = datetime.now(timezone.utc)
 
+    # 🔥 IMPORTANTE: Todos los json.dumps() deben tener ensure_ascii=False
     session = ExamSession(
         token=token,
         user_id=user.id if user else None,
         anon_id=anon_id,
-        nivel=data.nivel,
+        ip_address=ip,
+        user_agent=ua,
+        fingerprint=req.fingerprint,
+        nivel=req.nivel,
+        questions_data=json.dumps(question_ids, ensure_ascii=False),
+        answers_data=json.dumps([], ensure_ascii=False),
+        current_index=0,
         total_questions=cantidad,
-        questions_data=json.dumps(preguntas_cliente),
-        correct_answers=json.dumps(correctas_map),
         start_time=now,
         expires_at=now + timedelta(seconds=DURACION_EXAMEN),
-        ip_address=ip,
-        user_agent=ua
+        evaluated=False,
+        shuffled_data=json.dumps(shuffled_map, ensure_ascii=False)
     )
 
     db.add(session)
     await db.commit()
+    await db.refresh(session)
 
-    return {
-        "token": token,
-        "duracion_max": DURACION_EXAMEN,
-        "start_time": now.isoformat(),
-        "preguntas": preguntas_cliente
-    }
+    await log(db, session.id, ip, ua, "start")
+    return build_question(session, 0)
 
-# ------------------------------------------------------------
-# SUBMIT (MEJORADO)
-# ------------------------------------------------------------
-@router.post("/examen/submit")
-async def evaluar_examen(
-    request: Request,
-    data: EvaluacionRequest,
-    anon_id: str = Depends(get_or_create_anon_id),
-    user: User = Depends(get_current_user_db),
-    db: AsyncSession = Depends(get_db)
-):
+
+@router.post("/examen/answer")
+async def answer(req: AnswerRequest, request: Request, db: AsyncSession = Depends(get_db)):
+    ip = request.client.host
+    ua = request.headers.get("user-agent","")
+
+    # Traer sesión
+    result = await db.execute(select(ExamSession).where(ExamSession.token == req.token))
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(400, "Sesión inválida")
+    if session.evaluated:
+        raise HTTPException(400, "Examen ya finalizado")
+    if datetime.now(timezone.utc) > session.expires_at:
+        raise HTTPException(400, "Examen expirado")
+    if session.ip_address != ip:
+        raise HTTPException(403, "IP sospechosa")
+
+    question_ids = json.loads(session.questions_data)
+    if session.current_index >= len(question_ids):
+        raise HTTPException(400, "Examen terminado")
+
+    qid_actual = question_ids[session.current_index]
+    if qid_actual != req.question_id:
+        raise HTTPException(400, "Orden inválido")
+    if not verificar_firma(req.firma, req.question_id, req.ts):
+        raise HTTPException(400, "Firma inválida")
+
+    # Obtener la información de mezclado almacenada en la sesión
+    shuffled_map = json.loads(session.shuffled_data) if session.shuffled_data else {}
+    shuffle_info = shuffled_map.get(str(req.question_id))
+
+    # Determinar si la respuesta es correcta usando el índice correcto almacenado
+    es_correcta = False
+    if shuffle_info:
+        correct_index = shuffle_info["correct_index"]
+        es_correcta = (req.seleccion == correct_index)
+    else:
+        p = next((x for x in PREGUNTAS_DB if x["id"] == req.question_id), None)
+        if p and 0 <= req.seleccion < len(p["respuestas"]):
+            es_correcta = p["respuestas"][req.seleccion] == p["correcta"]
+
+    print(f"[DEBUG] Pregunta ID: {req.question_id}, Selección: {req.seleccion}, Correcta: {es_correcta}")
+
+    # Guardar respuesta
+    respuestas = json.loads(session.answers_data)
+    respuestas.append({
+        "id": req.question_id,
+        "seleccion": req.seleccion,
+        "tiempo": req.tiempo,
+        "correcta": es_correcta
+    })
+    # 🔥 Agregar ensure_ascii=False aquí también
+    session.answers_data = json.dumps(respuestas, ensure_ascii=False)
+    session.current_index += 1
+    await db.commit()
+
+    await log(db, session.id, ip, ua, "answer", {"q": req.question_id, "seleccion": req.seleccion, "correcta": es_correcta})
+
+    return build_question(session, session.current_index)
+
+
+
+@router.post("/examen/finish")
+async def finish(req: FinishRequest, request: Request, db: AsyncSession = Depends(get_db)):
     ip = request.client.host
     ua = request.headers.get("user-agent", "")
 
-    result = await db.execute(
-        select(ExamSession).where(ExamSession.token == data.token)
-    )
+    result = await db.execute(select(ExamSession).where(ExamSession.token == req.token))
     session = result.scalar_one_or_none()
-
     if not session:
-        raise HTTPException(400, "Token inválido")
-
+        raise HTTPException(400, "Sesión inválida")
     if session.evaluated:
-        raise HTTPException(400, "Ya evaluado")
+        raise HTTPException(400, "Examen ya evaluado")
 
-    ahora = datetime.now(timezone.utc)
+    question_ids = json.loads(session.questions_data)
+    respuestas = json.loads(session.answers_data)
 
-    if ahora > session.expires_at:
-        session.evaluated = True
-        await db.commit()
-        return {"error": "Tiempo excedido", "resultado": 0, "total": session.total_questions}
+    correctas = sum(1 for r in respuestas if r.get("correcta", False))
+    print(f"[DEBUG] Evaluando examen {session.id} con {len(respuestas)} respuestas. Correctas: {correctas}")
 
-    duracion = int((ahora - session.start_time).total_seconds())
+    tiempos = [r.get("tiempo", 0) for r in respuestas]
+    duracion = (datetime.now(timezone.utc) - session.start_time).total_seconds()
+    avg = sum(tiempos)/len(tiempos) if tiempos else 0
+    var = sum((t-avg)**2 for t in tiempos)/len(tiempos) if tiempos else 0
 
-    preguntas_originales = {
-        p["id"] for p in json.loads(session.questions_data)
-    }
+    fraud = 0
+    if avg < 1.2: fraud += 2
+    if var < 0.5: fraud += 2
+    if correctas == len(question_ids) and duracion < 60: fraud += 3
 
-    preguntas_enviadas = {r.id for r in data.respuestas}
-
-    if preguntas_enviadas != preguntas_originales:
-        raise HTTPException(400, "Manipulación detectada")
-
-    correctas_map = json.loads(session.correct_answers)
-
-    correctas = 0
-    respondidas = 0
-
-    for r in data.respuestas:
-        if r.seleccion != -1:
-            respondidas += 1
-            if str(r.id) in correctas_map and correctas_map[str(r.id)] == r.seleccion:
-                correctas += 1
-
-    if respondidas < MIN_RESPUESTAS_VALIDAS:
-        session.evaluated = True
-        await db.commit()
-        return {
-            "error": "Muy pocas respuestas",
-            "resultado": 0,
-            "total": session.total_questions
-        }
-
-    # --------------------------------------------------------
-    # VALIDACIONES ANTIBOT
-    # --------------------------------------------------------
-    is_valid = True
-
-    if duracion < (len(preguntas_originales) * MIN_ANSWER_TIME):
-        is_valid = False
-
-    if correctas == session.total_questions and duracion < 30:
-        is_valid = False
-
-    if is_bot(ua):
-        is_valid = False
-
-    session.evaluated = True
-    await db.commit()
+    is_valid = fraud < 4
 
     intento = ExamAttempt(
-        user_id=user.id if user else None,
-        anon_id=anon_id,
-        display_name=data.nombre[:50] if data.nombre else None,
+        user_id=session.user_id,
+        anon_id=session.anon_id,
+        display_name=req.nombre[:50] if req.nombre else None,
         ip_address=ip,
         score=correctas,
-        total=session.total_questions,
-        duration_seconds=duracion,
-        start_time=session.start_time,
+        total=len(question_ids),
+        duration_seconds=int(duracion),
+        avg_time=avg,
+        variance_time=var,
+        fraud_score=fraud,
         completed=True,
         is_valid=is_valid,
         session_id=session.id
     )
 
     db.add(intento)
+    session.evaluated = True
     await db.commit()
+    await db.refresh(intento)
+
+    # 🔥 Aquí también usar ensure_ascii=False en el log
+    await log(db, session.id, ip, ua, "finish", {"score": correctas, "valido": is_valid, "duracion": duracion, "fraud": fraud, "respuestas": respuestas})
+
+    print(f"[DEBUG] Resultado final: {correctas}/{len(question_ids)}, válido: {is_valid}, duración: {duracion}s")
 
     return {
         "resultado": correctas,
-        "total": session.total_questions,
-        "duracion": duracion,
-        "medalla": get_medalla(correctas, session.total_questions),
+        "total": len(question_ids),
+        "duracion": int(duracion),
+        "medalla": get_medalla(correctas, len(question_ids)),
+        "valido": is_valid,
         "attempt_id": intento.id
     }
 
-# ------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+# ==========================
+# SAVE NAME
+# ==========================
+@router.post("/examen/save_name")
+async def save_name(req: SaveNameRequest, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(ExamAttempt).where(ExamAttempt.id == req.token)
+    )
+    intento = result.scalar_one_or_none()
+    if not intento:
+        raise HTTPException(400, "Intento no encontrado")
+    intento.display_name = req.nombre[:50]
+    await db.commit()
+    return {"ok": True}
+
+# ==========================
 # RANKING
-# ------------------------------------------------------------
+# ==========================
 @router.get("/examen/top10/{nivel}")
-async def top10_por_nivel(nivel: str, db: AsyncSession = Depends(get_db)):
+async def top10(nivel: str, db: AsyncSession = Depends(get_db)):
     if nivel not in NIVELES:
         raise HTTPException(400, "Nivel inválido")
 
     total = NIVELES[nivel]
-
     result = await db.execute(
         select(ExamAttempt)
         .where(
@@ -285,96 +386,10 @@ async def top10_por_nivel(nivel: str, db: AsyncSession = Depends(get_db)):
         .limit(10)
     )
 
-    return [
-        {
-            "nombre": r.display_name or "Anónimo",
-            "score": r.score,
-            "total": r.total,
-            "duracion": r.duration_seconds,
-            "medalla": get_medalla(r.score, r.total)
-        }
-        for r in result.scalars().all()
-    ]
-
-# ------------------------------------------------------------
-# RANKING DETALLE
-# ------------------------------------------------------------
-@router.get("/examen/ranking/{attempt_id}")
-async def ranking_examen(attempt_id: UUID, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(ExamAttempt).where(ExamAttempt.id == attempt_id))
-    intento = result.scalar_one_or_none()
-
-    if not intento:
-        raise HTTPException(404, "Intento no encontrado")
-
-    total = intento.total
-    nivel = next((k for k, v in NIVELES.items() if v == total), None)
-
-    result_all = await db.execute(
-        select(ExamAttempt)
-        .where(
-            ExamAttempt.completed == True,
-            ExamAttempt.is_valid == True,
-            ExamAttempt.total == total,
-            ExamAttempt.score >= (ExamAttempt.total * 0.6)
-        )
-        .order_by(desc(ExamAttempt.score), asc(ExamAttempt.duration_seconds))
-    )
-
-    all_attempts = result_all.scalars().all()
-
-    posicion = next((i + 1 for i, x in enumerate(all_attempts) if x.id == attempt_id), None)
-
-    return {
-        "top10": [
-            {
-                "nombre": r.display_name or "Anónimo",
-                "score": r.score,
-                "total": r.total,
-                "duracion": r.duration_seconds,
-                "medalla": get_medalla(r.score, r.total)
-            } for r in all_attempts[:10]
-        ],
-        "usuario": {
-            "nombre": intento.display_name or "Anónimo",
-            "score": intento.score,
-            "total": intento.total,
-            "duracion": intento.duration_seconds,
-            "posicion": posicion,
-            "nivel": nivel,
-            "medalla": get_medalla(intento.score, intento.total)
-        }
-    }
-
-
-@router.post("/examen/set-nombre")
-async def set_nombre(
-    data: NombreRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # Buscar sesión por token
-    result = await db.execute(
-        select(ExamSession).where(ExamSession.token == data.token)
-    )
-    session = result.scalar_one_or_none()
-
-    if not session:
-        raise HTTPException(404, "Sesión no encontrada")
-
-    # Buscar intento asociado
-    result = await db.execute(
-        select(ExamAttempt).where(ExamAttempt.session_id == session.id)
-    )
-    intento = result.scalar_one_or_none()
-
-    if not intento:
-        raise HTTPException(404, "Intento no encontrado")
-
-    # Evitar overwrite
-    if intento.display_name:
-        raise HTTPException(400, "Nombre ya asignado")
-
-    intento.display_name = data.nombre[:50]
-    await db.commit()
-
-    return {"ok": True}
+    return [{
+        "nombre": r.display_name or "Anónimo",
+        "score": r.score,
+        "total": r.total,
+        "duracion": r.duration_seconds,
+        "medalla": get_medalla(r.score, r.total)
+    } for r in result.scalars().all()]
