@@ -193,5 +193,60 @@ directamente con nuestro asistente especializado.
 }
 </script>
 
+<div id="newFeaturesToast" style="
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #3fa6ad;
+  color: #fff;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  font-family: 'Inter', sans-serif;
+  max-width: 320px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: default;
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+">
+  <span>
+    ¡El examinador ahora tiene <strong>nuevas funcionalidades, totalmente renovado</strong>! 
+    <a href="/examen/" style="color: #fff; text-decoration: underline; font-weight: 600;">Probalas ahora</a>
+  </span>
+  <button id="closeToast" style="
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+  ">&times;</button>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toast = document.getElementById('newFeaturesToast');
+    const closeBtn = document.getElementById('closeToast');
+
+    setTimeout(() => {
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateY(0)';
+    }, 500); 
+
+    closeBtn.addEventListener('click', () => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(50px)';
+    });
+
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(50px)';
+    }, 10500); 
+  });
+</script>
 </body>
 </html>
