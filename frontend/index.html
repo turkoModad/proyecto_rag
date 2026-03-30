@@ -17,7 +17,7 @@
 <meta name="theme-color" content="#000000">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="stylesheet" href="/frontend/css/styles.css?v=1.0.54">
+<link rel="stylesheet" href="/frontend/css/styles.css?v=1.0.56">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <meta property="og:title" content="Asistente IA de la Ley de Tránsito 24449">
 <meta property="og:description" content="Consultá normas de tránsito y la Ley 24449 usando inteligencia artificial.">
@@ -46,28 +46,7 @@
 }
 </script>
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "Asistente de Seguridad Vial IA",
-  "applicationCategory": "LegalAssistant",
-  "operatingSystem": "Web",
-  "url": "https://seguridadvial.codepyhub.com/",
-  "description": "Asistente basado en inteligencia artificial para consultar la Ley Nacional de Tránsito 24449 en Argentina.",
-  "inLanguage": "es-AR",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "ARS"
-  },
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "4.9",
-    "reviewCount": "12"
-  }
-}
-</script>
+<script type="application/ld+json" src="/ld-json"></script>
 
 <script type="application/ld+json">
 {
@@ -290,6 +269,7 @@ La <strong>Ley Nacional de Tránsito 24449</strong> establece reglas fundamental
 
   <div class="review-header">
     <div class="rating-display">
+
       <span id="avgRating">--</span> ⭐
       <span id="totalReviews">(cargando...)</span>
     </div>
@@ -308,6 +288,10 @@ La <strong>Ley Nacional de Tránsito 24449</strong> establece reglas fundamental
 
 <button id="reviewSubmit">Enviar valoración</button>
   <div id="reviewFeedback" style="display: none;"></div>
+  <div class="reviews-rotator" id="reviewsRotator">
+    <p id="reviewText">Cargando opiniones...</p>
+  </div>
+
 </section>
 
 <section class="ai-disclaimer">
@@ -348,7 +332,7 @@ directa de la legislación vigente ni el asesoramiento de organismos oficiales o
 
 </div>
 
-<script src="/frontend/js/app.js?v=1.85"></script>
+<script src="/frontend/js/app.js?v=1.87"></script>
 <script>
   const textarea = document.getElementById('question');
   const MAX_HEIGHT = 150;
@@ -437,5 +421,53 @@ directa de la legislación vigente ni el asesoramiento de organismos oficiales o
     }, 10500); 
   });
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const reviewText = document.getElementById("reviewText");
+
+  let reviews = [];
+  let index = 0;
+
+  fetch('/ld-json')
+    .then(res => res.json())
+    .then(data => {
+      if (!data.review || data.review.length === 0) {
+        reviewText.innerText = "Aún no hay opiniones.";
+        return;
+      }
+
+      reviews = data.review;
+
+      function mostrarReview() {
+        const r = reviews[index];
+
+        const comentario = r.reviewBody 
+          ? r.reviewBody.slice(0, 100) 
+          : "Excelente experiencia";
+
+        const texto = `⭐ ${r.reviewRating.ratingValue} - ${comentario}`;
+
+        reviewText.classList.add("fade-out");
+
+        setTimeout(() => {
+          reviewText.innerText = texto;
+          reviewText.classList.remove("fade-out");
+          reviewText.classList.add("fade-in");
+        }, 300);
+
+        index = (index + 1) % reviews.length;
+      }
+
+      mostrarReview();
+
+      setInterval(mostrarReview, 4000);
+    })
+    .catch(() => {
+      reviewText.innerText = "Error cargando opiniones.";
+    });
+});
+</script>
+
 </body>
 </html>

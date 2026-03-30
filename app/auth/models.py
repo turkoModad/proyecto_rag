@@ -178,40 +178,27 @@ class ExamAttempt(Base):
     __tablename__ = "exam_attempts"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     anon_id = Column(String(64), nullable=True, index=True)
-
     display_name = Column(String(50), nullable=True)
-
     ip_address = Column(String(45), nullable=False)
-
     score = Column(Integer, nullable=False)
     total = Column(Integer, nullable=False)
-
     duration_seconds = Column(Integer, nullable=False)
-
-    # 🔥 NUEVO (antifraude)
     avg_time = Column(Float, nullable=True)
     variance_time = Column(Float, nullable=True)
     fraud_score = Column(Integer, nullable=True)
-
     completed = Column(Boolean, default=True)
     is_valid = Column(Boolean, default=True, index=True)
-
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-
     session_id = Column(UUID(as_uuid=True), ForeignKey("exam_sessions.id", ondelete="SET NULL"), nullable=True)
     session = relationship("ExamSession", back_populates="attempts")
 
     __table_args__ = (
-        # 🏆 ranking
         Index("idx_exam_ranking", "score", "duration_seconds"),
 
-        # 🔥 antifraude
         Index("idx_exam_ip_time", "ip_address", "created_at"),
 
-        # 🔥 analítica
         Index("idx_exam_valid", "is_valid", "score"),
     )
 
@@ -220,21 +207,13 @@ class ExamLog(Base):
     __tablename__ = "exam_logs"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-
     session_id = Column(UUID(as_uuid=True), ForeignKey("exam_sessions.id", ondelete="SET NULL"), nullable=True)
-
     ip_address = Column(String(45), nullable=False)
     user_agent = Column(Text, nullable=True)
-
     action = Column(String(50), nullable=False)
-
     details = Column(Text, nullable=True)
-
-    # 🔥 NUEVO (útil para análisis real)
     fingerprint = Column(String(128), nullable=True)
-
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
-
     session = relationship("ExamSession", foreign_keys=[session_id])
 
     __table_args__ = (

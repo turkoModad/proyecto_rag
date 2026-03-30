@@ -9,13 +9,11 @@ from sqlalchemy import select, desc, asc
 from app.auth.database import get_db
 from app.auth.models import ExamSession, ExamAttempt, ExamLog
 from app.auth.dependencies import get_current_user_db, get_or_create_anon_id
+from app.core.config import SECRET_EXAMENES, ARCHIVO_PREGUNTAS
 
 
 router = APIRouter(tags=["examen"])
 
-
-# CONFIG
-SECRET = "CAMBIAR_POR_SECRETO_REAL_LARGO"
 DURACION_EXAMEN = 600
 MAX_ATTEMPTS_PER_MINUTE = 5
 
@@ -26,9 +24,8 @@ NIVELES = {
 }
 
 
-# DATA
 def cargar_preguntas():
-    with open("data/preguntas_examen.jsonl", encoding="utf-8") as f:
+    with open(ARCHIVO_PREGUNTAS, encoding="utf-8") as f:
         return [json.loads(x) for x in f]
 
 
@@ -59,10 +56,9 @@ class SaveNameRequest(BaseModel):
     nombre: str = Field(..., max_length=10)
 
 
-# UTILS
 def firmar(qid, ts):
     msg = f"{qid}:{ts}"
-    return hmac.new(SECRET.encode(), msg.encode(), hashlib.sha256).hexdigest()
+    return hmac.new(SECRET_EXAMENES.encode(), msg.encode(), hashlib.sha256).hexdigest()
 
 
 def verificar_firma(firma, qid, ts):

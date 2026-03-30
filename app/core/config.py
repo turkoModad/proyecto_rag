@@ -36,6 +36,8 @@ try:
     SMTP_PASSWORD = get_secret("SMTP_PASSWORD")
     SENDER_EMAIL = get_secret("SENDER_EMAIL")
     RECIPIENT_EMAIL = get_secret("RECIPIENT_EMAIL")
+    SECRET_EXAMENES = get_secret("SECRET_EXAMENES")
+    ARCHIVO_PREGUNTAS = get_secret("ARCHIVO_PREGUNTAS")
 
 
 except Exception as e:

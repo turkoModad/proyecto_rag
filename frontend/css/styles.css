@@ -26,9 +26,6 @@ body {
     padding-right:16px;
 }
 
-/* ========================= */
-/* HERO TITLE */
-/* ========================= */
 .welcome-title{
     width:100%;
     max-width:900px;
@@ -60,9 +57,6 @@ body {
     margin-bottom:10px;
 }
 
-/* ========================= */
-/* APP CONTAINER */
-/* ========================= */
 .app{
     width:100%;
     max-width:900px;
@@ -77,7 +71,6 @@ body {
     border:1px solid rgba(255,255,255,0.3);
 }
 
-/* HEADER */
 .header {
     background: #052850;
     color: rgb(226, 226, 226);
@@ -142,7 +135,6 @@ body {
     margin-right: 6px;
 }
 
-/* QUERY COUNTER */
 .query-counter{
     font-size:0.8rem;
     background:rgba(255,255,255,0.15);
@@ -152,7 +144,6 @@ body {
     font-weight:500;
 }
 
-/* CHAT WINDOW */
 .chat-window {
     flex: 1.5;
     overflow-y: auto;
@@ -164,9 +155,6 @@ body {
     scroll-behavior: smooth;
 }
 
-/* ========================= */
-/* CHAT INTRO QUESTIONS */
-/* ========================= */
 .welcome{
     text-align:center;
     padding:24px 20px;
@@ -187,8 +175,6 @@ body {
     font-size:0.95rem;
 }
 
-/* ========================= */
-/* MESSAGES */
 .message {
     max-width: 65%;
     padding: 14px 18px;
@@ -250,7 +236,6 @@ body {
     30% { opacity: 1; transform: translateY(-4px); }
 }
 
-/* INPUT AREA */
 .input-area {
     display: flex;
     padding: 20px 24px;
@@ -344,7 +329,6 @@ body {
     background: #cbd5e1;
     border-radius: 10px;
 }
-/* SCROLLBAR */
 .chat-window::-webkit-scrollbar {
     width: 6px;
 }
@@ -362,8 +346,6 @@ body {
     background: #94a3b8;
 }
 
-/* ========================= */
-/* SEO / FAQ CONTENT */
 .seo-content {
     width:100%;
     max-width:900px;
@@ -434,8 +416,6 @@ body {
     transform: scale(0.98);
 }
 
-/* ========================= */
-/* BOTÓN CERRAR SESIÓN */
 .logout-btn {
     background: #dc2626;             
     color: white;
@@ -459,7 +439,6 @@ body {
     transform: scale(0.98);
 }
 
-/* CTA LOGIN */
 .cta-login{
     width:100%;
     max-width:900px;
@@ -498,9 +477,6 @@ body {
     display:inline-block;
 }
 
-/* ======================
-   ENLACES COMO BOTONES 
-========================= */
 .auth-btn {
     display: inline-block;
     background: #0b2a4f;       
@@ -540,8 +516,6 @@ body {
 }
 
 
-/* ========================= */
-/* AI DISCLAIMER */
 .ai-disclaimer{
     width:100%;
     max-width:900px;
@@ -567,8 +541,6 @@ body {
     color:#6b7280;
 }
 
-/* ========================= */
-/* TOAST LOGIN LIMIT */
 .toast{
     position:fixed;
     bottom:60px;
@@ -623,8 +595,7 @@ body {
     }
 }
 
-/* ========================= */
-/* MOBILE */
+
 @media (max-width:900px){
     .welcome-title{
         padding:6px 16px;
@@ -703,7 +674,6 @@ section:last-child{
     border:1px solid #eaeaea;
 }
 
-/* Contenedor de los enlaces en flexbox con wrap */
 #seccion-enlaces .faq-links {
     display: flex !important;
     flex-wrap: wrap !important;
@@ -711,7 +681,6 @@ section:last-child{
     justify-content: flex-start !important;
 }
 
-/* Cada enlace como tarjeta */
 #seccion-enlaces .faq-links a {
     flex: 1 1 200px !important;         
     display: flex !important;
@@ -729,14 +698,12 @@ section:last-child{
     transition: all 0.2s ease !important;
 }
 
-/* Flecha al final */
 #seccion-enlaces .faq-links a::after {
     content: "→" !important;
     font-size: 18px !important;
     color: #2d6cdf !important;
 }
 
-/* Efecto hover */
 #seccion-enlaces .faq-links a:hover {
     border-color: #2d6cdf !important;
     background: #f3f6fb !important;
@@ -744,9 +711,6 @@ section:last-child{
     box-shadow: 0 8px 20px rgba(0,0,0,0.08) !important;
 }
 
-/* ========================= */
-/* CONTACT BOX - FULL WIDTH */
-/* ========================= */
 .contact-box {
     width: 100%;
     max-width: 900px; 
@@ -762,26 +726,22 @@ section:last-child{
     gap: 18px;
 }
 
-/* GRID PARA INPUTS */
 .contact-row {
     display: flex;
     gap: 16px;
     flex-wrap: wrap;
 }
 
-/* EMAIL */
 .contact-row input {
     flex: 1;
     min-width: 250px;
 }
 
-/* TEXTAREA FULL WIDTH */
 .contact-box textarea {
     width: 100%;
     min-height: 120px;
 }
 
-/* BOTÓN + FOOTER */
 .contact-actions {
     display: flex;
     justify-content: space-between;
@@ -829,7 +789,6 @@ section:last-child{
     line-height: 1.5;
 }
 
-/* INPUTS */
 .contact-box input,
 .contact-box textarea {
     width: 100%;
@@ -849,7 +808,6 @@ section:last-child{
     outline: none;
 }
 
-/* BOTÓN  */
 #contactBtn {
     background: #0b2a4f;
     color: white;
@@ -868,16 +826,12 @@ section:last-child{
     box-shadow: 0 6px 16px rgba(11, 42, 79, 0.3);
 }
 
-/* FEEDBACK */
 .contact-feedback {
     font-size: 0.85rem;
     color: #16a34a;
     min-height: 18px;
 }
 
-/* ========================= */
-/* CONTACT INPUT INTERACTIVE */
-/* ========================= */
 .contact-box input,
 .contact-box textarea {
     width: 100%;
@@ -899,7 +853,6 @@ section:last-child{
     box-shadow: 0 8px 20px rgba(11, 42, 79, 0.12);
 }
 
-/* FOCUS  */
 .contact-box input:focus,
 .contact-box textarea:focus {
     transform: scale(1.02);
@@ -910,22 +863,17 @@ section:last-child{
     outline: none;
 }
 
-/* TEXTAREA ajuste */
 .contact-box textarea {
     min-height: 120px;
     resize: vertical;
 }
 
-/* PLACEHOLDER más fino */
 .contact-box input::placeholder,
 .contact-box textarea::placeholder {
     color: #94a3b8;
     font-weight: 400;
 }
 
-/* ========================= */
-/* HEADER RESPONSIVE FIX */
-/* ========================= */
 
 @media (max-width: 600px){
 
@@ -960,19 +908,16 @@ section:last-child{
         justify-content: space-between;
     }
 
-    /* CONTADOR MÁS CHICO */
     .query-counter {
         font-size: 0.7rem;
         padding: 5px 10px;
     }
 
-    /* STATUS MÁS COMPACTO */
     .status {
         font-size: 0.75rem;
         padding: 5px 10px;
     }
 
-    /* BOTÓN LOGOUT FULL WIDTH */
     .logout-btn {
         width: 100%;
         text-align: center;
@@ -1006,7 +951,6 @@ section:last-child{
     }
 }
 
-/* Efecto hover para el botón de Cafecito */
 .contact-actions a {
     display: inline-block;
     line-height: 0;
@@ -1017,7 +961,6 @@ section:last-child{
     transform: scale(1.1);
 }
 
-/* Efecto hover para el botón de enviar */
 .contact-actions button {
     margin: 0;
     transition: transform 0.2s ease;
@@ -1146,10 +1089,6 @@ section:last-child{
     color: #0b2a4f;
 }
 
-/* ========================= */
-/* REVIEW TEXTAREA CONSISTENTE */
-/* ========================= */
-
 .review-section textarea {
     width: 100%;
     padding: 14px 16px;
@@ -1160,11 +1099,9 @@ section:last-child{
     background: #f8fafc;
     transition: all 0.25s ease;
 
-    /* mismo efecto base */
     box-shadow: 0 2px 6px rgba(0,0,0,0.04);
 }
 
-/* HOVER */
 .review-section textarea:hover {
     transform: scale(1.02);
     background: white;
@@ -1172,7 +1109,6 @@ section:last-child{
     box-shadow: 0 8px 20px rgba(11, 42, 79, 0.12);
 }
 
-/* FOCUS */
 .review-section textarea:focus {
     transform: scale(1.02);
     border-color: #0b2a4f;
@@ -1182,7 +1118,6 @@ section:last-child{
     outline: none;
 }
 
-/* PLACEHOLDER */
 .review-section textarea::placeholder {
     color: #94a3b8;
     font-weight: 400;
@@ -1196,7 +1131,6 @@ section:last-child{
     filter: grayscale(0%);
 }
 
-/* Estilos para mensajes de valoración */
 .review-feedback {
     margin-top: 15px;
     padding: 12px;
@@ -1222,4 +1156,20 @@ section:last-child{
     background-color: #fff3cd;
     color: #856404;
     border: 1px solid #ffeeba;
+}
+
+.reviews-rotator {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #555;
+  min-height: 24px;
+  transition: opacity 0.4s ease;
+}
+
+.reviews-rotator.fade-out {
+  opacity: 0;
+}
+
+.reviews-rotator.fade-in {
+  opacity: 1;
 }
