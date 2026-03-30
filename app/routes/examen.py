@@ -3,8 +3,9 @@ import json, random, secrets, hmac, hashlib
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 from pydantic import BaseModel, Field
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc, asc
+from sqlalchemy import select, desc, asc, update
 
 from app.auth.database import get_db
 from app.auth.models import ExamSession, ExamAttempt, ExamLog
@@ -110,7 +111,7 @@ def build_question(session, index):
         return {"finished": True}
 
     shuffled_map = json.loads(session.shuffled_data) if session.shuffled_data else {}
-    shuffle_info = shuffled_map.get(str(qid))  # Asegúrate de convertir a str si es necesario
+    shuffle_info = shuffled_map.get(str(qid))  
     if not shuffle_info:
         opciones = p["respuestas"]
     else:
@@ -130,7 +131,6 @@ def build_question(session, index):
     }
 
 
-
 @router.post("/examen/start")
 async def start(
     req: StartRequest,
@@ -141,69 +141,72 @@ async def start(
 ):
     ip = request.client.host
     ua = request.headers.get("user-agent","")
+
     await rate_limit(db, ip)
 
     if req.nivel not in NIVELES:
         raise HTTPException(400, "Nivel inválido")
 
-    # Buscar sesiones activas existentes
-    query = select(ExamSession).where(
-        ExamSession.anon_id == anon_id,
-        ExamSession.evaluated == False,
-        ExamSession.expires_at > datetime.now(timezone.utc)
-    )
-    
-    if user and user.id:
-        query = query.where(ExamSession.user_id == user.id)
-    
-    existing_session = await db.execute(query)
-    session_activa = existing_session.scalar_one_or_none()
-    
-    if session_activa:
-        print(f"[DEBUG] Finalizando sesión anterior: {session_activa.token}")
-        session_activa.evaluated = True
+    try:
+        await db.execute(
+            update(ExamSession)
+            .where(
+                ExamSession.anon_id == anon_id,
+                ExamSession.evaluated == False,
+            )
+            .values(evaluated=True)
+        )
+
+        await db.flush()
+
+        cantidad = min(NIVELES[req.nivel], len(PREGUNTAS_DB))
+        preguntas = random.sample(PREGUNTAS_DB, cantidad)
+
+        shuffled_map = {}
+        for p in preguntas:
+            shuffled_answers = p["respuestas"].copy()
+            random.shuffle(shuffled_answers)
+
+            if p["correcta"] not in shuffled_answers:
+                raise HTTPException(500, f"Error en dataset: {p['pregunta']}")
+
+            correct_index = shuffled_answers.index(p["correcta"])
+
+            shuffled_map[str(p["id"])] = {
+                "shuffled": shuffled_answers,
+                "correct_index": correct_index
+            }
+
+        question_ids = [p["id"] for p in preguntas]
+        token = secrets.token_urlsafe(32)
+        now = datetime.now(timezone.utc)
+
+        session = ExamSession(
+            token=token,
+            user_id=user.id if user else None,
+            anon_id=anon_id,
+            ip_address=ip,
+            user_agent=ua,
+            fingerprint=req.fingerprint,
+            nivel=req.nivel,
+            questions_data=json.dumps(question_ids, ensure_ascii=False),
+            answers_data=json.dumps([], ensure_ascii=False),
+            current_index=0,
+            total_questions=cantidad,
+            start_time=now,
+            expires_at=now + timedelta(seconds=DURACION_EXAMEN),
+            evaluated=False,
+            shuffled_data=json.dumps(shuffled_map, ensure_ascii=False)
+        )
+
+        db.add(session)
+
         await db.commit()
-        await log(db, session_activa.id, ip, ua, "session_terminated", {"reason": "new_exam_started"})
+        await db.refresh(session)
 
-    cantidad = min(NIVELES[req.nivel], len(PREGUNTAS_DB))
-    preguntas = random.sample(PREGUNTAS_DB, cantidad)
-
-    shuffled_map = {}
-    for p in preguntas:
-        shuffled_answers = p["respuestas"].copy()
-        random.shuffle(shuffled_answers)
-        correct_index = shuffled_answers.index(p["correcta"])
-        shuffled_map[p["id"]] = {
-            "shuffled": shuffled_answers,
-            "correct_index": correct_index
-        }
-
-    question_ids = [p["id"] for p in preguntas]
-    token = secrets.token_urlsafe(32)
-    now = datetime.now(timezone.utc)
-
-    # 🔥 IMPORTANTE: Todos los json.dumps() deben tener ensure_ascii=False
-    session = ExamSession(
-        token=token,
-        user_id=user.id if user else None,
-        anon_id=anon_id,
-        ip_address=ip,
-        user_agent=ua,
-        fingerprint=req.fingerprint,
-        nivel=req.nivel,
-        questions_data=json.dumps(question_ids, ensure_ascii=False),
-        answers_data=json.dumps([], ensure_ascii=False),
-        current_index=0,
-        total_questions=cantidad,
-        start_time=now,
-        expires_at=now + timedelta(seconds=DURACION_EXAMEN),
-        evaluated=False,
-        shuffled_data=json.dumps(shuffled_map, ensure_ascii=False)
-    )
-
-    db.add(session)
-    await db.commit()
-    await db.refresh(session)
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(409, "Reintentá (colisión de sesión)")
 
     await log(db, session.id, ip, ua, "start")
     return build_question(session, 0)
@@ -236,11 +239,9 @@ async def answer(req: AnswerRequest, request: Request, db: AsyncSession = Depend
     if not verificar_firma(req.firma, req.question_id, req.ts):
         raise HTTPException(400, "Firma inválida")
 
-    # Obtener la información de mezclado almacenada en la sesión
     shuffled_map = json.loads(session.shuffled_data) if session.shuffled_data else {}
     shuffle_info = shuffled_map.get(str(req.question_id))
 
-    # Determinar si la respuesta es correcta usando el índice correcto almacenado
     es_correcta = False
     if shuffle_info:
         correct_index = shuffle_info["correct_index"]
@@ -252,7 +253,6 @@ async def answer(req: AnswerRequest, request: Request, db: AsyncSession = Depend
 
     print(f"[DEBUG] Pregunta ID: {req.question_id}, Selección: {req.seleccion}, Correcta: {es_correcta}")
 
-    # Guardar respuesta
     respuestas = json.loads(session.answers_data)
     respuestas.append({
         "id": req.question_id,
@@ -260,7 +260,6 @@ async def answer(req: AnswerRequest, request: Request, db: AsyncSession = Depend
         "tiempo": req.tiempo,
         "correcta": es_correcta
     })
-    # 🔥 Agregar ensure_ascii=False aquí también
     session.answers_data = json.dumps(respuestas, ensure_ascii=False)
     session.current_index += 1
     await db.commit()
@@ -322,7 +321,6 @@ async def finish(req: FinishRequest, request: Request, db: AsyncSession = Depend
     await db.commit()
     await db.refresh(intento)
 
-    # 🔥 Aquí también usar ensure_ascii=False en el log
     await log(db, session.id, ip, ua, "finish", {"score": correctas, "valido": is_valid, "duracion": duracion, "fraud": fraud, "respuestas": respuestas})
 
     print(f"[DEBUG] Resultado final: {correctas}/{len(question_ids)}, válido: {is_valid}, duración: {duracion}s")
@@ -337,18 +335,6 @@ async def finish(req: FinishRequest, request: Request, db: AsyncSession = Depend
     }
 
 
-
-
-
-
-
-
-
-
-
-# ==========================
-# SAVE NAME
-# ==========================
 @router.post("/examen/save_name")
 async def save_name(req: SaveNameRequest, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
@@ -361,9 +347,7 @@ async def save_name(req: SaveNameRequest, db: AsyncSession = Depends(get_db)):
     await db.commit()
     return {"ok": True}
 
-# ==========================
-# RANKING
-# ==========================
+
 @router.get("/examen/top10/{nivel}")
 async def top10(nivel: str, db: AsyncSession = Depends(get_db)):
     if nivel not in NIVELES:
