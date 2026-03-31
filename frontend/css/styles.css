@@ -376,9 +376,9 @@ body {
 
 .faq-list li {
     background: #f8fafc;
-    padding: 18px 20px;
+    padding: 16px 16px;
     border-radius: 14px;
-    margin-bottom: 12px;
+    margin-bottom: 6px;
     border: 1px solid #eef2f6;
     transition: all 0.2s;
 }
@@ -519,9 +519,11 @@ body {
 .ai-disclaimer{
     width:100%;
     max-width:900px;
+    margin-top: 0;
+    margin-bottom: 8px;
     background:#ffffff;
     border-radius:16px;
-    padding:32px 36px;
+    padding:12px 16px;
     border:1px solid #e6e8ec;
     box-shadow:0 2px 10px rgba(0,0,0,0.05);
     font-size:14px;
@@ -531,7 +533,7 @@ body {
 
 .ai-disclaimer h2{
     font-size:18px;
-    margin-bottom:12px;
+    margin-bottom:16px;
     color:#1a1a1a;
 }
 
@@ -597,6 +599,38 @@ body {
 
 
 @media (max-width:900px){
+
+    body {
+        padding: 4px 4px; 
+    }
+
+    .page {
+        padding-left: 4px;
+        padding-right: 4px;
+        gap: 20px; 
+    }
+
+
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 12px 12px;
+    }
+
+    .header-left,
+    .header-right {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .header-right {
+        justify-content: space-between;
+    }
+
     .welcome-title{
         padding:6px 16px;
     }
@@ -604,13 +638,13 @@ body {
         font-size:1.5rem;
     }
     .seo-content{
-        padding:2px 16px;
+        padding:12px 16px;
     }
     .cta-login{
-        padding:2px 16px;
+        padding:12px 16px;
     }
     .ai-disclaimer{
-        padding:2px 16px;
+        padding:12px 16px;
     }
     .app{
         height:75vh;
@@ -618,8 +652,8 @@ body {
 }
 
 .faq-topics{
-    margin-top:60px;
-    padding:30px;
+    margin-top:20px;
+    padding:18px;
     background:#f8fafc;
     border:1px solid #e5e7eb;
     border-radius:10px;
@@ -635,35 +669,6 @@ body {
     grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
     gap:20px;
     margin-top:20px;
-}
-
-.faq-links a{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:18px 20px;
-    background:rgb(105, 80, 216);
-    border:1px solid #e5e7eb;
-    border-radius:10px;
-    text-decoration:none;
-    color:#1f2937;
-    font-weight:600;
-    font-size:15px;
-    transition:all 0.2s ease;
-    box-shadow:0 2px 6px rgba(0,0,0,0.05);
-}
-
-.faq-links a::after{
-    content:"→";
-    font-size:18px;
-    color:#2d6cdf;
-}
-
-.faq-links a:hover{
-    border-color:#2d6cdf;
-    background:#f3f6fb;
-    transform:translateY(-2px);
-    box-shadow:0 8px 20px rgba(0,0,0,0.08);
 }
 
 section:last-child{
@@ -687,11 +692,11 @@ section:last-child{
     align-items: center !important;
     justify-content: space-between !important;
     padding: 18px 20px !important;
-    background: white !important;
+    background: #0b2a4f !important;
     border: 1px solid #e5e7eb !important;
     border-radius: 10px !important;
     text-decoration: none !important;
-    color: #1f2937 !important;
+    color: white !important;
     font-weight: 600 !important;
     font-size: 15px !important;
     box-shadow: 0 2px 6px rgba(0,0,0,0.05) !important;
@@ -701,12 +706,12 @@ section:last-child{
 #seccion-enlaces .faq-links a::after {
     content: "→" !important;
     font-size: 18px !important;
-    color: #2d6cdf !important;
+    color: #15457c !important;
 }
 
 #seccion-enlaces .faq-links a:hover {
     border-color: #2d6cdf !important;
-    background: #f3f6fb !important;
+    background: #15457c !important;
     transform: translateY(-2px) !important;
     box-shadow: 0 8px 20px rgba(0,0,0,0.08) !important;
 }
@@ -933,6 +938,10 @@ section:last-child{
         margin-bottom: 15px;
     }
 
+    .cta-login {
+        padding:10px 16px;
+    }
+
     .input-area {
         flex-direction: column;
         align-items: stretch;
@@ -974,16 +983,12 @@ section:last-child{
 .review-section {
     width: 100%;
     max-width: 900px;
-    margin: 0 auto;
-
+    margin-bottom: 0px !important;
     background: white;
     border-radius: 24px;
-
     border: 1px solid rgba(0,0,0,0.05);
     box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-
-    padding: 32px 36px;
-
+    padding: 16px 12px;
     display: flex;
     flex-direction: column;
     gap: 18px;

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-  <title>Simulador de Examen de Conducir Argentina | Preguntas Ley 24449</title>
+  <title>Simulador de examen de conducir Argentina 2026 (gratis) | Practicar test teórico Ley 24449</title>
 
   <meta name="description" content="Simulador gratuito para el examen de conducir en Argentina 2026. Practicá con preguntas reales de la Ley 24449 y aprobá el examen teórico oficial de seguridad vial.">
   <meta name="keywords" content="simulador examen de conducir, preguntas examen conducir, ley 24449, examen teórico conducir argentina, practicar examen conducir">
@@ -20,7 +20,7 @@
 
   <link rel="stylesheet" href="/frontend/css/styles.css">
   <link rel="stylesheet" href="/frontend/css/faq.css?v=1.0.58"/>
-  <link rel="stylesheet" href="/frontend/css/examen.css?v=1.0.22">
+  <link rel="stylesheet" href="/frontend/css/examen.css?v=1.0.23">
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
@@ -35,8 +35,8 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Simulador de Examen de Conducir | Preguntas Ley 24449">
   <meta name="twitter:description" content="Practicá con el simulador oficial de preguntas para el examen de conducir en Argentina.">
-  <meta name="twitter:image" content="https://seguridadvial.codepyhub.com/static/twitter-image-examen.jpg"> 
-
+  <meta name="twitter:image" content="https://seguridadvial.codepyhub.com/static/twitter-image-examen.jpg">
+  
 </head>
 
 <body>
@@ -49,71 +49,53 @@
 <main>
 
   <header>                        
-    <h1>Simulador de Examen de Conducir Argentina Ley 24449</h1>
+    <h1 style="text-align: center;">Simulador de examen de conducir Argentina (2026)  Practicá el examen teórico online</h1>
 
     <p class="hook-principal">
       <strong>¿Aprobarías el examen de conducir hoy?</strong><br>
-      Ponete a prueba con preguntas reales antes de rendir
+      Practicá en el simulador de examen teórico de conducir con preguntas reales
     </p>
 
     <p>La herramienta es <strong>interactiva y gratuita</strong>, diseñada para que aprendas de manera práctica y rápida con preguntas reales de la normativa vigente.</p>
-    
+
     <p>Aumentá tus chances de aprobar el examen teórico oficial. Este simulador utiliza preguntas extraídas de <strong>exámenes reales de seguridad vial</strong> para que conozcas los temas más frecuentes en todo el país.</p>
 
     <a href="/" class="back-btn" title="Asistente virtual de seguridad vial y transito">
       Consultar al asistente de tránsito con IA
-    </a>   
+    </a> 
   </header>
 
-  <section class="seo-content-simulador">
-    <span class="badge-ley">Basado en la Ley Nacional de Tránsito 24449</span>
-    <h2>Practicá para el examen teórico de conducir en Argentina</h2>
-    <p>Nuestro simulador está diseñado para reflejar las condiciones reales del examen teórico que toman en la mayoría de las provincias argentinas. Las preguntas se actualizan periódicamente para alinearse con la <strong>Ley Nacional de Tránsito 24449</strong> y sus modificatorias.</p>
-    <p>¿No estás seguro sobre alguna norma? Podés consultar primero a nuestro <a href="/" style="color: #1a3e6f; text-decoration: underline; font-weight: 500;">Asistente IA de la Ley de Tránsito</a> y luego venir a practicar aquí.</p>
-    
-    <h3>Tipos de preguntas que vas a encontrar:</h3>
-    <ul>
-        <li><strong>Señales de tránsito:</strong> Reconocimiento y significado de señales reglamentarias, preventivas e informativas.</li>
-        <li><strong>Prioridades de paso:</strong> Rotondas, intersecciones sin señalizar, cruces de peatones.</li>
-        <li><strong>Límites de velocidad:</strong> Máximas y mínimas permitidas en calles, avenidas, rutas y autopistas.</li>
-        <li><strong>Documentación obligatoria:</strong> Qué papeles llevar al conducir y sanciones por no hacerlo.</li>
-        <li><strong>Normas de circulación:</strong> Adelantamiento, uso de luces, distancia de seguridad, etc.</li>
-        <li><strong>Alcohol y conducción:</strong> Límites de alcoholemia permitidos y consecuencias.</li>
-    </ul>
-    <p>Cada pregunta incluye una explicación de la respuesta correcta basada en el articulado de la Ley 24449, para que no solo memorices, sino que <strong>entiendas por qué es correcta</strong>.</p>
-  </section>
+    <section class="config-section">
+      <h2><i class="fas fa-gamepad"></i> Elegí el nivel según tu experiencia. Podés cambiarlo cuando quieras.</h2>
 
-  <section class="config-section">
-    <h2><i class="fas fa-gamepad"></i> Elegí tu nivel</h2>
+      <div class="niveles">
+        <button class="nivel-btn active" data-nivel="aprendiz">
+          🌱 Aprendiz <span class="preg-count">20 preguntas</span>
+        </button>
+        <button class="nivel-btn" data-nivel="veterano">
+          ⚔️ Veterano <span class="preg-count">40 preguntas</span>
+        </button>
+        <button class="nivel-btn" data-nivel="leyenda">
+          👑 Leyenda <span class="preg-count">60 preguntas</span>
+        </button>
+      </div>
+      <div class="start-container">
+        <button id="btn-iniciar" class="btn-primary btn-large">
+          ▶ Iniciar examen
+        </button>
+      </div>
+    </section>
 
-    <div class="niveles">
-      <button class="nivel-btn active" data-nivel="aprendiz">
-        🌱 Aprendiz <span class="preg-count">20 preguntas</span>
+    <section id="examen-container" class="examen-container hidden"></section>
+
+    <div class="action-buttons" id="botones-examen">
+      <button id="btn-calificar" class="btn-secondary" disabled>
+        ✔ Calificar
       </button>
-      <button class="nivel-btn" data-nivel="veterano">
-        ⚔️ Veterano <span class="preg-count">40 preguntas</span>
-      </button>
-      <button class="nivel-btn" data-nivel="leyenda">
-        👑 Leyenda <span class="preg-count">60 preguntas</span>
-      </button>
-    </div>
-    <div class="start-container">
-      <button id="btn-iniciar" class="btn-primary btn-large">
-        ▶ Iniciar examen
+      <button id="btn-reintentar" class="btn-outline" disabled>
+        ↻ Reintentar
       </button>
     </div>
-  </section>
-
-  <section id="examen-container" class="examen-container hidden"></section>
-
-  <div class="action-buttons" id="botones-examen">
-    <button id="btn-calificar" class="btn-secondary" disabled>
-      ✔ Calificar
-    </button>
-    <button id="btn-reintentar" class="btn-outline" disabled>
-      ↻ Reintentar
-    </button>
-  </div>
 
   <section id="resultado" class="resultado hidden" aria-live="polite"></section>
 
@@ -138,6 +120,24 @@
       </div>
 
     </div>
+  </section>
+
+  <section class="seo-content-simulador">
+    <span class="badge-ley">Basado en la Ley Nacional de Tránsito 24449</span>
+    <h2>Practicá para el examen teórico de conducir en Argentina</h2>
+    <p>Nuestro simulador está diseñado para reflejar las condiciones reales del examen teórico que toman en la mayoría de las provincias argentinas. Las preguntas se actualizan periódicamente para alinearse con la <strong>Ley Nacional de Tránsito 24449</strong> y sus modificatorias.</p>
+    <p>¿No estás seguro sobre alguna norma? Podés consultar primero a nuestro <a href="/" style="color: #1a3e6f; text-decoration: underline; font-weight: 500;">Asistente IA de la Ley de Tránsito</a> y luego venir a practicar aquí.</p>
+    
+    <h3>Tipos de preguntas que vas a encontrar:</h3>
+    <ul>
+        <li><strong>Señales de tránsito:</strong> Reconocimiento y significado de señales reglamentarias, preventivas e informativas.</li>
+        <li><strong>Prioridades de paso:</strong> Rotondas, intersecciones sin señalizar, cruces de peatones.</li>
+        <li><strong>Límites de velocidad:</strong> Máximas y mínimas permitidas en calles, avenidas, rutas y autopistas.</li>
+        <li><strong>Documentación obligatoria:</strong> Qué papeles llevar al conducir y sanciones por no hacerlo.</li>
+        <li><strong>Normas de circulación:</strong> Adelantamiento, uso de luces, distancia de seguridad, etc.</li>
+        <li><strong>Alcohol y conducción:</strong> Límites de alcoholemia permitidos y consecuencias.</li>
+    </ul>
+    <p>Cada pregunta incluye una explicación de la respuesta correcta basada en el articulado de la Ley 24449, para que no solo memorices, sino que <strong>entiendas por qué es correcta</strong>.</p>
   </section>
 
   <section class="faq-simulador" aria-label="Preguntas frecuentes sobre el simulador de examen">
@@ -168,6 +168,63 @@
         <p>¡Por supuesto! Está diseñado para que puedas practicar desde cualquier dispositivo: computadora, tablet o celular.</p>
     </details>
   </section>
+
+  <section class="faq-examen-seo">
+
+    <h2>Preguntas reales del examen de conducir en Argentina</h2>
+
+    <article class="faq-item">
+      <h3>¿Se puede adelantar si hay una línea amarilla continua?</h3>
+      <p>No. La línea amarilla continua indica que está prohibido adelantar o invadir el carril contrario.</p>
+    </article>
+
+    <article class="faq-item">
+      <h3>¿Quién tiene prioridad en una rotonda?</h3>
+      <p>Siempre tiene prioridad el vehículo que ya está circulando dentro de la rotonda.</p>
+    </article>
+
+    <article class="faq-item">
+      <h3>¿Cuál es la velocidad máxima en semiautopistas?</h3>
+      <p>La velocidad máxima en semiautopistas es de 120 km/h para automóviles y motocicletas, salvo señalización que indique lo contrario.</p>
+    </article>
+
+    <article class="faq-item">
+      <h3>¿Está permitido estacionar en doble fila?</h3>
+      <p>No, está prohibido incluso si se utilizan balizas.</p>
+    </article>
+
+    <article class="faq-item">
+      <h3>¿Qué luces deben usarse durante el día en rutas?</h3>
+      <p>Es obligatorio circular con luces bajas encendidas durante las 24 horas.</p>
+    </article>
+
+    <article class="faq-item">
+      <h3>¿Cuál es la distancia mínima que debe mantenerse entre vehículos?</h3>
+      <p>Se debe mantener una distancia prudente que permita frenar sin colisionar ante cualquier imprevisto.</p>
+    </article>
+
+    <article class="faq-item">
+      <h3>¿Qué significa una señal de "Pare"?</h3>
+      <p>Obliga a detener completamente el vehículo antes de continuar la marcha.</p>
+    </article>
+
+    <article class="faq-item">
+      <h3>¿Qué hacer ante un semáforo en amarillo?</h3>
+      <p>Indica precaución y que el conductor debe detenerse si es posible hacerlo de forma segura.</p>
+    </article>
+
+    <article class="faq-item">
+      <h3>¿Es obligatorio usar cinturón de seguridad?</h3>
+      <p>Sí, es obligatorio para todos los ocupantes del vehículo, tanto en ciudad como en ruta.</p>
+    </article>
+
+    <article class="faq-item">
+      <h3>¿Cúal es la velocidad mínima en rutas y autopistas?</h3>
+      <p>La velocidad mínima es la mitad de la máxima, salvo señalización que indique lo contrario.</p>
+    </article>
+
+  </section>
+
 
   <section class="faq-topics" aria-label="Enlaces útiles para prepararte y trámites de tránsito"> 
     <div style="margin-bottom:50px">
