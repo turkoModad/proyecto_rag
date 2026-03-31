@@ -220,7 +220,7 @@ La <strong>Ley Nacional de Tránsito 24449</strong> establece reglas fundamental
 <section class="faq-topics" id="seccion-enlaces" style="max-width: 900px; margin-left: auto; margin-right: auto;">
   <h2>Explora más temas</h2>
   <div class="faq-links">
-    <a href="/examen/" title="Simulador de examen de transito">Simulador de Examen</a>
+    <a href="/examen/" title="Simulador de examen de transito" id="simuladorLink">Simulador de Examen</a>
     <a href="/faq/licencias/" title="Tramite de licencias de conducir">Trámite de Licencias</a>
     <a href="/faq/multas/" title="Consulta de multas de transito">Consulta de Multas</a>
     <a href="/faq/normas/" title="Normativa y reglas de transito">Reglas de Tránsito</a>
@@ -332,7 +332,7 @@ directa de la legislación vigente ni el asesoramiento de organismos oficiales o
 
 </div>
 
-<script src="/frontend/js/app.js?v=1.87"></script>
+<script src="/frontend/js/app.js?v=1.88"></script>
 <script>
   const textarea = document.getElementById('question');
   const MAX_HEIGHT = 150;
@@ -466,6 +466,57 @@ document.addEventListener("DOMContentLoaded", () => {
     .catch(() => {
       reviewText.innerText = "Error cargando opiniones.";
     });
+});
+</script>
+
+<div id="simuladorTooltip" style="
+  position: fixed;
+  background: #111;
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  max-width: 260px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.25s ease;
+">
+  <strong>Nuevo simulador mejorado</strong><br>
+  Practicá con preguntas reales, métricas de rendimiento y detección de errores en tiempo real.<br>
+  👉 Hacé click y probalo ahora.
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const link = document.getElementById("simuladorLink");
+  const tooltip = document.getElementById("simuladorTooltip");
+
+  if (!link || !tooltip) return;
+
+  let visible = false;
+
+  link.addEventListener("mousemove", (e) => {
+    const offsetX = 20;
+    const offsetY = 20;
+
+    tooltip.style.left = (e.clientX + offsetX) + "px";
+    tooltip.style.top = (e.clientY + offsetY) + "px";
+
+    if (!visible) {
+      tooltip.style.opacity = "1";
+      tooltip.style.transform = "translateY(0)";
+      visible = true;
+    }
+  });
+
+  link.addEventListener("mouseleave", () => {
+    tooltip.style.opacity = "0";
+    tooltip.style.transform = "translateY(10px)";
+    visible = false;
+  });
 });
 </script>
 

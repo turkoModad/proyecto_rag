@@ -660,10 +660,6 @@
     color: #1a3e6f;
 }
 
-/* ========================
-   ESTILOS PARA EL CAMPO DE NOMBRE EN RESULTADOS
-   ======================== */
-
 .resultado-card {
     padding: 20px;
     border-radius: 12px;
@@ -812,6 +808,16 @@
     min-width: 60px;           
     text-align: right;         
     white-space: nowrap;       
+}
+
+.hook-principal {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #1a3e6f;;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  line-height: 1.5;
+  text-align: center;
 }
 
 @keyframes fadeIn {

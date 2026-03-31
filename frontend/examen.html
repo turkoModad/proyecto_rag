@@ -19,8 +19,8 @@
   <link rel="manifest" href="/static/site.webmanifest">
 
   <link rel="stylesheet" href="/frontend/css/styles.css">
-  <link rel="stylesheet" href="/frontend/css/faq.css?v=1.0.57"/>
-  <link rel="stylesheet" href="/frontend/css/examen.css?v=1.0.19">
+  <link rel="stylesheet" href="/frontend/css/faq.css?v=1.0.58"/>
+  <link rel="stylesheet" href="/frontend/css/examen.css?v=1.0.22">
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
@@ -50,6 +50,11 @@
 
   <header>                        
     <h1>Simulador de Examen de Conducir Argentina Ley 24449</h1>
+
+    <p class="hook-principal">
+      <strong>¿Aprobarías el examen de conducir hoy?</strong><br>
+      Ponete a prueba con preguntas reales antes de rendir
+    </p>
 
     <p>La herramienta es <strong>interactiva y gratuita</strong>, diseñada para que aprendas de manera práctica y rápida con preguntas reales de la normativa vigente.</p>
     
@@ -113,7 +118,7 @@
   <section id="resultado" class="resultado hidden" aria-live="polite"></section>
 
   <section class="ranking-section">
-    <h2>🏆 Rankings por nivel</h2>
+    <h2 style="text-align: center;">🏆 Rankings por nivel</h2>
 
     <div class="ranking-grid">
 
@@ -193,7 +198,7 @@
 
 </main>
 
-<script src="/frontend/js/examen.js?v=1.0.73"></script>
+<script src="/frontend/js/examen.js?v=1.0.74"></script>
 
 <script type="application/ld+json">
   {
@@ -243,24 +248,8 @@
     ]
   }
 </script>
-  
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "Simulador de Examen de Conducir Argentina",
-    "description": "Simulador online gratuito con preguntas basadas en la Ley Nacional de Tránsito 24449 para practicar el examen teórico de conducir.",
-    "applicationCategory": "EducationalApplication",
-    "operatingSystem": "All",
-    "url": "https://seguridadvial.codepyhub.com/examen/",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "ARS"
-    },
-    "inLanguage": "es-AR"
-  }
-</script>
+
+<script type="application/ld+json" src="/ld-json"></script>
   
 <script type="application/ld+json">
   {

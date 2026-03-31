@@ -369,7 +369,7 @@ document.addEventListener("DOMContentLoaded", () => {
       
       setTimeout(() => {
         reiniciarPagina();
-      }, 2000);
+      }, 5000);
 
     } catch (error) {
       mostrarMensaje(error.message || "Error guardando nombre. Podés reintentar.", "error");
