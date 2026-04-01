@@ -9,7 +9,7 @@ from app.utils.network import get_real_ip
 from app.auth.service import has_review_recently  
 from sqlalchemy import func, select
 
-# Constante para período de valoración semanal
+
 REVIEW_COOLDOWN_DAYS = 7
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])

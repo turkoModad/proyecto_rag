@@ -1,0 +1,135 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #f1f5f9;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 20px;
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.menu h3 {
+    margin: 10px 0 5px 0;
+    font-size: 14px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.menu hr {
+    margin: 10px 0;
+    border-color: #334155;
+}
+
+button {
+    padding: 10px 12px;
+    border: none;
+    background: #1e293b;
+    color: #e2e8f0;
+    cursor: pointer;
+    border-radius: 6px;
+    text-align: left;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+button:hover {
+    background: #334155;
+    transform: translateX(2px);
+}
+
+button:active {
+    transform: translateX(0);
+}
+
+.output {
+    background: #020617;
+    padding: 20px;
+    border-radius: 12px;
+    overflow: auto;
+    max-height: calc(100vh - 100px);
+    border: 1px solid #1e293b;
+}
+
+.title {
+    margin-bottom: 15px;
+    font-weight: bold;
+    font-size: 18px;
+    color: #38bdf8;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 8px;
+}
+
+pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 0;
+    color: #cbd5e1;
+}
+
+/* Scrollbar personalizada */
+.menu::-webkit-scrollbar,
+.output::-webkit-scrollbar {
+    width: 8px;
+}
+
+.menu::-webkit-scrollbar-track,
+.output::-webkit-scrollbar-track {
+    background: #0f172a;
+    border-radius: 4px;
+}
+
+.menu::-webkit-scrollbar-thumb,
+.output::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+}
+
+.menu::-webkit-scrollbar-thumb:hover,
+.output::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        grid-template-columns: 1fr;
+    }
+    
+    .menu {
+        max-height: 300px;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    button {
+        flex: 1 0 auto;
+        text-align: center;
+    }
+    
+    body {
+        padding: 10px;
+    }
+}

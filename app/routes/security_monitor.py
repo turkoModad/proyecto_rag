@@ -9,14 +9,17 @@ from sqlalchemy import select, func
 from app.auth.access_log_service import get_suspicious_ips, get_endpoint_hits, AccessLog
 
 
-router = APIRouter(prefix="/security", tags=["Security"])
+router = APIRouter(
+    prefix="/security",
+    tags=["Security"],
+    dependencies=[Depends(require_admin)]  
+)
 
 
 @router.get("/suspicious-ips")
 async def suspicious_ips(
     minutes: int = 5,
     min_requests: int = 50,
-    admin=Depends(require_admin),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -33,7 +36,6 @@ async def suspicious_ips(
 @router.get("/top-endpoints")
 async def top_endpoints(
     minutes: int = 5,
-    admin=Depends(require_admin),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -47,7 +49,7 @@ async def top_endpoints(
 
 
 @router.get("/blocked-ips")
-async def get_blocked_ips(admin=Depends(require_admin)):
+async def get_blocked_ips():
     """
     Lista IPs bloqueadas actualmente
     """
@@ -71,7 +73,7 @@ async def get_blocked_ips(admin=Depends(require_admin)):
 
 
 @router.delete("/unblock-ip/{ip}")
-async def unblock_ip(ip: str, admin=Depends(require_admin)):
+async def unblock_ip(ip: str):
     """
     Desbloquea una IP manualmente
     """
@@ -84,7 +86,6 @@ async def unblock_ip(ip: str, admin=Depends(require_admin)):
 @router.get("/analytics/countries")
 async def analytics_by_country(
     minutes: int = 60,
-    admin=Depends(require_admin),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -123,7 +124,6 @@ async def analytics_by_country(
 @router.get("/analytics/errors")
 async def error_analytics(
     minutes: int = 60,
-    admin=Depends(require_admin),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -163,7 +163,6 @@ async def error_analytics(
 @router.get("/analytics/rate-limiting")
 async def rate_limiting_analytics(
     minutes: int = 60,
-    admin=Depends(require_admin),
     db: AsyncSession = Depends(get_db)
 ):
     """

@@ -56,3 +56,21 @@ def verify_token(token: str):
     
     except jwt.InvalidTokenError as e:
         return {"error": "Token inválido"}
+    
+
+
+def verify_token_by_type(token: str, expected_type: str):
+    """
+    Verifica un token JWT y valida que sea del tipo esperado.
+    Retorna el payload si es válido, o None si no.
+    """
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[ALGORITHM])
+        
+        if payload.get("type") != expected_type:
+            return None
+        
+        return payload
+        
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+        return None

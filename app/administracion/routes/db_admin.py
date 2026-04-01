@@ -36,7 +36,6 @@ async def ingest_qa_batch(data: dict):
         respuesta = registro.get("respuesta")
         articulo = registro.get("articulo")
         
-        # Validaciones
         if not pregunta or not respuesta:
             resultados.append({
                 "status": "error",
@@ -113,14 +112,12 @@ async def search_qa(data: dict):
     Busca entradas en la colección QA por texto
     """
     texto = data.get("texto")
-    limit = data.get("limit", 50)  # Límite de resultados, por defecto 50
+    limit = data.get("limit")  
     
     if not texto:
         raise HTTPException(status_code=400, detail="Texto de búsqueda faltante")
     
     try:
-        # Opción 1: Búsqueda por scroll con filtro de texto (más simple)
-        # Esto busca coincidencias exactas en el payload
         scroll_result = client.scroll(
             collection_name=COLLECTION_LEY,
             scroll_filter=Filter(
@@ -134,7 +131,7 @@ async def search_qa(data: dict):
             limit=limit
         )
         
-        points = scroll_result[0]  # El primer elemento son los puntos
+        points = scroll_result[0]  
         results = []
         
         for point in points:
@@ -154,11 +151,9 @@ async def search_qa(data: dict):
         raise HTTPException(status_code=500, detail=f"Error en búsqueda: {str(e)}")
 
 
+
 @router.post("/search_qa_semantic")
 async def search_qa_semantic(data: dict):
-    """
-    Búsqueda semántica usando embeddings (más precisa)
-    """
     texto = data.get("texto")
     limit = data.get("limit", 10)
     
@@ -166,30 +161,27 @@ async def search_qa_semantic(data: dict):
         raise HTTPException(status_code=400, detail="Texto de búsqueda faltante")
     
     try:
-        # Generar embedding para el texto de búsqueda
         query_vector = get_embedding(texto, prefix="query")
         
         if query_vector is None:
-            raise HTTPException(status_code=500, detail="Error generando embedding para búsqueda")
+            raise HTTPException(status_code=500, detail="Error generando embedding")
         
         if hasattr(query_vector, "tolist"):
             query_vector = query_vector.tolist()
         
-        # Buscar por similitud vectorial
-        search_result = client.search(
+        search_result = client.query_points(
             collection_name=COLLECTION_LEY,
-            query_vector=query_vector,
+            query=query_vector,  
             limit=limit,
-            with_payload=True,
-            with_vectors=False
+            with_payload=True
         )
         
         results = []
-        for scored_point in search_result:
+        for point in search_result.points:  
             results.append({
-                "id": scored_point.id,
-                "payload": scored_point.payload,
-                "score": scored_point.score  # Similaridad (0-1)
+                "id": point.id,
+                "payload": point.payload,
+                "score": round(point.score, 4)
             })
         
         return {
@@ -200,6 +192,7 @@ async def search_qa_semantic(data: dict):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error en búsqueda semántica: {str(e)}")
+    
 
 
 @router.post("/list_all_qa")
@@ -240,6 +233,7 @@ async def list_all_qa(data: dict = None):
         raise HTTPException(status_code=500, detail=f"Error listando entradas: {str(e)}")
 
 
+
 @router.post("/delete_qa")
 async def delete_qa(data: dict):
     """
@@ -260,6 +254,7 @@ async def delete_qa(data: dict):
         raise HTTPException(status_code=500, detail=f"Error eliminando entrada: {str(e)}")
 
 
+
 @router.post("/delete_by_filter")
 async def delete_by_filter(data: dict):
     """
@@ -272,7 +267,6 @@ async def delete_by_filter(data: dict):
         raise HTTPException(status_code=400, detail="Campo y valor requeridos")
     
     try:
-        # Primero buscar las entradas que coinciden
         scroll_result = client.scroll(
             collection_name=COLLECTION_LEY,
             scroll_filter=Filter(
@@ -283,7 +277,7 @@ async def delete_by_filter(data: dict):
                     )
                 ]
             ),
-            limit=100  # Límite por seguridad
+            limit=100 
         )
         
         points = scroll_result[0]
@@ -292,7 +286,6 @@ async def delete_by_filter(data: dict):
         if not point_ids:
             return {"status": "ok", "message": "No se encontraron entradas para eliminar", "deleted": 0}
         
-        # Eliminar los puntos encontrados
         client.delete(
             collection_name=COLLECTION_LEY,
             points_selector=point_ids

@@ -2,64 +2,9 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Panel</title>
-    <style>
-        body {
-            font-family: Arial;
-            background: #0f172a;
-            color: #e2e8f0;
-            margin: 0;
-            padding: 20px;
-        }
-
-        h1 {
-            margin-bottom: 20px;
-        }
-
-        .container {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            gap: 20px;
-        }
-
-        .menu {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        button {
-            padding: 10px;
-            border: none;
-            background: #1e293b;
-            color: white;
-            cursor: pointer;
-            border-radius: 6px;
-            text-align: left;
-        }
-
-        button:hover {
-            background: #334155;
-        }
-
-        .output {
-            background: #020617;
-            padding: 15px;
-            border-radius: 8px;
-            overflow: auto;
-            max-height: 80vh;
-        }
-
-        pre {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-
-        .title {
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Sistema RAG</title>
+    <link rel="stylesheet" href="/frontend/css/administracion.css?v=1.0.3">
 </head>
 <body>
 
@@ -72,6 +17,36 @@
         <button onclick="loadIPsDetail()">📊 IPs detalle</button>
         <button onclick="loadIPsUsers()">👥 IPs + usuarios</button>
         <button onclick="loadEndpoints()">📡 Top endpoints</button>
+        <hr>
+
+        <button onclick="listAllQA()">📚 Ver QA (vector)</button>
+        <button onclick="searchQA()">🔎 Buscar QA (texto)</button>
+        <button onclick="searchSemantic()">🧠 Buscar semántico</button>
+        <button onclick="ingestQA()">➕ Insertar QA</button>
+        <button onclick="deleteQA()">❌ Eliminar por ID</button>
+        <button onclick="deleteByFilter()">⚠️ Eliminar por filtro</button>
+
+        <hr>
+        <h3>Usuarios / IPs</h3>
+        <button onclick="blockUser()">🚫 Bloquear usuario</button>
+        <button onclick="unblockUser()">✅ Desbloquear usuario</button>
+        <button onclick="makeAdmin()">⭐ Hacer admin</button>
+        <button onclick="deleteUser()">❌ Eliminar usuario</button>
+        <button onclick="blockIP()">🌐 Bloquear IP</button>
+
+        <hr>
+        <h3>Logs / QA</h3>
+        <button onclick="loadQALogs()">📋 QA Logs</button>
+        <button onclick="loadQAOutOfDomain()">⚠️ QA Out-of-domain</button>
+        <button onclick="loadVisits()">👥 Visitas únicas</button>
+        <button onclick="loadReviews()">📝 Reviews</button>
+        <button onclick="loadExamAttempts()">📊 Exam Attempts</button>
+        <button onclick="loadMessages()">✉️ Mensajes</button>
+        
+        <hr>
+        <button onclick="window.location.href='https://seguridadvial.codepyhub.com/frontend/login.html'  "style="background: #dc2626; text-align: center;">
+            Cerrar sesión
+        </button>
     </div>
 
     <div class="output">
@@ -80,62 +55,6 @@
     </div>
 </div>
 
-<script>
-const API_BASE = "/admin";
-
-function setOutput(title, data) {
-    document.getElementById("title").innerText = title;
-    document.getElementById("result").innerText = JSON.stringify(data, null, 2);
-}
-
-async function fetchData(endpoint, title) {
-    try {
-        const res = await fetch(API_BASE + endpoint, {
-            credentials: "include"
-        });
-
-        if (!res.ok) {
-            const text = await res.text();
-            throw new Error(text);
-        }
-
-        const data = await res.json();
-        setOutput(title, data);
-
-    } catch (err) {
-        setOutput("Error", err.message);
-    }
-}
-
-// =========================
-// USERS
-// =========================
-function loadUsers() {
-    fetchData("/users", "Usuarios registrados");
-}
-
-// =========================
-// IPS
-// =========================
-function loadIPs() {
-    fetchData("/ips", "Top IPs por requests");
-}
-
-function loadIPsDetail() {
-    fetchData("/ips/detail", "Detalle de IPs");
-}
-
-function loadIPsUsers() {
-    fetchData("/ips/users", "IPs con usuarios");
-}
-
-// =========================
-// ENDPOINTS
-// =========================
-function loadEndpoints() {
-    fetchData("/top-endpoints", "Endpoints más usados");
-}
-</script>
-
+<script src="/frontend/js/administracion.js?v=1.0.3"></script>
 </body>
 </html>
