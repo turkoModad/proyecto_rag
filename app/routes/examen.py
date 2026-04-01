@@ -26,8 +26,18 @@ NIVELES = {
 
 
 def cargar_preguntas():
-    with open(ARCHIVO_PREGUNTAS, encoding="utf-8") as f:
-        return [json.loads(x) for x in f]
+    preguntas = []
+    with open(ARCHIVO_PREGUNTAS, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                preguntas.append(json.loads(line))
+            except json.JSONDecodeError:
+                print(f"Error al saltar línea corrupta: {line[:50]}...")
+                continue
+    return preguntas
 
 
 PREGUNTAS_DB = cargar_preguntas()
@@ -360,7 +370,7 @@ async def top10(nivel: str, db: AsyncSession = Depends(get_db)):
             ExamAttempt.completed == True,
             ExamAttempt.is_valid == True,
             ExamAttempt.total == total,
-            ExamAttempt.score >= (ExamAttempt.total * 0.6)
+            ExamAttempt.score >= (ExamAttempt.total * 0.7)
         )
         .order_by(desc(ExamAttempt.score), asc(ExamAttempt.duration_seconds))
         .limit(10)

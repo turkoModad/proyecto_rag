@@ -405,7 +405,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="ranking-item">
             <span class="ranking-pos">#${i+1}</span>
             <span class="ranking-nombre">${escapeHtml(r.nombre)}</span>
-            <span class="ranking-score">${Math.round((r.score/r.total)*100)}%</span>
+            <span class="ranking-score">${r.score}/${r.total}</span>
             <span class="ranking-tiempo">⏱ ${duracionFormateada}</span>
           </div>
         `;
