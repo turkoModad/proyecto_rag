@@ -6,12 +6,12 @@ from qdrant_client.models import PointStruct, Filter, FieldCondition, MatchText
 from app.service.embedding import get_embedding
 from app.db.vector_client import client
 from app.core.config import COLLECTION_LEY
-from app.administracion.security.admin_security import require_admin
+from app.administracion.security.admin_security import require_admin_with_session_password
 
 
 router = APIRouter(
     prefix="/vector",
-    dependencies=[Depends(require_admin)]
+    dependencies=[Depends(require_admin_with_session_password)]
 )
 
 

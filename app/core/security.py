@@ -3,6 +3,7 @@ import logging
 import hashlib 
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
+import secrets
 
 
 load_dotenv()
@@ -70,12 +71,32 @@ def generate_var_id(value: str) -> str:
     return f"id_{hashlib.md5(value.encode()).hexdigest()[:8]}"
 
 
-# ----------------------------
-# HASH DETERMINÍSTICO PARA EMAILS
-# ----------------------------
 def hash_email(email: str) -> str:
     """
     Genera un hash determinístico para emails.
     Útil para búsquedas y OTP.
     """
     return hashlib.sha256(email.strip().lower().encode()).hexdigest()
+
+
+def hash_session_password(password: str, salt: str) -> str:
+    """
+    Hashea la contraseña de sesión con SHA-512.
+    Usa salt para evitar ataques de rainbow table.
+    """
+    combined = f"{password}{salt}"
+    return hashlib.sha512(combined.encode()).hexdigest()
+
+
+def generate_session_password() -> str:
+    """
+    Genera una contraseña de sesión aleatoria de 8 caracteres alfanuméricos.
+    """
+    return secrets.token_hex(4).upper()
+
+
+def generate_session_salt() -> str:
+    """
+    Genera un salt aleatorio de 32 bytes en hex.
+    """
+    return secrets.token_hex(32)

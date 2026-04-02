@@ -9,6 +9,7 @@ from datetime import datetime, timezone, timedelta
 from fastapi import Request, Response
 from typing import Optional
 from app.utils.datatime import days_ago
+from app.core.security import decrypt_value
 
 
 logger = logging.getLogger("AuthService")
@@ -31,21 +32,19 @@ def get_argentina_day_bounds_utc():
 
     end_local = start_local + timedelta(days=1)
 
-    # Convertir a UTC nuevamente
     start_utc = start_local - argentina_offset
     end_utc = end_local - argentina_offset
 
     return start_utc, end_utc
 
 
-# ----------------------------
-# USUARIOS
-# ----------------------------
+
 async def get_user_by_email(db: AsyncSession, email: str):
     """Busca un usuario usando hash determinístico de email"""
     email_hashed = hash_email(email)
     result = await db.execute(select(User).where(User.email_hash == email_hashed))
     return result.scalar_one_or_none()
+
 
 
 async def create_user(db: AsyncSession, email: str, password: str):
@@ -69,6 +68,7 @@ async def create_user(db: AsyncSession, email: str, password: str):
     return new_user, email_hashed
 
 
+
 async def authenticate_user(db: AsyncSession, email: str, password: str):
     """Autentica usuario comparando contraseña y hash determinístico"""
     user = await get_user_by_email(db, email)
@@ -77,6 +77,7 @@ async def authenticate_user(db: AsyncSession, email: str, password: str):
     if not verify_password(password, user.password_hash):  
         return None
     return user
+
 
 
 async def log_query(
@@ -122,6 +123,7 @@ async def log_query(
     return query_log
 
 
+
 async def count_user_queries(db: AsyncSession, user_id: str) -> int:
     start_utc, end_utc = get_argentina_day_bounds_utc()
 
@@ -134,6 +136,7 @@ async def count_user_queries(db: AsyncSession, user_id: str) -> int:
         )
     )
     return result.scalar() or 0
+
 
 
 async def count_anonymous_queries(db: AsyncSession, ip_address: str, endpoint: str = "/ask") -> int:
@@ -152,9 +155,7 @@ async def count_anonymous_queries(db: AsyncSession, ip_address: str, endpoint: s
     return result.scalar() or 0
 
 
-# =========================
-# REVIEWS
-# =========================
+
 async def has_review_recently(
     db: AsyncSession,
     user_id: Optional[str] = None,  
@@ -181,6 +182,7 @@ async def has_review_recently(
     return result.scalar()
 
 
+
 async def has_weekly_review(
     db: AsyncSession,
     user_id: Optional[int] = None,
@@ -190,6 +192,7 @@ async def has_weekly_review(
     Verifica si un usuario ya ha realizado una valoración en los últimos 7 días.
     """
     return await has_review_recently(db, user_id, ip_address, days=7)
+
 
 
 async def log_otp(db: AsyncSession, email: str, ip_address: str, purpose: str = None):
@@ -212,6 +215,7 @@ async def log_otp(db: AsyncSession, email: str, ip_address: str, purpose: str = 
     return log
 
 
+
 async def get_user_by_token(db: AsyncSession, token: str):
     """
     Busca un usuario por OTP token.
@@ -221,6 +225,7 @@ async def get_user_by_token(db: AsyncSession, token: str):
     result = await db.execute(query)
     user = result.scalars().first()
     return user
+
 
 
 async def get_user_by_id(db: AsyncSession, user_id: str):
@@ -234,6 +239,7 @@ async def get_user_by_id(db: AsyncSession, user_id: str):
         logger.error(f"Error al buscar usuario por ID {user_id}: {e}")
         return None
     
+
 
 def validate_password_strength(password: str) -> tuple[bool, str]:
     """
@@ -252,6 +258,7 @@ def validate_password_strength(password: str) -> tuple[bool, str]:
     if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
         return False, "La contraseña debe contener al menos un carácter especial"
     return True, ""
+
 
 
 async def create_user(db: AsyncSession, email: str, password: str):
@@ -279,6 +286,7 @@ async def create_user(db: AsyncSession, email: str, password: str):
     return new_user, email_hashed
 
 
+
 async def create_refresh_token_record(db: AsyncSession, user_id: str, jti: str, expires_at: datetime):
     """Guarda un refresh token en la BD"""
     token_record = RefreshToken(
@@ -293,10 +301,12 @@ async def create_refresh_token_record(db: AsyncSession, user_id: str, jti: str, 
     return token_record
 
 
+
 async def get_refresh_token_by_jti(db: AsyncSession, jti: str):
     """Obtiene el registro de refresh token por jti (sin filtrar por revocado)"""
     result = await db.execute(select(RefreshToken).where(RefreshToken.jti == jti))
     return result.scalar_one_or_none()
+
 
 
 async def revoke_refresh_token(db: AsyncSession, jti: str):
@@ -309,14 +319,17 @@ async def revoke_refresh_token(db: AsyncSession, jti: str):
     return False
 
 
+
 def utc_now():
     return datetime.now(timezone.utc)
+
 
 def get_real_ip(request: Request) -> str:
     forwarded = request.headers.get("x-forwarded-for")
     if forwarded:
         return forwarded.split(",")[0].strip()
     return request.headers.get("CF-Connecting-IP") or request.client.host or "unknown"
+
 
 
 def clear_auth_cookies(response: Response):
@@ -330,6 +343,7 @@ def clear_auth_cookies(response: Response):
     response.delete_cookie("refresh_token", **cookie_config)
 
 
+
 async def revoke_all_user_refresh_tokens(db: AsyncSession, user_id: str):
     """Revoca todos los refresh tokens activos de un usuario"""
     stmt = update(RefreshToken).where(
@@ -339,3 +353,15 @@ async def revoke_all_user_refresh_tokens(db: AsyncSession, user_id: str):
     result = await db.execute(stmt)
     await db.commit()
     return result.rowcount
+
+
+
+async def get_user_decrypted_email(db: AsyncSession, user_id: str) -> Optional[str]:
+    """Obtiene el email descifrado de un usuario"""
+    user = await get_user_by_id(db, user_id)
+    if not user:
+        return None
+    try:
+        return decrypt_value(user.email)
+    except Exception:
+        return None

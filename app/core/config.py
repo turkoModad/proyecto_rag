@@ -109,9 +109,12 @@ MAX_FAILED_ATTEMPTS = 10
 LIMITE_CARACTERES_MENSAJE = 600          
 
 # horarios de limpieza db ip
-CLEANUP_HOURS_LOCAL = [(0, 0),]
+CLEANUP_HOURS_LOCAL = [(0, 0)]
 
 # Tiempo de retención de logs (en minutos)
-LOG_RETENTION_MINUTES = 360
+LOG_RETENTION_MINUTES = 1440
 
 VALID_ROLES = ["free", "admin"]
+
+# duracion del token de la contraseña del admin
+SESSION_PASSWORD_EXPIRE_MINUTES = 120

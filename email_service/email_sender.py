@@ -20,16 +20,29 @@ if not logger.handlers:
     logger.addHandler(handler)
 
 
+
 def _mask_email(email: str) -> str:
     """Muestra solo los primeros 5 caracteres antes del @ y enmascara el resto"""
-    local, domain = email.split("@")
-    visible = local[:5]
-    masked = visible + "*" * max(len(local) - 5, 0)
-    return f"{masked}@****.com"
+    if not email or "@" not in email:
+        return "email_invalido"
+    
+    try:
+        local, domain = email.split("@")
+        visible = local[:5]
+        masked = visible + "*" * max(len(local) - 5, 0)
+        return f"{masked}@****.com"
+    except Exception:
+        return "email_invalido"
+
 
 
 def enviar_email(receiver_email: str, subject: str, body_html: str) -> bool:
     """Envía un email mostrando solo el correo parcialmente enmascarado en logs"""
+    
+    if not receiver_email or "@" not in receiver_email:
+        logger.error(f"Email inválido para envío: {receiver_email}")
+        return False
+    
     mensaje = MIMEMultipart()
     mensaje["From"] = SENDER_EMAIL
     mensaje["To"] = receiver_email
@@ -56,6 +69,7 @@ def enviar_email(receiver_email: str, subject: str, body_html: str) -> bool:
         logger.exception(f"Error inesperado enviando email: {e}")
 
     return False
+
 
 
 def generar_token_verificacion() -> str:
@@ -106,6 +120,7 @@ def enviar_otp(receiver_email: str) -> dict:
     else:
         logger.warning(f"No se pudo enviar OTP a {masked_email}")
         return None
+    
     
     
 def enviar_reset_email(receiver_email: str) -> str:

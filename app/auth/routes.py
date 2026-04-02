@@ -43,9 +43,7 @@ FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-# ----------------------------
-# REGISTER
-# ----------------------------
+
 @router.get("/register")
 async def get_register():
     return FileResponse(os.path.join(FRONTEND_DIR, "register.html"))
@@ -84,9 +82,7 @@ async def register(request: Request, user: UserCreate, db: AsyncSession = Depend
     })
 
 
-# ----------------------------
-# VERIFY OTP
-# ----------------------------
+
 @router.get("/verify")
 async def get_verify():
     return FileResponse(os.path.join(FRONTEND_DIR, "verify.html"))
@@ -126,7 +122,6 @@ async def verify(data: dict, db: AsyncSession = Depends(get_db)):
     user.otp_expires = None
     user.otp_attempts = 0
 
-    # CASO 1: Registro 
     if user.otp_purpose == "register":
         user.is_verified = True
         user.otp_purpose = None
@@ -147,7 +142,6 @@ async def verify(data: dict, db: AsyncSession = Depends(get_db)):
         _set_auth_cookies(response, access, refresh)
         return response
 
-    # CASO 2: Login (2FA) - sin cambios
     if user.otp_purpose == "login":
         user.otp_purpose = None
 
@@ -170,12 +164,11 @@ async def verify(data: dict, db: AsyncSession = Depends(get_db)):
     raise HTTPException(400, "OTP inválido")
 
 
-# ----------------------------
-# LOGIN
-# ----------------------------
+
 @router.get("/login")
 async def get_login():
     return FileResponse(os.path.join(FRONTEND_DIR, "login.html"))
+
 
 
 @router.post("/login")
@@ -215,9 +208,7 @@ async def login(
     })
 
 
-# ----------------------------
-# LOGOUT
-# ----------------------------
+
 @router.post("/logout")
 async def logout(request: Request, db: AsyncSession = Depends(get_db)):
     refresh_token = request.cookies.get("refresh_token")
@@ -239,7 +230,10 @@ async def logout(request: Request, db: AsyncSession = Depends(get_db)):
     }
     response.delete_cookie("access_token", **cookie_config)
     response.delete_cookie("refresh_token", **cookie_config)
+    response.delete_cookie("session_password_hash", **cookie_config)
+    response.delete_cookie("session_password_salt", **cookie_config)
     return response
+
 
 def _set_auth_cookies(response: Response, access: str, refresh: str):
     cookie_config = {
@@ -263,6 +257,7 @@ def _set_auth_cookies(response: Response, access: str, refresh: str):
         max_age=REFRESH_EXPIRE_DAYS * 24 * 60 * 60,  
         **cookie_config
     )
+
 
 
 
@@ -334,12 +329,11 @@ async def refresh_token(
     return response
 
 
-# =========================
-# FORGOT PASSWORD (solicitar recuperación)
-# =========================
+
 @router.get("/forgot-password")
 async def get_forgot_password():
     return FileResponse(os.path.join(FRONTEND_DIR, "forgot-password.html"))
+
 
 
 @router.post("/forgot-password")
@@ -378,12 +372,11 @@ async def forgot_password(
     return {"message": "Si el email está registrado, recibirás un correo con las instrucciones."}
 
 
-# =========================
-# RESET PASSWORD (cambiar contraseña)
-# =========================
+
 @router.get("/reset-password")
 async def get_reset_password():
     return FileResponse(os.path.join(FRONTEND_DIR, "reset-password.html"))
+
 
 
 @router.post("/reset-password")

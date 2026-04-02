@@ -19,18 +19,15 @@ async def get_current_user(request: Request):
     access_token = request.cookies.get("access_token")
     refresh_token = request.cookies.get("refresh_token")
     
-    # Caso 1: No hay access token pero sí refresh token → necesita renovar
     if not access_token and refresh_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Access token missing, refresh required"
         )
     
-    # Caso 2: No hay ningún token → anónimo
     if not access_token:
         return None
     
-    # Caso 3: Hay access token, validarlo
     try:
         payload = verify_token(access_token)
         if payload.get("type") != "access" or "error" in payload:
@@ -213,12 +210,12 @@ async def get_current_user_from_refresh_token(
 
 async def get_current_user_with_full_security(
     request: Request,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    allow_refresh_fallback: bool = False  
 ) -> Optional[User]:
     """
-    Función principal que intenta autenticar con access token primero,
-    y si falla, con refresh token. SIEMPRE verifica en DB.
-    Esta es la función que DEBES usar para admin.
+    Función principal que intenta autenticar con access token.
+    El refresh_token SOLO se usa si allow_refresh_fallback=True
     """
     access_token = request.cookies.get("access_token")
     
@@ -240,25 +237,26 @@ async def get_current_user_with_full_security(
         except Exception:
             pass
     
-    refresh_token = request.cookies.get("refresh_token")
-    
-    if refresh_token:
-        try:
-            payload = verify_token_by_type(refresh_token, "refresh")
-            
-            if payload:
-                user_id = payload.get("sub")
+    if allow_refresh_fallback:
+        refresh_token = request.cookies.get("refresh_token")
+        
+        if refresh_token:
+            try:
+                payload = verify_token_by_type(refresh_token, "refresh")
                 
-                if user_id:
-                    result = await db.execute(
-                        select(User).where(User.id == user_id)
-                    )
-                    db_user = result.scalar_one_or_none()
+                if payload:
+                    user_id = payload.get("sub")
                     
-                    if db_user and not db_user.is_blocked:
-                        return db_user
-        except Exception:
-            pass
+                    if user_id:
+                        result = await db.execute(
+                            select(User).where(User.id == user_id)
+                        )
+                        db_user = result.scalar_one_or_none()
+                        
+                        if db_user and not db_user.is_blocked:
+                            return db_user
+            except Exception:
+                pass
     
     return None
 

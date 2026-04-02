@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Admin Access</title>
+<link rel="stylesheet" href="/frontend/css/admin_login.css?v=1.0.8">
+</head>
+<body>
+
+<div class="box">
+    <h2>🔐 Acceso Admin</h2>
+    <p>Se enviará una contraseña temporal a tu email</p>
+
+    <button class="send" onclick="requestPassword()">📧 Enviar contraseña</button>
+
+    <input type="password" id="pass" placeholder="Ingresa la contraseña" autocomplete="off">
+
+    <button class="login" onclick="login()">🔓 Ingresar al panel</button>
+    
+    <div id="errorMsg" class="error"></div>
+    <div id="successMsg" class="success"></div>
+</div>
+<script src="/frontend/js/admin_login.js?v=1.0.9"></script>
+</body>
+</html>
