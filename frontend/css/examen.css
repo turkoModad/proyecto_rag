@@ -1,5 +1,6 @@
 .examen-container {
-  max-width: 900px;
+  width: 100%;
+  max-width: 1035px;
   margin: 30px auto;
   padding: 25px;
   background: #ffffff;
@@ -96,7 +97,7 @@
 }
 
 .action-buttons {
-  max-width: 900px;
+  max-width: 1035px;
   margin: 30px auto;
   display: flex;
   justify-content: space-between;
@@ -163,7 +164,7 @@
 }
 
 .resultado {
-  max-width: 900px;
+  max-width: 1035px;
   margin: 0 auto;
 }
 
@@ -262,11 +263,12 @@
 }
 
 .seo-content-simulador { 
-    background: #f8f9fa; 
-    padding: 25px; 
-    border-radius: 12px; 
-    margin: 40px 0; 
-    border-left: 4px solid #1a3e6f; 
+  max-width: 1035px;
+  margin: 40px auto;
+  background: #f8f9fa; 
+  padding: 25px; 
+  border-radius: 12px; 
+  border-left: 4px solid #1a3e6f; 
 }
 
 .seo-content-simulador h2 { 
@@ -295,11 +297,12 @@
 }
 
 .faq-simulador { 
-    background: #fff; 
-    padding: 20px; 
-    border-radius: 12px; 
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
-    margin: 30px 0; 
+  max-width: 1035px;
+  margin: 30px auto;
+  background: #fff; 
+  padding: 20px; 
+  border-radius: 12px; 
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
 }
 
 .faq-simulador details { 
@@ -321,7 +324,7 @@
 }
 
 .config-section {
-  max-width: 900px;
+  max-width: 1035px;
   margin: 40px auto;
   padding: 30px;
   border-radius: 16px;
@@ -411,14 +414,12 @@
 }
 
 .ranking {
-  max-width: 600px;
+  max-width: 1035px;
   margin: 20px auto 40px auto;
   padding: 20px;
-
   background: #ffffff;
   border-radius: 14px;
   box-shadow: 0 8px 25px rgba(0,0,0,0.06);
-
   text-align: left;
 }
 
@@ -661,11 +662,12 @@
 }
 
 .resultado-card {
-    padding: 20px;
-    border-radius: 12px;
-    background: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+  max-width: 600px;
+  margin: 30px auto;
+  padding: 25px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
 }
 
 .resultado-card hr {
@@ -674,7 +676,6 @@
     border-top: 1px solid #e0e0e0;
 }
 
-/* Contenedor del campo de nombre */
 .nombre-ranking-container {
     margin: 20px 0;
     display: flex;
@@ -682,7 +683,6 @@
     gap: 12px;
 }
 
-/* Etiqueta del campo */
 .nombre-ranking-label {
     font-size: 14px;
     font-weight: 600;
@@ -697,7 +697,6 @@
     font-size: 16px;
 }
 
-/* Input de texto */
 #nombre-ranking {
     width: 100%;
     padding: 12px 16px;
@@ -721,7 +720,6 @@
     font-size: 14px;
 }
 
-/* Botón de guardar ranking */
 .btn-guardar-ranking {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -757,7 +755,6 @@
     font-size: 16px;
 }
 
-/* Versión responsive */
 @media (max-width: 768px) {
     #nombre-ranking {
         padding: 10px 14px;
@@ -770,7 +767,6 @@
     }
 }
 
-/* Estilos para el mensaje de éxito/error en el ranking */
 .ranking-mensaje {
     margin-top: 12px;
     padding: 10px;
@@ -839,5 +835,56 @@
   to {
     opacity: 1;
     transform: translate(-50%, 0);
+  }
+}
+
+.simulador-links {
+  max-width: 1035px;
+  margin: 30px auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.simulador-links a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #0b214f;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  text-decoration: none;
+  color: white;
+  font-weight: 600;
+  font-size: 15px;
+  text-align: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.simulador-links a::after {
+  content: "→";
+  font-size: 18px;
+  color: #ffffff;
+  transition: transform 0.2s ease;
+}
+
+.simulador-links a:hover {
+  border-color: #2d6cdf;
+  background: #15457c;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.simulador-links a:hover::after {
+  transform: translateX(4px);
+}
+
+@media (max-width: 600px) {
+  .simulador-links {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 }

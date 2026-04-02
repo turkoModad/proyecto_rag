@@ -38,6 +38,7 @@ try:
     RECIPIENT_EMAIL = get_secret("RECIPIENT_EMAIL")
     SECRET_EXAMENES = get_secret("SECRET_EXAMENES")
     ARCHIVO_PREGUNTAS = get_secret("ARCHIVO_PREGUNTAS")
+    LLM_API_KEY = get_secret("LLM_API_KEY")
 
 
 except Exception as e:
