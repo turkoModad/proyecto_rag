@@ -1,4 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
+  setInterval(async () => {
+      try {
+          await fetch('/auth/refresh', { method: 'POST', credentials: 'include' });
+          console.log("🔄 Token renovado automáticamente");
+      } catch(e) {
+          console.log("⚠️ No se pudo renovar token");
+      }
+  }, 10 * 60 * 1000);
 
   const btnIniciar = document.getElementById("btn-iniciar");
   const btnCalificar = document.getElementById("btn-calificar");
