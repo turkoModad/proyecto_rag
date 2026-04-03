@@ -17,6 +17,52 @@ document.addEventListener("DOMContentLoaded", () => {
   let tiempoRestante = 600;
   let nivel = "aprendiz";
 
+
+  let isRefreshing = false;
+
+  async function refreshAccessToken() {
+    if (isRefreshing) return;
+    isRefreshing = true;
+    
+    try {
+        const response = await fetch('/auth/refresh', {
+            method: 'POST',
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            console.log("✅ Token renovado");
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error("Error refrescando token:", error);
+        return false;
+    } finally {
+        isRefreshing = false;
+    }
+  }
+
+  async function fetchWithAuth(url, options = {}) {
+    let response = await fetch(url, {
+        ...options,
+        credentials: 'include'
+    });
+    
+    if (response.status === 401) {
+        console.log("🔑 Token expirado, refrescando...");
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
+            response = await fetch(url, {
+                ...options,
+                credentials: 'include'
+            });
+        }
+    }
+    
+    return response;
+  }
+
   function mostrarMensaje(mensaje, tipo = "error") {
     const mensajeExistente = document.querySelector(".mensaje-flotante");
     if (mensajeExistente) {
@@ -110,47 +156,47 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function iniciarExamen() {
-      if (btnIniciar.disabled) return;
-      
-      resetUI();
+    if (btnIniciar.disabled) return;
+    
+    resetUI();
 
-      btnIniciar.disabled = true;
-      btnIniciar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando...';
-      nivelButtons.forEach(b => b.disabled = true);
+    btnIniciar.disabled = true;
+    btnIniciar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando...';
+    nivelButtons.forEach(b => b.disabled = true);
 
-      try {
-          const res = await fetch("/examen/start", {
-              method: "POST",
-              headers: {"Content-Type": "application/json"},
-              body: JSON.stringify({
-                  nivel,
-                  fingerprint: fingerprint()
-              })
-          });
+    try {
+        const res = await fetchWithAuth("/examen/start", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                nivel,
+                fingerprint: fingerprint()
+            })
+        });
 
-          if (!res.ok) {
-              const errorData = await res.json().catch(() => ({}));
-              throw new Error(errorData.detail || "Error al iniciar el examen");
-          }
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.detail || "Error al iniciar el examen");
+        }
 
-          current = await res.json();
-          token = current.token;
+        current = await res.json();
+        token = current.token;
 
-          examenActivo = true;
-          startTime = Date.now();
+        examenActivo = true;
+        startTime = Date.now();
 
-          iniciarTimer();
-          renderPregunta();
-          
-          btnIniciar.innerHTML = '▶ Iniciar examen';
+        iniciarTimer();
+        renderPregunta();
+        
+        btnIniciar.innerHTML = '▶ Iniciar examen';
 
-      } catch (error) {
-          mostrarMensaje(error.message || "Error iniciando examen. Por favor, intentá de nuevo.");
-          btnIniciar.disabled = false;
-          btnIniciar.innerHTML = '▶ Iniciar examen';
-          nivelButtons.forEach(b => b.disabled = false);
-          resetUI();
-      }
+    } catch (error) {
+        mostrarMensaje(error.message || "Error iniciando examen. Por favor, intentá de nuevo.");
+        btnIniciar.disabled = false;
+        btnIniciar.innerHTML = '▶ Iniciar examen';
+        nivelButtons.forEach(b => b.disabled = false);
+        resetUI();
+    }
   }
 
 
@@ -194,43 +240,43 @@ document.addEventListener("DOMContentLoaded", () => {
     const tiempo = (Date.now() - startTime) / 1000;
 
     if (current.finished) {
-      finalizarExamen();
-      return;
+        finalizarExamen();
+        return;
     }
 
     try {
-      const res = await fetch("/examen/answer", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-          token,
-          question_id: current.question_id,
-          seleccion: idx,
-          firma: current.firma,
-          ts: current.ts,
-          tiempo
-        })
-      });
+        const res = await fetchWithAuth("/examen/answer", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                token,
+                question_id: current.question_id,
+                seleccion: idx,
+                firma: current.firma,
+                ts: current.ts,
+                tiempo
+            })
+        });
 
-      if (!res.ok) {
-        const err = await res.json().catch(()=>({detail:"Error"}));
-        throw new Error(err.detail || "Error enviando respuesta");
-      }
+        if (!res.ok) {
+            const err = await res.json().catch(()=>({detail:"Error"}));
+            throw new Error(err.detail || "Error enviando respuesta");
+        }
 
-      const data = await res.json();
-      current = data;
+        const data = await res.json();
+        current = data;
 
-      startTime = Date.now();
+        startTime = Date.now();
 
-      if (current.finished) {
-        finalizarExamen();
-      } else {
-        renderPregunta();
-      }
+        if (current.finished) {
+            finalizarExamen();
+        } else {
+            renderPregunta();
+        }
 
     } catch (e) {
-      mostrarMensaje(e.message || "Error enviando respuesta. Por favor, intentá de nuevo.");
-      bloquearOpciones();
+        mostrarMensaje(e.message || "Error enviando respuesta. Por favor, intentá de nuevo.");
+        bloquearOpciones();
     }
   }
 
@@ -246,22 +292,22 @@ document.addEventListener("DOMContentLoaded", () => {
     detenerTimer();
 
     try {
-      const res = await fetch("/examen/finish", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ token })
-      });
+        const res = await fetchWithAuth("/examen/finish", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ token })
+        });
 
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.detail || "Error al finalizar el examen");
-      }
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.detail || "Error al finalizar el examen");
+        }
 
-      const data = await res.json();
-      mostrarResultado(data);
+        const data = await res.json();
+        mostrarResultado(data);
 
     } catch (error) {
-      mostrarMensaje(error.message || "Error finalizando examen. Por favor, recargá la página.");
+        mostrarMensaje(error.message || "Error finalizando examen. Por favor, recargá la página.");
     }
   }
 
@@ -342,8 +388,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const nombre = document.getElementById("nombre-ranking").value.trim();
     
     if (!nombre) {
-      mostrarMensaje("Por favor, ingresá un nombre para guardar en el ranking", "error");
-      return;
+        mostrarMensaje("Por favor, ingresá un nombre para guardar en el ranking", "error");
+        return;
     }
 
     const btnGuardar = document.getElementById("guardar-ranking");
@@ -351,30 +397,30 @@ document.addEventListener("DOMContentLoaded", () => {
     btnGuardar.textContent = "Guardando...";
 
     try {
-      const res = await fetch("/examen/save_name", {  
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-          token,
-          nombre
-        })
-      });
+        const res = await fetchWithAuth("/examen/save_name", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                token,
+                nombre
+            })
+        });
 
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.detail || "Error al guardar");
-      }
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.detail || "Error al guardar");
+        }
 
-      mostrarMensaje(`¡Gracias ${nombre}! Tu puntaje ha sido guardado en el ranking 🏆`, "exito");
-      
-      setTimeout(() => {
-        reiniciarPagina();
-      }, 5000);
+        mostrarMensaje(`¡Gracias ${nombre}! Tu puntaje ha sido guardado en el ranking 🏆`, "exito");
+        
+        setTimeout(() => {
+            reiniciarPagina();
+        }, 5000);
 
     } catch (error) {
-      mostrarMensaje(error.message || "Error guardando nombre. Podés reintentar.", "error");
-      btnGuardar.disabled = false;
-      btnGuardar.textContent = "Guardar en ranking";
+        mostrarMensaje(error.message || "Error guardando nombre. Podés reintentar.", "error");
+        btnGuardar.disabled = false;
+        btnGuardar.textContent = "Guardar en ranking";
     }
   }
 
