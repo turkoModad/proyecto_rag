@@ -8,3 +8,5 @@ scripts/
 static/*
 !static/favicon.ico
 !static/site.webmanifest
+*.egg-info/             
+*.egg
