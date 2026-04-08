@@ -3,7 +3,12 @@ from setuptools import setup, find_packages
 setup(
     name='proyecto_rag',
     version='0.1.0',
-    packages=find_packages(exclude=['frontend', 'static', 'scripts', 'data', 'models', 'duplicados.csv']),
+    packages=['app', 'compartido', 'email_service'] + find_packages(exclude=['frontend', 'static', 'scripts', 'data', 'models']),
+    package_dir={
+        'app': 'app',
+        'compartido': 'compartido',
+        'email_service': 'email_service',
+    },
     install_requires=[
         'fastapi',
         'uvicorn',
@@ -18,12 +23,6 @@ setup(
         'pydantic-settings',
     ],
     python_requires='>=3.10, <3.12',
-    description='Módulos reutilizables para RAG - Autenticación, Email, Compartición',
+    description='Módulos reutilizables para RAG',
     author='CodePyhub',
-    author_email='turkomodad88@gmail.com',
-    url='https://github.com/turkoModad/proyecto_rag',
-    classifiers=[
-        'Programming Language :: Python :: 3.10',
-        'Programming Language :: Python :: 3.11',
-    ],
 )
